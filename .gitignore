@@ -1,0 +1,24 @@
+# Build artifacts
+build/
+*.o
+*.exe
+
+# NCU reports (large binary files)
+*.ncu-rep
+
+# Editor / IDE
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+plot/
+paper/
+profiling/
+logs/
+third_party/
+kernel/
+
