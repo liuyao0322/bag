@@ -1420,3 +1420,26 @@
   supplied correctness-checked negative results and resource boundaries but
   did not produce a candidate that beats the directly affected small buckets.
 - Trajectory: `trajectory/iter-53-20260831-225735`.
+
+### Final verification after the paper-guided optimization phase
+
+- Selected source: the exact iteration-39 product-major small-TF32
+  last-completer implementation; `src/bag_triton/bag.py` and
+  `solution/bag_triton/bag.py` are byte-for-byte identical.
+- Full functional regression passed all **28** BAG numerical/interface cases
+  and all **26** primitive cases.  Coverage includes IEEE/TF32, row-major,
+  column-major, sliced positive strides, non-aligned sizes, non-default caller
+  streams, repeated multistream and seven-stream schedules, grouped/hybrid
+  paths, and concurrent primitive atomic accumulation.
+- Independent final benchmark reports `CORRECT=True` for all 20 cases, BAG
+  geometric-mean latency **0.815398 ms**, and geometric-mean `GEMM/BAG`
+  **0.919152x**.
+- The priority TF32 buckets remain stable at **0.0225 ms** for N=512 and
+  **0.0922 ms** for N=1024 in both layouts.  The 0.33% aggregate difference
+  from iteration 53's 0.812709 ms is dominated by unchanged IEEE/large-shape
+  variability; source and generated target specializations are unchanged.
+- Final decision: no paper-guided candidate from iterations 40--52 beats the
+  directly affected small buckets.  Keep the already-published winner and the
+  complete negative-result/resource log rather than publishing a noisy or
+  layout-specific regression.
+- Trajectory: `trajectory/final-20260831-225852`.
