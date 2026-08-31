@@ -400,6 +400,23 @@
   below the general 3% threshold.
 - Trajectory: `trajectory/iter-30-20260831-151531`.
 
+### Final multi-stream verification
+
+- Selected source: iteration 30, commit `35cebab`; no code changes were made
+  before the independent final run.
+- Measurement boundary: `BagWorkspace` and its four CUDA streams were created
+  before warmup and before `triton.testing.do_bench`; creation is not included.
+- Correctness: `CORRECT=True` across all 20 layout/precision/size cases.
+- BAG geometric-mean latency: **1.599316 ms**; speedup geomean vs cuBLAS was
+  **0.465460x**. The difference from iter-30's 1.538423 ms is concentrated in
+  the first column-major IEEE N=512/1024 cases; N=2048 multi-stream latency
+  remained stable at `1.0476/1.0532 ms` IEEE and `0.7178/0.7009 ms` TF32.
+- Large serial buckets also remained stable: N=8192 was about 49.0-49.5 ms
+  IEEE and 30.31-30.34 ms TF32.
+- Decision: retain iteration 30. It provides a repeatable targeted N=2048
+  improvement while auto-gating event overhead out of all other buckets.
+- Trajectory: `trajectory/final-20260831-151619`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with
