@@ -25,6 +25,7 @@
 | iter-16 | Compact 32x32x16 tile for medium-small fused GEMMs | 0.046449 ms geomean; 0.871591x vs unfused | yes | keep; new 512 best |
 | iter-17 | Increase compact tile BK from 16 to 32 with two stages | 0.047569 ms geomean; 0.865065x vs unfused | yes | reject; regression |
 | iter-18 | Increase compact 32x32 tile from 4 to 8 warps | 0.060066 ms geomean; 0.685031x vs unfused | yes | reject; major regression |
+| iter-19 | Deepen compact 32x32x16 pipeline from 3 to 4 stages | 0.053670 ms geomean; 0.782033x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -309,3 +310,18 @@
 - Outcome: **reject**. The small output tile does not contain enough work to
   amortize eight-warp cooperation; four warps is decisively better.
 - Trajectory: `trajectory/iter-18-20260831-143913`.
+
+### Iteration 19 — deeper compact-tile pipeline
+
+- Change: restored four warps and increased `32x32x16` from 3 to 4 stages.
+- Hypothesis: the approximately 32-KiB four-stage footprint could preserve
+  multi-CTA residency while prefetching farther ahead.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.053670 ms**.
+- Geometric-mean speedup vs unfused: **0.782033x**.
+- Change vs iteration-16 best (0.046449 ms): **15.55% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0686`, IEEE row-major
+  `0.0686`, TF32 column-major `0.0420`, TF32 row-major `0.0420`.
+- Outcome: **reject**. Four stages add pipeline/synchronization overhead beyond
+  what this short GEMM can amortize; three stages remains the optimum tested.
+- Trajectory: `trajectory/iter-19-20260831-143941`.
