@@ -26,6 +26,7 @@
 | iter-17 | Increase compact tile BK from 16 to 32 with two stages | 0.047569 ms geomean; 0.865065x vs unfused | yes | reject; regression |
 | iter-18 | Increase compact 32x32 tile from 4 to 8 warps | 0.060066 ms geomean; 0.685031x vs unfused | yes | reject; major regression |
 | iter-19 | Deepen compact 32x32x16 pipeline from 3 to 4 stages | 0.053670 ms geomean; 0.782033x vs unfused | yes | reject; regression |
+| iter-20 | Reduce compact 32x32 tile from 4 to 2 warps | 0.052497 ms geomean; 0.793737x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -325,3 +326,30 @@
 - Outcome: **reject**. Four stages add pipeline/synchronization overhead beyond
   what this short GEMM can amortize; three stages remains the optimum tested.
 - Trajectory: `trajectory/iter-19-20260831-143941`.
+
+### Stall reassessment after iteration 19
+
+- NCU remains unavailable due the previously observed `ERR_NVGPUCTRPERM`;
+  per the one-probe policy it was not retried.
+- Iterations 17–19 show that iteration 16's `BK=16`, four warps, and three
+  stages are each locally important: wider K, more warps, and deeper
+  pipelining all regress.
+- Triton's official I/O-bound matmul configuration space uses 16/32-sized M
+  tiles, 32/64-sized N tiles, and two warps when N is at most 64. This motivated
+  testing the untried two-warp and compact rectangular directions.
+
+### Iteration 20 — two-warp compact tile
+
+- Change: restored three stages and reduced `32x32x16` from four to two
+  warps.
+- Hypothesis: fewer cooperative threads and greater per-thread ILP could reduce
+  overhead for this short, I/O/atomic-heavy GEMM.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.052497 ms**.
+- Geometric-mean speedup vs unfused: **0.793737x**.
+- Change vs iteration-16 best (0.046449 ms): **13.02% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0604`, IEEE row-major
+  `0.0543`, TF32 column-major `0.0481`, TF32 row-major `0.0481`.
+- Outcome: **reject**. Two warps leave insufficient latency-hiding capacity;
+  four warps is the optimum tested warp count.
+- Trajectory: `trajectory/iter-20-20260831-144027`.
