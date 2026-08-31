@@ -463,6 +463,42 @@
   leaf-GEMM efficiency through a hybrid or grouped/batched implementation.
 - Trajectory: `trajectory/iter-31-20260831-153322`.
 
+### Iteration 32 — hybrid cuBLAS leaves with direct Triton decode
+
+- Change: added an explicitly labelled hybrid schedule. Triton materializes
+  independent M3/M6/M7 inputs and both M1/M2 input pairs; seven serial cuBLAS
+  GEMMs store their products in four output quadrants plus three dead
+  workspace buffers; one Triton kernel decodes the seven products directly
+  into the final C basis.
+- Algebraic decode: `C11=M4+M5`, `C12=M3+M5-M6-M2`,
+  `C21=M1-M3-M5-M7`, and `C22=M1+M2-M3-M5`.
+- Hypothesis: matching cuBLAS leaf throughput and removing intermediate C-psi
+  merge passes would expose the practical upper bound after mandatory O(N^2)
+  BAG transformations.
+- Measurement boundary: all buffers were preallocated; input transforms,
+  seven leaf GEMMs, the direct decode, and all required execution were timed.
+  This result is explicitly hybrid and is not reported as a pure Triton
+  primitive result.
+- Correctness: `CORRECT=True` across all 20 formal cases; the quick interface
+  suite also passed the hybrid schedule.
+- BAG geometric-mean latency: **1.153518 ms**.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.648018x**.
+- Change vs iteration-30 pure-Triton best (1.538423 ms): **25.02% faster**.
+- N=8192 speedup: IEEE column/row `1.020x/0.985x`; TF32 column/row
+  `0.953x/0.959x`.
+- Component result at N=8192 IEEE row-major: seven cuBLAS leaves totalled
+  `40.444928 ms`; transformations and host gaps totalled `2.772990 ms`, down
+  from `3.560448 ms` before direct decode.
+- Analysis: even idealized leaves do not reach 8/7 at this finite size. Seven
+  half-size cuBLAS calls scale to about 40.5 ms rather than exactly 7/8 of the
+  full GEMM, and unavoidable input materialization/direct decoding adds about
+  2.8 ms. The hybrid path establishes a measured practical ceiling near
+  1.02x for IEEE N=8192 on this GPU.
+- Outcome: **keep as an explicit diagnostic/performance backend**, not as the
+  claimed pure-Triton primitive implementation. Continue with a grouped Triton
+  leaf kernel to remove launch overhead in the small buckets.
+- Trajectory: `trajectory/iter-32-20260831-154247`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with

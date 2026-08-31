@@ -136,6 +136,27 @@ def _run_seven_stream_replay_case() -> None:
         raise AssertionError(f"seven-stream replay relative error {relative_l2:.6e}")
 
 
+def _run_hybrid_case() -> None:
+    """Check the explicit cuBLAS-leaf diagnostic schedule."""
+
+    size = 128
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.set_float32_matmul_precision("highest")
+    a = _matrix(size, "column-major")
+    b = _matrix(size, "column-major")
+    output = _matrix(size, "column-major")
+    reference = torch.mm(a, b)
+    workspace = allocate_bag_workspace(a, b, output, hybrid=True)
+    bag_matmul(a, b, out=output, workspace=workspace, schedule="hybrid")
+    torch.cuda.synchronize()
+    difference = output - reference
+    relative_l2 = float(
+        torch.linalg.vector_norm(difference) / torch.linalg.vector_norm(reference)
+    )
+    if relative_l2 > 3.0e-4:
+        raise AssertionError(f"hybrid relative error {relative_l2:.6e}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=20260831)
@@ -163,6 +184,8 @@ def main() -> None:
     print("PASS non-default caller stream and repeated multistream batches")
     _run_seven_stream_replay_case()
     print("PASS non-default caller stream and repeated seven-stream atomic launches")
+    _run_hybrid_case()
+    print("PASS explicit hybrid cuBLAS-leaf schedule")
     print(f"All {count} Triton BAG numerical cases and interface checks passed.")
 
 
