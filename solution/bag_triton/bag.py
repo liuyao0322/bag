@@ -761,6 +761,14 @@ def _grouped_bag_gemm_kernel(
             other=0.0,
         )
         if INTERLEAVE_PREP:
+            prepared_left_offsets = (
+                offsets_m[:, None] * stride_left_m
+                + current_k[None, :] * stride_left_k
+            )
+            prepared_right_offsets = (
+                current_k[:, None] * stride_right_k
+                + offsets_n[None, :] * stride_right_n
+            )
             # M4 owns the canonical-left transformed operands.  Restricting
             # writes to program_n==0 gives every (m,k) fragment one owner.
             if local_product_id == 0:
@@ -774,29 +782,29 @@ def _grouped_bag_gemm_kernel(
                     left22 = tl.load(left22_ptr + left_offsets, mask=left_mask, other=0.0)
                     left_three = left12 - left21 + left22
                     tl.store(
-                        left_ptr + 0 * stride_left_batch + left_offsets,
+                        left_ptr + 0 * stride_left_batch + prepared_left_offsets,
                         left12 + left22,
                         mask=left_mask,
                     )
                     tl.store(
-                        left_ptr + 1 * stride_left_batch + left_offsets,
+                        left_ptr + 1 * stride_left_batch + prepared_left_offsets,
                         left22 - left21,
                         mask=left_mask,
                     )
                     tl.store(
-                        left_ptr + 2 * stride_left_batch + left_offsets,
+                        left_ptr + 2 * stride_left_batch + prepared_left_offsets,
                         left_three,
                         mask=left_mask,
                     )
                     if TRANSPOSE_PROBLEM:
                         tl.store(
-                            left_ptr + 6 * stride_left_batch + left_offsets,
+                            left_ptr + 6 * stride_left_batch + prepared_left_offsets,
                             left_three - left,
                             mask=left_mask,
                         )
                     else:
                         tl.store(
-                            left_ptr + 5 * stride_left_batch + left_offsets,
+                            left_ptr + 5 * stride_left_batch + prepared_left_offsets,
                             left_three - left,
                             mask=left_mask,
                         )
@@ -819,29 +827,29 @@ def _grouped_bag_gemm_kernel(
                     right22 = tl.load(right22_ptr + right_offsets, mask=right_mask, other=0.0)
                     right_three = right12 - right21 + right22
                     tl.store(
-                        right_ptr + 0 * stride_right_batch + right_offsets,
+                        right_ptr + 0 * stride_right_batch + prepared_right_offsets,
                         right12 + right22,
                         mask=right_mask,
                     )
                     tl.store(
-                        right_ptr + 1 * stride_right_batch + right_offsets,
+                        right_ptr + 1 * stride_right_batch + prepared_right_offsets,
                         right22 - right21,
                         mask=right_mask,
                     )
                     tl.store(
-                        right_ptr + 2 * stride_right_batch + right_offsets,
+                        right_ptr + 2 * stride_right_batch + prepared_right_offsets,
                         right_three,
                         mask=right_mask,
                     )
                     if TRANSPOSE_PROBLEM:
                         tl.store(
-                            right_ptr + 5 * stride_right_batch + right_offsets,
+                            right_ptr + 5 * stride_right_batch + prepared_right_offsets,
                             right_three - right11,
                             mask=right_mask,
                         )
                     else:
                         tl.store(
-                            right_ptr + 6 * stride_right_batch + right_offsets,
+                            right_ptr + 6 * stride_right_batch + prepared_right_offsets,
                             right_three - right11,
                             mask=right_mask,
                         )

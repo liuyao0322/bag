@@ -1149,3 +1149,27 @@
   canonical-left/right slot mapping before timing the direction**.
 - Trajectory: benchmark aborted before the trajectory snapshot step; console
   output is preserved in `_bench_output.txt` for this commit.
+
+### Iteration 44 — correct grouped-destination strides for raw2 prepare
+
+- Change: retained iteration 43's two-phase dataflow and fixed all eight
+  transformed stores to use the compact grouped-plane strides.  The failed
+  prototype had formed destination addresses with the original N-leading
+  quadrant strides instead of the N/2-leading workspace strides.
+- Correctness: all 20 formal cases now report `CORRECT=True`; IEEE and TF32
+  errors match the established baseline.  A direct workspace diagnostic also
+  confirmed the M4/M5 products and final counter state were already correct;
+  only the transformed-plane addresses were defective in iteration 43.
+- BAG geometric-mean latency: **0.857485 ms**, 5.47% above the independent
+  **0.813021 ms** product-major baseline.
+- Targeted result: N=512 TF32 rose from **0.0225 ms** to **0.0328 ms** in both
+  layouts (about 45.8% slower); N=1024 rose from **0.0922 ms** to
+  **0.1116 ms** (about 21.0% slower).
+- Analysis: correctness validates the two-launch phase mapping, counter=2
+  protocol, and row/column operand slots.  Performance rejects the fixed edge
+  owners: only `Pm+Pn` CTAs perform all input transforms, so the first launch
+  ends with a long tail even though its aggregate CTA wave count is unchanged.
+- Outcome: **reject the edge-owner schedule, not yet the raw2 dataflow**.  Test
+  a rotating unique owner per K-step so the same prepare work and fragment
+  reuse are distributed across all raw-product CTAs.
+- Trajectory: `trajectory/iter-44-20260831-222310`.
