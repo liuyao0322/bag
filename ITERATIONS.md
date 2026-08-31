@@ -921,3 +921,27 @@
 - Outcome: **accept as the new provisional best** and continue with the
   independent N=1024 pointwise/IEEE-GEMM candidates before final publication.
 - Trajectory: `trajectory/iter-36-20260831-170515`.
+
+### Iteration 37 — widen N=1024 grouped pointwise passes
+
+- Change: retain BLOCK=256/four warps through `half<=256`, specialize
+  `half<=512` (full N=1024) prepare and decode to BLOCK=1024/four warps, and
+  retain BLOCK=2048/eight warps above that boundary.
+- Hypothesis: N=1024 has enough elements to amortize wider vector programs;
+  reducing both pointwise grids from 1024 to 256 programs should lower launch
+  scheduling overhead without changing the seven-product GEMM.
+- Correctness: `CORRECT=True` on all 20 formal benchmark cases.
+- N=1024 BAG latencies: IEEE column/row **0.1280/0.1270 ms**, TF32 column/row
+  **0.0973/0.0973 ms**. Their geomean is **0.11138 ms**, **1.70% lower** than
+  iteration 36's 0.11331 ms N=1024 geomean.
+- Focused pre-screen independently showed the same direction: IEEE column
+  `0.1321 -> 0.1309 ms` and TF32 column/row `0.0983/0.0984 ->
+  0.0973/0.0975 ms`, with N=512 unchanged at benchmark resolution.
+- Full-suite BAG geomean is **0.820715 ms** and full-suite `GEMM/BAG` geomean
+  is **0.913709x**. The 0.22% full-geomean regression versus iteration 36 is
+  smaller than the independent large-shape run variation; N>=2048 executes
+  byte-identical kernels, so it is not attributed to this specialization.
+- Outcome: **accept for the small-matrix objective**. The targeted N=1024
+  signal improves consistently in focused and formal measurements, while all
+  other buckets retain their prior implementation.
+- Trajectory: `trajectory/iter-37-20260831-170655`.

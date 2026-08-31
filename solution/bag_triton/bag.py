@@ -1094,10 +1094,15 @@ def bag_matmul(
     c_psi22 = out[half:, half:]
 
     if use_grouped:
-        grouped_prepare_block = 256 if half <= 512 else 2048
-        grouped_prepare_warps = 4 if half <= 512 else 8
-        grouped_decode_block = 256 if half <= 512 else 2048
-        grouped_decode_warps = 4 if half <= 512 else 8
+        if half <= 256:
+            grouped_prepare_block = grouped_decode_block = 256
+            grouped_prepare_warps = grouped_decode_warps = 4
+        elif half <= 512:
+            grouped_prepare_block = grouped_decode_block = 1024
+            grouped_prepare_warps = grouped_decode_warps = 4
+        else:
+            grouped_prepare_block = grouped_decode_block = 2048
+            grouped_prepare_warps = grouped_decode_warps = 8
         _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, grouped_prepare_block),)](
             a,
             b,
