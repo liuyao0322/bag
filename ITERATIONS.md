@@ -858,3 +858,37 @@
   latency improves by **1.077x** even though only the 512 bucket changed.
 - Formal square-512 improvement: IEEE `0.079872 -> 0.051200 ms` (**1.560x**)
   and TF32 `0.070656 -> 0.040960 ms` (**1.725x**) for both layouts.
+
+### Final sparse-grouped BAG verification and publication
+
+- Selected implementation: iteration 34's sparse operand materialization and
+  precision/size-specific grouped GEMM buckets plus iteration 35's wide
+  pointwise preparation/decode programs for N>=2048.
+- Rejected follow-ups: tile-resident seven-product decoding, direct K-loop
+  operand generation, CUDA Graph replay, unit-inner-stride specialization,
+  `maxnreg=64`, and semi-sparse materialization. They either regressed the
+  measured suite or produced unstable/no material gains; `maxnreg=64` caused
+  catastrophic register spilling and was removed immediately.
+- Correctness before publication: all **28** full BAG cases and all **26** full
+  primitive cases passed. Coverage includes IEEE/TF32, row-major,
+  column-major, sliced positive strides, non-aligned shapes, non-default caller
+  streams, repeated multistream/seven-stream schedules, and concurrent atomic
+  primitive updates.
+- Independent final result: **0.832332 ms** BAG latency geometric mean and
+  **0.901037x** speedup geometric mean versus ordinary cuBLAS GEMM;
+  `CORRECT=True` on all 20 benchmark cases. The final latency is within 0.51%
+  of iteration 35's `0.828137 ms`, confirming the selected implementation.
+- Aggregate by N (`GEMM/BAG`): N=512 `0.757575x`, N=1024 `0.833819x`,
+  N=2048 `0.961977x`, N=4096 `1.003673x`, and N=8192 `0.973773x`.
+- Large TF32 results: N=4096 is `1.053x/1.053x` and N=8192 is
+  `1.015x/1.012x` for column/row-major. IEEE remains more sensitive to
+  run-to-run cuBLAS timing at N=8192, so BAG latency and the complete CSV are
+  reported alongside every ratio.
+- Published `solution/bag_triton/bag.py` byte-for-byte to
+  `src/bag_triton/bag.py`; a source-root quick replay passed all 18 numerical
+  cases and retained explicit schedule/interface checks.
+- Refreshed `benchmark_results/bag_vs_gemm_rtx3090.csv` and the accompanying
+  Markdown report from `trajectory/final-20260831-164812`.
+- The arithmetic-only upper bound remains `8/7=1.142857x`; the prior measured
+  IEEE column-major finite-shape bound near `1.1325x` is retained separately
+  from this final run's end-to-end result.

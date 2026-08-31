@@ -890,8 +890,8 @@ def bag_matmul(
             independent precomputed inputs and atomic output accumulation;
             ``"hybrid"`` uses Triton transforms around seven serial cuBLAS
             leaf GEMMs as a diagnostic upper-bound implementation;
-            ``"grouped"`` materializes seven pairs and executes all seven
-            products in one batched Triton launch;
+            ``"grouped"`` materializes only the required transformed operands
+            and executes all seven products in one batched Triton launch;
             ``"auto"`` selects grouped execution through N=8192 when grouped
             workspace is supplied, and otherwise uses the measured serial or
             dependency-batched fallback.

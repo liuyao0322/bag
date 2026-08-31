@@ -31,26 +31,27 @@ Each row is the geometric mean of row/column-major and IEEE/TF32 cases.
 
 | N | BAG median (ms) | GEMM median (ms) | GEMM/BAG speedup |
 |---:|---:|---:|---:|
-| 512 | 0.031314 | 0.021685 | 0.692521x |
-| 1024 | 0.121122 | 0.093688 | 0.773502x |
-| 2048 | 0.729086 | 0.671485 | 0.920995x |
-| 4096 | 5.031416 | 4.825449 | 0.959064x |
-| 8192 | 39.148390 | 36.166375 | 0.923828x |
+| 512 | 0.028662 | 0.021714 | 0.757575x |
+| 1024 | 0.113289 | 0.094463 | 0.833819x |
+| 2048 | 0.697425 | 0.670907 | 0.961977x |
+| 4096 | 4.801546 | 4.819184 | 1.003673x |
+| 8192 | 36.737450 | 35.773945 | 0.973773x |
 
-Across all 20 cases, BAG latency geometric mean is **0.885580 ms** and the
-speedup geometric mean is **0.847458x**. Relative to the previous
-dependency-batched implementation (`1.538423 ms`), the grouped implementation
-is **1.737x faster** and reduces geometric-mean latency by **42.44%**. At
-N=4096 it reaches 93.6-94.0% of ordinary IEEE GEMM performance and 98.0-98.1%
-of ordinary TF32 GEMM performance.
+Across all 20 cases, BAG latency geometric mean is **0.832332 ms** and the
+speedup geometric mean is **0.901037x**. Relative to the original grouped
+implementation (`0.885580 ms`), the optimized implementation is **1.064x
+faster** and reduces geometric-mean latency by **6.01%**. Relative to the
+earlier dependency-batched implementation (`1.538423 ms`), it is **1.849x
+faster**. The per-size aggregate reaches parity with ordinary GEMM at N=4096
+and 97.4% of it at N=8192.
 
 ## Grouped/batched Triton launch
 
-The auto scheduler uses grouped execution for N<=4096 when the preallocated
+The auto scheduler uses grouped execution for N<=8192 when the preallocated
 workspace contains its three `(7,N/2,N/2)` buffers:
 
 ```text
-materialize seven left/right pairs
+materialize only eight genuinely transformed operands
     -> one 2-D Triton grid: M1 | M2 | M3 | M4 | M5 | M6 | M7
     -> direct decode of seven products into C
 ```
@@ -59,12 +60,15 @@ The product dimension is the second grid axis, so all seven independent GEMMs
 are issued by one Triton launch. Products are written to disjoint batch slices;
 the decode kernel therefore needs no atomic operations. Workspace allocation,
 including all batch buffers, occurs before warmup and timing. The timed auto
-path creates no streams.
+path creates no streams. Six unchanged quadrant operands are read directly
+from A/B instead of being copied into grouped storage. The GEMM tile, BK,
+pipeline depth, and pointwise program width are statically bucketed by matrix
+size and IEEE/TF32 mode; offline tuning is not part of runtime execution.
 
-The benefit is largest where launch latency previously dominated: row-major
-IEEE/TF32 N=512 now takes `0.0348/0.0266 ms`, and N=1024 takes
-`0.1393/0.1044 ms`. At N=2048 the TF32 column-major case reaches `0.984x` of
-ordinary GEMM; at N=4096 the TF32 cases reach `0.980x/0.981x`.
+The final row-major IEEE/TF32 latency is `0.0317/0.0246 ms` at N=512 and
+`0.1300/0.0983 ms` at N=1024. At N=2048, TF32 row-major reaches `1.027x` of
+ordinary GEMM. At N=4096, TF32 reaches `1.053x` in both layouts; at N=8192 it
+reaches `1.015x/1.012x` for column/row-major.
 
 ## Arithmetic upper bound versus measured end-to-end speedup
 
@@ -73,11 +77,13 @@ executes seven half-size GEMMs where a classical blocked GEMM executes eight.
 It is distinct from an end-to-end measurement that includes transforms,
 product storage, decoding, and launches.
 
-The same final-run cuBLAS measurements give the following finite-shape,
-GEMM-only bound `T_gemm(N) / (7*T_gemm(N/2))` at N=8192: IEEE
-column/row-major `1.1325x/1.0875x`, and TF32 column/row-major
-`1.0288x/1.0373x`. The IEEE column-major result confirms a measured leaf-GEMM
-bound close to 1.14x.
+The current independent final-run cuBLAS measurements give the following
+finite-shape, GEMM-only bound `T_gemm(N) / (7*T_gemm(N/2))` at N=8192: IEEE
+column/row-major `1.0956x/1.0934x`, and TF32 column/row-major
+`1.0295x/1.0259x`. A prior same-GPU run measured IEEE column-major at
+`1.1325x`, which remains the previously observed finite-shape upper bound near
+1.14x; run-to-run GEMM timing variation does not replace the arithmetic
+`8/7` ceiling.
 
 Separately, one explicit hybrid end-to-end run measured seven cuBLAS leaves at
 `40.444928 ms` plus `2.772990 ms` of transformations/host gaps, for
@@ -94,8 +100,8 @@ diagnostic schedule.
 
 ## Accuracy
 
-- IEEE: maximum relative L2 error `3.140339e-06`; maximum absolute error
-  `3.452301e-04`.
+- IEEE: maximum relative L2 error `3.139858e-06`; maximum absolute error
+  `3.385544e-04`.
 - TF32: maximum relative L2 error `1.095635e-03`; maximum absolute error
   `5.009460e-02`.
 

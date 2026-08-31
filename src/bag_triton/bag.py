@@ -590,14 +590,11 @@ def _prepare_grouped_inputs_kernel(
         a12 - a21 + a22,
         mask=mask,
     )
-    tl.store(left_ptr + 3 * stride_left_batch + left_offsets, a11, mask=mask)
-    tl.store(left_ptr + 4 * stride_left_batch + left_offsets, a12, mask=mask)
     tl.store(
         left_ptr + 5 * stride_left_batch + left_offsets,
         a12 - a21 + a22 - a11,
         mask=mask,
     )
-    tl.store(left_ptr + 6 * stride_left_batch + left_offsets, a21, mask=mask)
     tl.store(right_ptr + 0 * stride_right_batch + right_offsets, b12 + b22, mask=mask)
     tl.store(right_ptr + 1 * stride_right_batch + right_offsets, b22 - b21, mask=mask)
     tl.store(
@@ -605,9 +602,6 @@ def _prepare_grouped_inputs_kernel(
         b12 - b21 + b22,
         mask=mask,
     )
-    tl.store(right_ptr + 3 * stride_right_batch + right_offsets, b11, mask=mask)
-    tl.store(right_ptr + 4 * stride_right_batch + right_offsets, b21, mask=mask)
-    tl.store(right_ptr + 5 * stride_right_batch + right_offsets, b12, mask=mask)
     tl.store(
         right_ptr + 6 * stride_right_batch + right_offsets,
         b12 - b21 + b22 - b11,
@@ -619,6 +613,12 @@ def _prepare_grouped_inputs_kernel(
 def _grouped_bag_gemm_kernel(
     left_ptr,
     right_ptr,
+    left3_ptr,
+    left4_ptr,
+    left56_ptr,
+    right3_ptr,
+    right4_ptr,
+    right56_ptr,
     products_ptr,
     half,
     stride_left_batch,
@@ -627,6 +627,10 @@ def _grouped_bag_gemm_kernel(
     stride_right_batch,
     stride_right_k,
     stride_right_n,
+    stride_direct_left_m,
+    stride_direct_left_k,
+    stride_direct_right_k,
+    stride_direct_right_n,
     stride_products_batch,
     stride_products_m,
     stride_products_n,
@@ -635,8 +639,9 @@ def _grouped_bag_gemm_kernel(
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
     GROUP_M: tl.constexpr,
+    TRANSPOSE_PROBLEM: tl.constexpr,
 ):
-    """Compute seven independent, materialized BAG products in one launch."""
+    """Compute seven BAG products, loading unchanged quadrants in place."""
 
     program_id = tl.program_id(axis=0)
     product_id = tl.program_id(axis=1)
@@ -652,17 +657,66 @@ def _grouped_bag_gemm_kernel(
     offsets_n = program_n * BLOCK_N + tl.arange(0, BLOCK_N)
     offsets_k = tl.arange(0, BLOCK_K)
     accumulator = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
-    left_base = left_ptr + product_id * stride_left_batch
-    right_base = right_ptr + product_id * stride_right_batch
+    if product_id == 3:
+        left_base = left3_ptr
+        current_stride_left_m = stride_direct_left_m
+        current_stride_left_k = stride_direct_left_k
+        right_base = right3_ptr
+        current_stride_right_k = stride_direct_right_k
+        current_stride_right_n = stride_direct_right_n
+    elif product_id == 4:
+        left_base = left4_ptr
+        current_stride_left_m = stride_direct_left_m
+        current_stride_left_k = stride_direct_left_k
+        right_base = right4_ptr
+        current_stride_right_k = stride_direct_right_k
+        current_stride_right_n = stride_direct_right_n
+    elif product_id == 5:
+        if TRANSPOSE_PROBLEM:
+            left_base = left56_ptr
+            current_stride_left_m = stride_direct_left_m
+            current_stride_left_k = stride_direct_left_k
+            right_base = right_ptr + product_id * stride_right_batch
+            current_stride_right_k = stride_right_k
+            current_stride_right_n = stride_right_n
+        else:
+            left_base = left_ptr + product_id * stride_left_batch
+            current_stride_left_m = stride_left_m
+            current_stride_left_k = stride_left_k
+            right_base = right56_ptr
+            current_stride_right_k = stride_direct_right_k
+            current_stride_right_n = stride_direct_right_n
+    elif product_id == 6:
+        if TRANSPOSE_PROBLEM:
+            left_base = left_ptr + product_id * stride_left_batch
+            current_stride_left_m = stride_left_m
+            current_stride_left_k = stride_left_k
+            right_base = right56_ptr
+            current_stride_right_k = stride_direct_right_k
+            current_stride_right_n = stride_direct_right_n
+        else:
+            left_base = left56_ptr
+            current_stride_left_m = stride_direct_left_m
+            current_stride_left_k = stride_direct_left_k
+            right_base = right_ptr + product_id * stride_right_batch
+            current_stride_right_k = stride_right_k
+            current_stride_right_n = stride_right_n
+    else:
+        left_base = left_ptr + product_id * stride_left_batch
+        current_stride_left_m = stride_left_m
+        current_stride_left_k = stride_left_k
+        right_base = right_ptr + product_id * stride_right_batch
+        current_stride_right_k = stride_right_k
+        current_stride_right_n = stride_right_n
     for k_start in range(0, tl.cdiv(half, BLOCK_K)):
         current_k = k_start * BLOCK_K + offsets_k
         left_offsets = (
-            offsets_m[:, None] * stride_left_m
-            + current_k[None, :] * stride_left_k
+            offsets_m[:, None] * current_stride_left_m
+            + current_k[None, :] * current_stride_left_k
         )
         right_offsets = (
-            current_k[:, None] * stride_right_k
-            + offsets_n[None, :] * stride_right_n
+            current_k[:, None] * current_stride_right_k
+            + offsets_n[None, :] * current_stride_right_n
         )
         left = tl.load(
             left_base + left_offsets,
@@ -762,7 +816,7 @@ def allocate_bag_workspace(
         raise TypeError(
             f"grouped must be bool or None, got {type(grouped).__name__}"
         )
-    allocate_grouped = size <= 4096 if grouped is None else grouped
+    allocate_grouped = size <= 8192 if grouped is None else grouped
     sa = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     sb = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     ua = None
@@ -836,9 +890,9 @@ def bag_matmul(
             independent precomputed inputs and atomic output accumulation;
             ``"hybrid"`` uses Triton transforms around seven serial cuBLAS
             leaf GEMMs as a diagnostic upper-bound implementation;
-            ``"grouped"`` materializes seven pairs and executes all seven
-            products in one batched Triton launch;
-            ``"auto"`` selects grouped execution through N=4096 when grouped
+            ``"grouped"`` materializes only the required transformed operands
+            and executes all seven products in one batched Triton launch;
+            ``"auto"`` selects grouped execution through N=8192 when grouped
             workspace is supplied, and otherwise uses the measured serial or
             dependency-batched fallback.
 
@@ -887,7 +941,7 @@ def bag_matmul(
             multistream=schedule in ("multistream", "seven-stream"),
             full_concurrency=schedule == "seven-stream",
             hybrid=schedule == "hybrid",
-            grouped=schedule == "grouped" or (schedule == "auto" and size <= 4096),
+            grouped=schedule == "grouped" or (schedule == "auto" and size <= 8192),
         )
     elif not isinstance(workspace, BagWorkspace):
         try:
@@ -920,7 +974,7 @@ def bag_matmul(
         )
     )
     use_grouped = schedule == "grouped" or (
-        schedule == "auto" and size <= 4096 and grouped_workspace_available
+        schedule == "auto" and size <= 8192 and grouped_workspace_available
     )
     if schedule == "multistream" and size < 4096 and worker_streams is None:
         raise ValueError(
@@ -962,14 +1016,15 @@ def bag_matmul(
     grouped_right = workspace.grouped_right
     grouped_products = workspace.grouped_products
     if use_grouped:
-        for name, tensor in (
+        grouped_tensors = [
             ("workspace.grouped_left", grouped_left),
             ("workspace.grouped_right", grouped_right),
-            ("workspace.grouped_products", grouped_products),
-        ):
+        ]
+        grouped_tensors.append(("workspace.grouped_products", grouped_products))
+        for name, tensor in grouped_tensors:
             if not isinstance(tensor, torch.Tensor):
                 raise ValueError(
-                    "schedule='grouped' requires workspace from "
+                    f"schedule={schedule!r} requires workspace from "
                     "allocate_bag_workspace(..., grouped=True)"
                 )
             if tuple(tensor.shape) != (7, half, half):
@@ -1039,7 +1094,11 @@ def bag_matmul(
     c_psi22 = out[half:, half:]
 
     if use_grouped:
-        _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, block),)](
+        grouped_prepare_block = 256 if half <= 512 else 2048
+        grouped_prepare_warps = 4 if half <= 512 else 8
+        grouped_decode_block = 256 if half <= 512 else 2048
+        grouped_decode_warps = 4 if half <= 512 else 8
+        _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, grouped_prepare_block),)](
             a,
             b,
             grouped_left,
@@ -1050,27 +1109,51 @@ def bag_matmul(
             grouped_left.stride(0), grouped_left.stride(1), grouped_left.stride(2),
             grouped_right.stride(0), grouped_right.stride(1), grouped_right.stride(2),
             COLUMN_MAJOR=column_major,
-            BLOCK=block,
-            num_warps=4,
+            BLOCK=grouped_prepare_block,
+            num_warps=grouped_prepare_warps,
         )
-        if half <= 256:
-            block_m, block_n, block_k, num_warps, num_stages = 32, 32, 16, 4, 3
+
+    if use_grouped:
+        if half <= 64:
+            block_m, block_n, block_k = 32, 32, 16
+            num_warps, num_stages = 4, 3
+        elif half <= 256:
+            block_m, block_n, block_k = 64, 64, 32
+            num_warps, num_stages = 4, 4
+        elif half <= 512:
+            block_m, block_n = 64, 64
+            block_k = 16 if allow_tf32 else 32
+            num_warps, num_stages = 4, 3
         elif half <= 1024:
-            block_m, block_n, block_k, num_warps, num_stages = 64, 64, 32, 4, 3
+            block_m, block_n = 64, 64
+            block_k = 16 if allow_tf32 else 32
+            num_warps = 4
+            num_stages = 3 if allow_tf32 else 2
         else:
-            block_m, block_n, block_k, num_warps, num_stages = 128, 128, 32, 8, 4
+            block_m, block_n = 128, 128
+            block_k = 16 if allow_tf32 else 32
+            num_warps = 8
+            num_stages = 3 if half <= 2048 else 4
         if column_major:
             kernel_left = grouped_right
             kernel_right = grouped_left
+            kernel_left3, kernel_left4, kernel_left56 = b11, b21, b12
+            kernel_right3, kernel_right4, kernel_right56 = a11, a12, a21
             stride_left_m, stride_left_k = grouped_right.stride(2), grouped_right.stride(1)
             stride_right_k, stride_right_n = grouped_left.stride(2), grouped_left.stride(1)
+            stride_direct_left_m, stride_direct_left_k = b.stride(1), b.stride(0)
+            stride_direct_right_k, stride_direct_right_n = a.stride(1), a.stride(0)
             stride_products_m = grouped_products.stride(2)
             stride_products_n = grouped_products.stride(1)
         else:
             kernel_left = grouped_left
             kernel_right = grouped_right
+            kernel_left3, kernel_left4, kernel_left56 = a11, a12, a21
+            kernel_right3, kernel_right4, kernel_right56 = b11, b21, b12
             stride_left_m, stride_left_k = grouped_left.stride(1), grouped_left.stride(2)
             stride_right_k, stride_right_n = grouped_right.stride(1), grouped_right.stride(2)
+            stride_direct_left_m, stride_direct_left_k = a.stride(0), a.stride(1)
+            stride_direct_right_k, stride_direct_right_n = b.stride(0), b.stride(1)
             stride_products_m = grouped_products.stride(1)
             stride_products_n = grouped_products.stride(2)
         grouped_grid = (
@@ -1080,6 +1163,12 @@ def bag_matmul(
         _grouped_bag_gemm_kernel[grouped_grid](
             kernel_left,
             kernel_right,
+            kernel_left3,
+            kernel_left4,
+            kernel_left56,
+            kernel_right3,
+            kernel_right4,
+            kernel_right56,
             grouped_products,
             half,
             kernel_left.stride(0),
@@ -1088,6 +1177,10 @@ def bag_matmul(
             kernel_right.stride(0),
             stride_right_k,
             stride_right_n,
+            stride_direct_left_m,
+            stride_direct_left_k,
+            stride_direct_right_k,
+            stride_direct_right_n,
             grouped_products.stride(0),
             stride_products_m,
             stride_products_n,
@@ -1096,11 +1189,12 @@ def bag_matmul(
             BLOCK_N=block_n,
             BLOCK_K=block_k,
             GROUP_M=8,
+            TRANSPOSE_PROBLEM=column_major,
             num_warps=num_warps,
             num_stages=num_stages,
         )
         products = tuple(grouped_products[index] for index in range(7))
-        _decode_hybrid_products_kernel[(triton.cdiv(element_count, block),)](
+        _decode_hybrid_products_kernel[(triton.cdiv(element_count, grouped_decode_block),)](
             products[0], products[1], products[2], products[3],
             products[4], products[5], products[6], out,
             element_count,
@@ -1114,8 +1208,8 @@ def bag_matmul(
             products[6].stride(0), products[6].stride(1),
             out.stride(0), out.stride(1),
             COLUMN_MAJOR=column_major,
-            BLOCK=block,
-            num_warps=4,
+            BLOCK=grouped_decode_block,
+            num_warps=grouped_decode_warps,
         )
         return out
 
