@@ -161,23 +161,32 @@ def _select_launch_config(
     block_k = 16 if k < 32 else 32
     has_input_combination = delta != 0 or epsilon != 0
     if m >= 4 * n:
-        # Four pipelined inputs at stages=3 need 100 KiB for this tile, just
-        # over the 99 KiB RTX 3090 limit.  Two stages retain BLOCK_K=32.
+        if has_input_combination and n >= 512:
+            return _LaunchConfig(128, 128, 16, 8, 16, 3)
+        # Eight warps keep per-thread accumulators bounded while a 64-wide
+        # output tile improves reuse along the short matrix dimension.
         num_stages = 2 if has_input_combination else 3
-        return _LaunchConfig(128, 32, block_k, 8, 4, num_stages)
+        num_warps = 8 if has_input_combination else 4
+        block_n = 64 if has_input_combination else 32
+        return _LaunchConfig(128, block_n, block_k, 8, num_warps, num_stages)
     if n >= 4 * m:
+        if has_input_combination and m >= 512:
+            return _LaunchConfig(128, 128, 16, 8, 16, 3)
         num_stages = 2 if has_input_combination else 3
-        return _LaunchConfig(32, 128, block_k, 8, 4, num_stages)
+        num_warps = 8 if has_input_combination else 4
+        block_m = 64 if has_input_combination else 32
+        return _LaunchConfig(block_m, 128, block_k, 8, num_warps, num_stages)
     if max(m, n) <= 256:
         return _LaunchConfig(32, 32, block_k, 8, 4, 3)
-    if min(m, n) >= 2048:
-        # With both input combinations enabled, the pipelined X/Y/V/W loads
-        # make BLOCK_K=32 exceed the 99 KiB shared-memory limit on RTX 3090
-        # (about 160 KiB at num_stages=3).  Halving K keeps the 128x128 output
-        # tile while fitting both consumer and datacenter NVIDIA GPUs.
+    if min(m, n) >= 1024:
+        # Large square matrices benefit from the greater output-tile reuse;
+        # halve K so four pipelined inputs remain within shared-memory limits.
         if has_input_combination:
-            block_k = 16
-        return _LaunchConfig(128, 128, block_k, 8, 8, 3)
+            return _LaunchConfig(128, 128, 16, 8, 16, 3)
+        if min(m, n) >= 2048:
+            return _LaunchConfig(128, 128, block_k, 8, 8, 3)
+    if has_input_combination:
+        return _LaunchConfig(128, 64, block_k, 8, 8, 2)
     return _LaunchConfig(64, 64, block_k, 8, 4, 3)
 
 
@@ -209,6 +218,15 @@ def _check_matrix(
         raise ValueError(f"{name} must not have broadcasted output dimensions")
     if tensor.requires_grad:
         raise ValueError(f"{name} must not require gradients; bag_primitive is an in-place low-level kernel")
+
+
+def _is_column_major(tensor: torch.Tensor) -> bool:
+    """Return whether a logical matrix has a conventional column-major view."""
+
+    rows, columns = tensor.shape
+    row_contiguous = rows <= 1 or tensor.stride(0) == 1
+    valid_leading_dimension = columns <= 1 or tensor.stride(1) >= max(rows, 1)
+    return row_contiguous and valid_leading_dimension
 
 
 def bag_primitive(
@@ -327,34 +345,79 @@ def bag_primitive(
             e.zero_()
         return d, e
 
-    config = _select_launch_config(m, n, k, delta=delta, epsilon=epsilon)
-    grid = (triton.cdiv(m, config.block_m) * triton.cdiv(n, config.block_n),)
+    required_matrices = [x, v]
+    if delta != 0:
+        required_matrices.append(y_kernel)
+    if epsilon != 0:
+        required_matrices.append(w_kernel)
+    if gamma_d != 0:
+        required_matrices.append(d_kernel)
+    if gamma_e != 0:
+        required_matrices.append(e_kernel)
+    transpose_problem = all(_is_column_major(tensor) for tensor in required_matrices)
+
+    if transpose_problem:
+        # Column-major C=A@B is physically row-major C^T=B^T@A^T.  Swapping
+        # operands and M/N lets Triton's dot lowering use its efficient
+        # row-major operand layouts without moving or materializing any data.
+        kernel_x, kernel_y = v, w_kernel
+        kernel_v, kernel_w = x, y_kernel
+        kernel_m, kernel_n = n, m
+        kernel_delta, kernel_epsilon = epsilon, delta
+        stride_xm, stride_xk = v.stride(1), v.stride(0)
+        stride_ym, stride_yk = w_kernel.stride(1), w_kernel.stride(0)
+        stride_vk, stride_vn = x.stride(1), x.stride(0)
+        stride_wk, stride_wn = y_kernel.stride(1), y_kernel.stride(0)
+        stride_dm, stride_dn = d_kernel.stride(1), d_kernel.stride(0)
+        stride_em, stride_en = e_kernel.stride(1), e_kernel.stride(0)
+    else:
+        kernel_x, kernel_y = x, y_kernel
+        kernel_v, kernel_w = v, w_kernel
+        kernel_m, kernel_n = m, n
+        kernel_delta, kernel_epsilon = delta, epsilon
+        stride_xm, stride_xk = x.stride(0), x.stride(1)
+        stride_ym, stride_yk = y_kernel.stride(0), y_kernel.stride(1)
+        stride_vk, stride_vn = v.stride(0), v.stride(1)
+        stride_wk, stride_wn = w_kernel.stride(0), w_kernel.stride(1)
+        stride_dm, stride_dn = d_kernel.stride(0), d_kernel.stride(1)
+        stride_em, stride_en = e_kernel.stride(0), e_kernel.stride(1)
+
+    config = _select_launch_config(
+        kernel_m,
+        kernel_n,
+        k,
+        delta=kernel_delta,
+        epsilon=kernel_epsilon,
+    )
+    grid = (
+        triton.cdiv(kernel_m, config.block_m) * triton.cdiv(kernel_n, config.block_n),
+    )
     input_precision = "tf32" if allow_tf32 else "ieee"
 
     _bag_primitive_kernel[grid](
-        x,
-        y_kernel,
-        v,
-        w_kernel,
+        kernel_x,
+        kernel_y,
+        kernel_v,
+        kernel_w,
         d_kernel,
         e_kernel,
-        m,
-        n,
+        kernel_m,
+        kernel_n,
         k,
-        x.stride(0),
-        x.stride(1),
-        y_kernel.stride(0),
-        y_kernel.stride(1),
-        v.stride(0),
-        v.stride(1),
-        w_kernel.stride(0),
-        w_kernel.stride(1),
-        d_kernel.stride(0),
-        d_kernel.stride(1),
-        e_kernel.stride(0),
-        e_kernel.stride(1),
-        DELTA=delta,
-        EPSILON=epsilon,
+        stride_xm,
+        stride_xk,
+        stride_ym,
+        stride_yk,
+        stride_vk,
+        stride_vn,
+        stride_wk,
+        stride_wn,
+        stride_dm,
+        stride_dn,
+        stride_em,
+        stride_en,
+        DELTA=kernel_delta,
+        EPSILON=kernel_epsilon,
         GAMMA_D=gamma_d,
         GAMMA_E=gamma_e,
         INPUT_PRECISION=input_precision,
