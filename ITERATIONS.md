@@ -15,6 +15,7 @@
 | iter-8 | Corrected exact-tile unmasked load path | 1.175801 ms geomean; 0.679223x vs unfused | yes | reject; no gain |
 | iter-9 | Canonical-contiguous address specialization | 1.155336 ms geomean; 0.692094x vs unfused | yes | reject; below 3% threshold |
 | iter-10 | Use 128x128x16 tiles for large tall/wide GEMMs | 1.091716 ms geomean; 0.733427x vs unfused | yes | keep; new best |
+| iter-11 | Extend fused 128x128x16 tiles down to short edge 1024 | 0.991254 ms geomean; 0.807483x vs unfused | yes | keep; new best |
 
 ## Baseline
 
@@ -161,3 +162,16 @@
 - Per-shape fused latency (ms): square-1024 `0.2847`, square-2048 `1.3384`, square-4096 `8.5340`, tall `0.7987`, wide `0.8028`, large-k `0.8120`.
 - Outcome: **new best**. Tall and wide latency improve another 16.9% and 15.1% over iteration 5, respectively, without degrading the other shape buckets.
 - Trajectory: `trajectory/iter-10-20260831-142124`.
+
+## Iteration 11 — extend square fused tiles to 1024
+
+- Change: lowered the short-edge threshold for the fused `128x128x16`, 8-warp, 3-stage path from 2048 to 1024; the no-input-combination policy remains unchanged.
+- Hypothesis: the reuse and pipeline advantages observed on large square/aspect-ratio shapes should also benefit 1024-square and 1024x1024 large-K GEMMs.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.991254 ms**.
+- Geometric-mean speedup vs unfused: **0.807483x**.
+- Change vs iteration-10 best (1.091716 ms): **9.20% faster**.
+- Change vs baseline (2.185636 ms): **2.2050x faster**.
+- Per-shape fused latency (ms): square-1024 `0.2212`, square-2048 `1.3517`, square-4096 `8.5760`, tall `0.7941`, wide `0.7962`, large-k `0.5852`.
+- Outcome: **new best**. Square-1024 improves 22.3%, while large-K improves 27.9% and reaches 0.945x of the strong unfused path.
+- Trajectory: `trajectory/iter-11-20260831-142155`.
