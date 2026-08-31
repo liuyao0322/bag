@@ -619,6 +619,35 @@
   without weakening the all-shape reporting contract.
 - Trajectory: `trajectory/iter-34-20260831-162705`.
 
+### Iteration 35 — wide pointwise preparation and decode programs
+
+- Change: kept the iteration-34 grouped GEMM body unchanged, while changing
+  the grouped input-preparation and direct-decode kernels from `BLOCK=256`,
+  four warps to `BLOCK=2048`, eight warps for N>=2048. N=512/1024 retain the
+  smaller pointwise configuration. Allocation, JIT, and all rejected CUDA
+  Graph experiments remain outside the selected implementation.
+- Hypothesis: the transform and decode passes traverse physically contiguous
+  storage and touch many arrays per element; wider programs should amortize
+  CTA scheduling and address work on large matrices without affecting product
+  reuse or numerical behavior.
+- Correctness: all 20 formal layout/precision/size cases reported
+  `CORRECT=True` with unchanged IEEE and TF32 error levels.
+- BAG geometric-mean latency: **0.828137 ms**, 0.40% below iteration 34's
+  **0.831471 ms** and 6.31% below iteration 33's **0.883871 ms**.
+- Geometric-mean speedup versus ordinary cuBLAS GEMM: **0.899713x**. The
+  reference GEMM run varied materially at N=8192 IEEE, so the selection is
+  based on BAG latency rather than treating the ratio change as kernel work.
+- Per-bucket effect: N=2048 BAG latency was `0.8356/0.8612 ms` IEEE and
+  `0.5724/0.5765 ms` TF32 for column/row-major; N=8192 was
+  `47.1081/46.6033 ms` IEEE and `28.1441/28.1436 ms` TF32.
+- Analysis: the improvement is small in the all-suite geomean because only
+  three size buckets change, but pre-screens across 512/1024/2048/4096-wide
+  blocks consistently favored 2048 elements with eight warps for the large
+  pointwise passes. The GEMM body remains the dominant large-N cost.
+- Outcome: **keep as a targeted new best**; do not extend the wide pointwise
+  program to N<=1024, where it did not provide a stable benefit.
+- Trajectory: `trajectory/iter-35-20260831-163827`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with

@@ -1094,7 +1094,11 @@ def bag_matmul(
     c_psi22 = out[half:, half:]
 
     if use_grouped:
-        _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, block),)](
+        grouped_prepare_block = 256 if half <= 512 else 2048
+        grouped_prepare_warps = 4 if half <= 512 else 8
+        grouped_decode_block = 256 if half <= 512 else 2048
+        grouped_decode_warps = 4 if half <= 512 else 8
+        _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, grouped_prepare_block),)](
             a,
             b,
             grouped_left,
@@ -1105,8 +1109,8 @@ def bag_matmul(
             grouped_left.stride(0), grouped_left.stride(1), grouped_left.stride(2),
             grouped_right.stride(0), grouped_right.stride(1), grouped_right.stride(2),
             COLUMN_MAJOR=column_major,
-            BLOCK=block,
-            num_warps=4,
+            BLOCK=grouped_prepare_block,
+            num_warps=grouped_prepare_warps,
         )
 
     if use_grouped:
@@ -1190,7 +1194,7 @@ def bag_matmul(
             num_stages=num_stages,
         )
         products = tuple(grouped_products[index] for index in range(7))
-        _decode_hybrid_products_kernel[(triton.cdiv(element_count, block),)](
+        _decode_hybrid_products_kernel[(triton.cdiv(element_count, grouped_decode_block),)](
             products[0], products[1], products[2], products[3],
             products[4], products[5], products[6], out,
             element_count,
@@ -1204,8 +1208,8 @@ def bag_matmul(
             products[6].stride(0), products[6].stride(1),
             out.stride(0), out.stride(1),
             COLUMN_MAJOR=column_major,
-            BLOCK=block,
-            num_warps=4,
+            BLOCK=grouped_decode_block,
+            num_warps=grouped_decode_warps,
         )
         return out
 
