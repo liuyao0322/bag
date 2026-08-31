@@ -1300,3 +1300,33 @@
   objective, and this bucket is not improved by reducing it mechanically.
 - Outcome: **reject**; restore the three-stage N=1024 IEEE specialization.
 - Trajectory: `trajectory/iter-49-20260831-223954`.
+
+### Iteration 50 — ordered 6+1 M7 write-once epilogue
+
+- Change: restored the three-stage N=1024 IEEE grouped kernel.  For that bucket
+  only, the unchanged product kernel launches six product planes M1--M6, then
+  a dedicated `32x32x32` four-warp kernel computes the seventh genuine
+  half-size GEMM (M7) and directly writes all four output quadrants from its
+  FP32 accumulator plus M1--M6.  It neither stores nor reloads M7 and uses no
+  counter or atomic.  TF32 and every other size retain their prior paths.
+- Dataflow/measurement boundary: the candidate still has three timed launches,
+  exactly like IEEE's prepare + seven-product + decode baseline; all seven BAG
+  products, the phase boundary, and the write-once epilogue are included.
+- Correctness: all 20 formal cases report `CORRECT=True`; IEEE errors match the
+  clean baseline, confirming both row-major and transposed column-major M7
+  operand mappings.
+- Targeted result: N=1024 IEEE measured **0.1352/0.1331 ms** for column/row
+  major, versus iteration 47's **0.1290/0.1270 ms**.  Both layouts regress by
+  about 4.8%, while the untouched N=512 IEEE and all small TF32 buckets retain
+  their baseline event bins.
+- Full-suite BAG geometric mean was **0.817252 ms**, 0.50% above the clean
+  **0.813207 ms** replay.
+- Analysis: eliminating one product-plane write/read and the standalone
+  pointwise epilogue cannot offset serializing the final GEMM behind M1--M6.
+  The 256-CTA final phase has adequate work supply, so the loss is the ordered
+  phase boundary and reduced cross-product scheduling freedom rather than the
+  original 64-CTA underfill concern.
+- Outcome: **reject**.  Preserve this as evidence for the papers' AB/ABC
+  crossover: write-once fusion is not automatically beneficial when it turns
+  a batched GPU GEMM into ordered phases.
+- Trajectory: `trajectory/iter-50-20260831-224844`.

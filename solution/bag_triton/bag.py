@@ -829,6 +829,126 @@ def _grouped_bag_gemm_kernel(
                 )
 
 
+@triton.jit
+def _grouped_final_m7_decode_kernel(
+    left_ptr,
+    right_ptr,
+    products_ptr,
+    c11_ptr,
+    c12_ptr,
+    c21_ptr,
+    c22_ptr,
+    half,
+    stride_left_m,
+    stride_left_k,
+    stride_right_k,
+    stride_right_n,
+    stride_products_batch,
+    stride_products_m,
+    stride_products_n,
+    stride_output_m,
+    stride_output_n,
+    INPUT_PRECISION: tl.constexpr,
+    BLOCK_M: tl.constexpr,
+    BLOCK_N: tl.constexpr,
+    BLOCK_K: tl.constexpr,
+    GROUP_M: tl.constexpr,
+):
+    """Compute ordered-final M7 and decode M1--M7 without storing M7."""
+
+    program_id = tl.program_id(axis=0)
+    num_programs_m = tl.cdiv(half, BLOCK_M)
+    num_programs_n = tl.cdiv(half, BLOCK_N)
+    programs_per_group = GROUP_M * num_programs_n
+    group_id = program_id // programs_per_group
+    first_program_m = group_id * GROUP_M
+    group_size_m = tl.minimum(num_programs_m - first_program_m, GROUP_M)
+    program_m = first_program_m + ((program_id % programs_per_group) % group_size_m)
+    program_n = (program_id % programs_per_group) // group_size_m
+
+    offsets_m = program_m * BLOCK_M + tl.arange(0, BLOCK_M)
+    offsets_n = program_n * BLOCK_N + tl.arange(0, BLOCK_N)
+    offsets_k = tl.arange(0, BLOCK_K)
+    accumulator = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
+    for k_start in range(0, tl.cdiv(half, BLOCK_K)):
+        current_k = k_start * BLOCK_K + offsets_k
+        left_offsets = (
+            offsets_m[:, None] * stride_left_m
+            + current_k[None, :] * stride_left_k
+        )
+        right_offsets = (
+            current_k[:, None] * stride_right_k
+            + offsets_n[None, :] * stride_right_n
+        )
+        left = tl.load(
+            left_ptr + left_offsets,
+            mask=(offsets_m[:, None] < half) & (current_k[None, :] < half),
+            other=0.0,
+        )
+        right = tl.load(
+            right_ptr + right_offsets,
+            mask=(current_k[:, None] < half) & (offsets_n[None, :] < half),
+            other=0.0,
+        )
+        accumulator += tl.dot(left, right, input_precision=INPUT_PRECISION)
+
+    output_mask = (offsets_m[:, None] < half) & (offsets_n[None, :] < half)
+    product_offsets = (
+        offsets_m[:, None] * stride_products_m
+        + offsets_n[None, :] * stride_products_n
+    )
+    output_offsets = (
+        offsets_m[:, None] * stride_output_m
+        + offsets_n[None, :] * stride_output_n
+    )
+
+    # Keep no more than four product tiles live and preserve the baseline's
+    # left-to-right FP32 expression order.  M7 is the dot accumulator itself.
+    m1 = tl.load(
+        products_ptr + 0 * stride_products_batch + product_offsets,
+        mask=output_mask,
+    )
+    m3 = tl.load(
+        products_ptr + 2 * stride_products_batch + product_offsets,
+        mask=output_mask,
+    )
+    m5 = tl.load(
+        products_ptr + 4 * stride_products_batch + product_offsets,
+        mask=output_mask,
+    )
+    tl.store(
+        c21_ptr + output_offsets,
+        m1 - m3 - m5 - accumulator,
+        mask=output_mask,
+    )
+
+    m2 = tl.load(
+        products_ptr + 1 * stride_products_batch + product_offsets,
+        mask=output_mask,
+    )
+    tl.store(
+        c22_ptr + output_offsets,
+        m1 + m2 - m3 - m5,
+        mask=output_mask,
+    )
+
+    m6 = tl.load(
+        products_ptr + 5 * stride_products_batch + product_offsets,
+        mask=output_mask,
+    )
+    tl.store(
+        c12_ptr + output_offsets,
+        m3 + m5 - m6 - m2,
+        mask=output_mask,
+    )
+
+    m4 = tl.load(
+        products_ptr + 3 * stride_products_batch + product_offsets,
+        mask=output_mask,
+    )
+    tl.store(c11_ptr + output_offsets, m4 + m5, mask=output_mask)
+
+
 def _is_column_major(tensor: torch.Tensor) -> bool:
     rows, columns = tensor.shape
     return (rows <= 1 or tensor.stride(0) == 1) and (
@@ -1186,6 +1306,7 @@ def bag_matmul(
         # decode into the last product CTA.  Other sizes/precisions retain the
         # independent bandwidth kernel to avoid register-pressure regressions.
         fuse_last_decode = half in (256, 512) and allow_tf32
+        ordered_final_m7 = half == 512 and not allow_tf32
         num_product_tiles = 32 if half == 256 else 64 if half == 512 else 0
         if half <= 256:
             grouped_prepare_block = grouped_decode_block = 256
@@ -1224,8 +1345,7 @@ def bag_matmul(
         elif half <= 512:
             block_m, block_n = 64, 64
             block_k = 16 if allow_tf32 else 32
-            num_warps = 4
-            num_stages = 3 if allow_tf32 else 2
+            num_warps, num_stages = 4, 3
         elif half <= 1024:
             block_m, block_n = 64, 64
             block_k = 16 if allow_tf32 else 32
@@ -1249,6 +1369,13 @@ def bag_matmul(
             stride_products_n = grouped_products.stride(1)
             stride_output_m = out.stride(1)
             stride_output_n = out.stride(0)
+            if ordered_final_m7:
+                final_m7_left = grouped_right[6]
+                final_m7_right = kernel_right56
+                final_m7_stride_left_m = stride_left_m
+                final_m7_stride_left_k = stride_left_k
+                final_m7_stride_right_k = stride_direct_right_k
+                final_m7_stride_right_n = stride_direct_right_n
         else:
             kernel_left = grouped_left
             kernel_right = grouped_right
@@ -1262,9 +1389,16 @@ def bag_matmul(
             stride_products_n = grouped_products.stride(2)
             stride_output_m = out.stride(0)
             stride_output_n = out.stride(1)
+            if ordered_final_m7:
+                final_m7_left = kernel_left56
+                final_m7_right = grouped_right[6]
+                final_m7_stride_left_m = stride_direct_left_m
+                final_m7_stride_left_k = stride_direct_left_k
+                final_m7_stride_right_k = stride_right_k
+                final_m7_stride_right_n = stride_right_n
         grouped_grid = (
             triton.cdiv(half, block_m) * triton.cdiv(half, block_n),
-            7,
+            6 if ordered_final_m7 else 7,
         )
         _grouped_bag_gemm_kernel[grouped_grid](
             kernel_left,
@@ -1307,7 +1441,39 @@ def bag_matmul(
             num_warps=num_warps,
             num_stages=num_stages,
         )
-        if not fuse_last_decode:
+        if ordered_final_m7:
+            final_block_m = final_block_n = final_block_k = 32
+            final_grid = (
+                triton.cdiv(half, final_block_m)
+                * triton.cdiv(half, final_block_n),
+            )
+            _grouped_final_m7_decode_kernel[final_grid](
+                final_m7_left,
+                final_m7_right,
+                grouped_products,
+                c_psi11,
+                c_psi12,
+                c_psi21,
+                c_psi22,
+                half,
+                final_m7_stride_left_m,
+                final_m7_stride_left_k,
+                final_m7_stride_right_k,
+                final_m7_stride_right_n,
+                grouped_products.stride(0),
+                stride_products_m,
+                stride_products_n,
+                stride_output_m,
+                stride_output_n,
+                INPUT_PRECISION="ieee",
+                BLOCK_M=final_block_m,
+                BLOCK_N=final_block_n,
+                BLOCK_K=final_block_k,
+                GROUP_M=8,
+                num_warps=4,
+                num_stages=3,
+            )
+        elif not fuse_last_decode:
             products = tuple(grouped_products[index] for index in range(7))
             _decode_hybrid_products_kernel[(triton.cdiv(element_count, grouped_decode_block),)](
                 products[0], products[1], products[2], products[3],
