@@ -21,6 +21,7 @@
 | iter-14 | Increase fused 128x128 CTA from 8 to 16 warps | 0.958616 ms geomean; 0.834934x vs unfused | yes | keep; new best |
 | iter-15 | Increase fused 128x128 CTA from 16 to 32 warps | 1.229815 ms geomean; 0.649229x vs unfused | yes | reject; major regression |
 | final | Restore and independently remeasure iteration 14 | 0.963284 ms geomean; 0.831807x vs unfused | yes | final |
+| baseline-512 | Existing 128x64x32 bucket on four 512 modes | 0.077348 ms geomean; 0.534826x vs unfused | yes | 512 phase baseline |
 
 ## Baseline
 
@@ -238,3 +239,20 @@
 - The final rerun is within 0.49% of iteration 14's signal geomean, confirming the selected implementation.
 - Relative to the strong preallocated unfused sequence, the fused primitive reaches 0.832x geometric-mean speedup (about 20.2% slower); this remaining gap includes two required atomic output accumulations and IEEE FP32 dot execution.
 - Trajectory: `trajectory/final-20260831-142428`.
+
+## Square-512 optimization phase
+
+### Baseline 512
+
+- Scope: square-512 across column-major/row-major and IEEE/TF32, always with
+  both input combinations and two atomic output accumulations.
+- Existing configuration: `128x64x32`, 8 warps, 2 stages, 32 CTAs.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.077348 ms**.
+- Geometric-mean speedup vs unfused: **0.534826x**.
+- Per-mode fused latency (ms): IEEE column-major `0.0901`, IEEE row-major
+  `0.0819`, TF32 column-major `0.0696`, TF32 row-major `0.0696`.
+- Analysis: 32 CTAs underfill the RTX 3090's 82 SMs, while the four-input,
+  two-stage tile carries an estimated 98,304-byte pipeline payload and thus
+  cannot recover latency hiding through multi-CTA residency.
+- Trajectory: `trajectory/baseline-20260831-143739`.

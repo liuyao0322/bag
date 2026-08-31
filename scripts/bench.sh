@@ -33,9 +33,9 @@ srun \
         BAG_TRITON_IMPL_ROOT="$BAG_TRITON_IMPL_ROOT" \
         TRITON_CACHE_DIR="$TRITON_CACHE_DIR" \
         "$PYTHON_BIN" -s scripts/benchmark_triton_primitive.py \
-            --layout column-major \
-            --precision ieee \
-            --shape square-1024 square-2048 square-4096 tall wide large-k \
+            --layout column-major row-major \
+            --precision ieee tf32 \
+            --shape square-512 \
             --warmup-ms 20 \
             --rep-ms 80 \
     2>&1 | tee _bench_output.txt

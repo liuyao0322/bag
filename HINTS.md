@@ -10,3 +10,10 @@ Source: user prompt, 2026-08-31.
   fused-vs-unfused suite before selecting the final implementation.
 - Do not include JIT compilation or allocation time in steady-state results.
 - Do not weaken correctness tolerances or remove hard shapes to claim speedup.
+
+Source: user prompt, 2026-08-31 (512-bucket follow-up).
+
+- Optimize the square-512 launch bucket specifically, across row-major and
+  column-major layouts and both IEEE and TF32 precision modes.
+- Retain the previously selected large-shape configuration and require a full
+  correctness/performance regression before publishing the 512-bucket winner.
