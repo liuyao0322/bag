@@ -23,6 +23,7 @@
 | final | Restore and independently remeasure iteration 14 | 0.963284 ms geomean; 0.831807x vs unfused | yes | final |
 | baseline-512 | Existing 128x64x32 bucket on four 512 modes | 0.077348 ms geomean; 0.534826x vs unfused | yes | 512 phase baseline |
 | iter-16 | Compact 32x32x16 tile for medium-small fused GEMMs | 0.046449 ms geomean; 0.871591x vs unfused | yes | keep; new 512 best |
+| iter-17 | Increase compact tile BK from 16 to 32 with two stages | 0.047569 ms geomean; 0.865065x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -275,3 +276,19 @@
 - Outcome: **new 512 best**. The broad improvement confirms that whole-GPU
   underfill and shared-memory-constrained residency dominated the old bucket.
 - Trajectory: `trajectory/iter-16-20260831-143818`.
+
+### Iteration 17 — wider K tile with shallower pipeline
+
+- Change: retained the `32x32`, 4-warp output tile but changed
+  `BK=16/stages=3` to `BK=32/stages=2`.
+- Hypothesis: halving K-loop iterations while keeping the estimated pipeline
+  footprint near 32 KiB could improve instruction efficiency.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.047569 ms**.
+- Geometric-mean speedup vs unfused: **0.865065x**.
+- Change vs iteration-16 best (0.046449 ms): **2.41% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0563`, IEEE row-major
+  `0.0492`, TF32 column-major `0.0430`, TF32 row-major `0.0430`.
+- Outcome: **reject**. Fewer K-loop iterations do not compensate for the
+  shallower pipeline and larger per-stage loads, especially in TF32.
+- Trajectory: `trajectory/iter-17-20260831-143847`.
