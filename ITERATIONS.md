@@ -16,6 +16,7 @@
 | iter-9 | Canonical-contiguous address specialization | 1.155336 ms geomean; 0.692094x vs unfused | yes | reject; below 3% threshold |
 | iter-10 | Use 128x128x16 tiles for large tall/wide GEMMs | 1.091716 ms geomean; 0.733427x vs unfused | yes | keep; new best |
 | iter-11 | Extend fused 128x128x16 tiles down to short edge 1024 | 0.991254 ms geomean; 0.807483x vs unfused | yes | keep; new best |
+| iter-12 | Test 128x128x8 with four pipeline stages | benchmark failed to compile | no result | reject; unsupported K tile |
 
 ## Baseline
 
@@ -175,3 +176,12 @@
 - Per-shape fused latency (ms): square-1024 `0.2212`, square-2048 `1.3517`, square-4096 `8.5760`, tall `0.7941`, wide `0.7962`, large-k `0.5852`.
 - Outcome: **new best**. Square-1024 improves 22.3%, while large-K improves 27.9% and reaches 0.945x of the strong unfused path.
 - Trajectory: `trajectory/iter-11-20260831-142155`.
+
+## Iteration 12 — smaller K tile with deeper pipeline
+
+- Change: changed fused 128x128 configurations from `BK=16, stages=3` to `BK=8, stages=4`.
+- Hypothesis: reducing per-stage shared-memory data and increasing prefetch depth could improve latency hiding despite doubling K-loop iterations.
+- Correctness/performance: **not measured** because Triton compilation failed.
+- Failure: Triton 3.6's NVIDIA `tl.dot` lowering requires the K dimension to be at least 16; `BK=8` triggers `Input shapes should have ... K >= 16`.
+- Outcome: **reject**. BK=16 is the minimum supported dot tile on this stack, so this direction is exhausted.
+- Trajectory: no snapshot was created because compilation failed before the benchmark snapshot step.
