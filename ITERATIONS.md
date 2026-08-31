@@ -533,6 +533,30 @@
   final independent benchmark before publishing.
 - Trajectory: `trajectory/iter-33-20260831-154625`.
 
+### Final grouped-Triton verification
+
+- Selected source: iteration 33, commit `0a9d559`.
+- Correctness before final timing: all **28** BAG cases and all **26** primitive
+  cases passed, including sliced positive-stride layouts, non-default caller
+  streams, repeated seven-stream atomic calls, grouped column-major execution,
+  and concurrent primitive atomic accumulation.
+- Independent formal correctness: `CORRECT=True` across all 20 benchmark
+  layout/precision/size cases.
+- BAG geometric-mean latency: **0.885580 ms**.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.847458x**.
+- Reproducibility vs iteration 33: latency differs by only **0.19%**
+  (`0.883871 -> 0.885580 ms`).
+- Best near-parity buckets: TF32 N=2048 column/row `0.984x/0.949x`; TF32
+  N=4096 column/row `0.980x/0.981x`.
+- Measurement boundary: grouped input/product buffers were allocated before
+  warmup and timing. The timed path contains input materialization, one batched
+  seven-product Triton launch, direct decode, and required execution; it creates
+  no CUDA streams.
+- Decision: publish iteration 33 as the new pure-Triton implementation. The
+  measured gap to 8/7 is explained by finite-size GEMM scaling and mandatory
+  O(N^2) transforms, not by omitted synchronization or allocation overhead.
+- Trajectory: `trajectory/final-20260831-154749`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with
