@@ -8,6 +8,7 @@
 | iter-1 | Reinterpret column-major as transposed row-major GEMM | 1.358151 ms geomean; 0.588348x vs unfused | yes | keep; new best |
 | iter-2 | Rectangular `128x64x32`, 8-warps, 2-stage main tiles | 1.422233 ms geomean; 0.560589x vs unfused | yes | reject; regression |
 | iter-3 | Size-specific rectangular standard tile + square large tile | 1.309330 ms geomean; 0.609487x vs unfused | yes | keep; new best |
+| iter-4 | Reduce standard rectangular tile from 8 to 4 warps | 1.370751 ms geomean; 0.583013x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -69,3 +70,17 @@
 - Analysis: The result validates separate throughput regimes. Large squares
   need the reuse of 128x128 tiles despite K=16, while 1024 and large-K benefit
   from more programs, fewer K iterations, and lower accumulator pressure.
+
+## Iteration 4
+
+- Direction: Keep the iteration-3 tiles but reduce the standard
+  `128x64x32` configuration from 8 warps to 4, increasing per-thread ILP.
+- Hypothesis: The conventional Triton four-warp mapping might schedule the
+  IEEE dot loop more efficiently than eight warps.
+- Result: fused geomean regressed from 1.309330 to 1.370751 ms (4.7% slower).
+  Square-1024 rose from 0.2857 to 0.3420 ms and large-K from 0.8136 to
+  0.8755 ms; unaffected buckets moved only within normal noise.
+  `CORRECT=True`.
+- Analysis: Four warps likely create excessive per-thread accumulator/register
+  pressure for four-input fusion. Eight warps are decisively better for this
+  rectangular tile and should be retained.

@@ -177,7 +177,7 @@ def _select_launch_config(
             return _LaunchConfig(128, 128, 16, 8, 8, 3)
         return _LaunchConfig(128, 128, block_k, 8, 8, 3)
     if has_input_combination:
-        return _LaunchConfig(128, 64, block_k, 8, 8, 2)
+        return _LaunchConfig(128, 64, block_k, 8, 4, 2)
     return _LaunchConfig(64, 64, block_k, 8, 4, 3)
 
 
