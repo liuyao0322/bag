@@ -1276,7 +1276,7 @@ def bag_matmul(
             stride_output_m = out.stride(0)
             stride_output_n = out.stride(1)
         num_spatial_tiles = triton.cdiv(half, block_m) * triton.cdiv(half, block_n)
-        order_chunk = 16 if fuse_last_decode else 0
+        order_chunk = 8 if fuse_last_decode else 0
         grouped_grid = (
             (num_spatial_tiles * 7,)
             if order_chunk

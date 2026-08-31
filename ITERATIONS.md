@@ -1038,8 +1038,8 @@
 
 - Change: retained the existing two-dimensional product-major launch for every
   non-fused bucket, but flattened the N=512/1024 TF32 last-completer grid into
-  four-spatial-tile microchunks.  Within each chunk the kernel launches M1--M7
-  before advancing to the next four tiles; algebra, tile sizes, workspace,
+  four-spatial-tile microchunks.  Within each chunk the linear CTA ids assign
+  M1--M7 before advancing to the next four tiles; algebra, tile sizes, workspace,
   counter protocol, launch count, and numerical order are unchanged.
 - Hypothesis: bounding the launch distance between the seven products for one
   spatial region would keep the product workspace hotter for the final CTA's
@@ -1082,3 +1082,30 @@
 - Outcome: **reject and close this scheduling axis**.  Restore the exact
   product-major launch before implementing interleaved preparation.
 - Trajectory: `trajectory/iter-41-20260831-221028`.
+
+### Iteration 42 — GROUP_M-aligned eight-tile microchunks
+
+- Change: set the small-TF32 microchunk to eight spatial tiles, exactly one
+  `GROUP_M=8` swizzle stripe.  This was the most structurally favorable middle
+  point because it does not split the existing eight-CTA right-operand reuse
+  group.  CUDA is not assumed to execute or complete CTAs in numeric order;
+  correctness remains entirely protected by the existing GPU-scope acq_rel
+  arrival counter.
+- Hypothesis: an intact swizzle stripe could preserve the product-input reuse
+  lost by G=4 while retaining more product-workspace locality than G=16 or the
+  full product-major launch.
+- Correctness: all 20 formal cases reported `CORRECT=True` with unchanged
+  numerical error.
+- BAG geometric-mean latency: **0.822996 ms**, 1.23% above the independent
+  **0.813021 ms** product-major baseline.
+- Targeted result: N=512 TF32 was **0.0246 ms** in both layouts (about 9.3%
+  slower than **0.0225 ms**); N=1024 TF32 was **0.0973 ms** (about 5.5%
+  slower than **0.0922 ms**).
+- Analysis: even when the microchunk matches the GEMM swizzle, reducing the
+  full same-product run loses more operand/cache efficiency than the fused
+  decoder gains.  G=4, G=8, G=16, and the previously measured tile-major
+  endpoint all agree.
+- Outcome: **reject**.  Three consecutive scheduling candidates have not
+  improved the best result; perform the required stall reassessment, restore
+  the exact product-major kernel, and change direction to interleaved prepare.
+- Trajectory: `trajectory/iter-42-20260831-221133`.
