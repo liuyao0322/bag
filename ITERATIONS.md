@@ -35,6 +35,7 @@
 | iter-25 | One-level BAG with two quarter-block transforms and seven fused primitives | 2.240755 ms geomean; 0.330219x vs cuBLAS GEMM | yes | baseline for end-to-end BAG phase |
 | iter-26 | Non-atomic output accumulation for same-stream BAG calls | 2.069139 ms geomean; 0.356438x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 | iter-27 | Materialize terminal four-term inputs to remove right-combination IEEE cliff | 1.853898 ms geomean; 0.397718x vs cuBLAS GEMM | yes | keep; new end-to-end best |
+| iter-28 | Traverse pointwise transforms in physical contiguous order | 1.580899 ms geomean; 0.469512x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 
 ## Baseline
 
@@ -322,6 +323,27 @@
 - Outcome: keep as new best. Make pointwise kernels traverse physical
   contiguous order for column-major storage.
 - Trajectory: `trajectory/iter-27-20260831-150336`.
+
+### Iteration 28 — layout-aware pointwise traversal
+
+- Change: specialized the preparation, four-term completion, and inverse
+  kernels so column-major tensors map adjacent lanes along physical rows;
+  row-major and generic-stride traversal is unchanged.
+- Hypothesis: component events attributed about 20.25 ms at N=8192
+  column-major to pointwise/host gaps versus 1.83 ms row-major, indicating
+  warp-wide leading-dimension accesses instead of coalesced accesses.
+- Correctness: the 18-case quick BAG suite and all 20 benchmark cases passed.
+- BAG geometric-mean latency: **1.580899 ms**, 14.72% below iteration 27 and
+  29.45% below the end-to-end baseline.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.469512x**.
+- N=8192 column-major improved to `51.8164 ms` IEEE and `31.9729 ms` TF32;
+  row/column speedups are now symmetric at roughly 0.87x IEEE and 0.90x TF32.
+- Analysis: physical-order mapping eliminates the column-major bandwidth
+  pathology. Remaining large-N gap is dominated by the seven GEMM calls;
+  N=512/1024 remain launch-bound because one BAG level creates ten launches.
+- Outcome: keep as new best. Investigate fusing the small pointwise kernels
+  and size-gating BAG so launch-bound buckets use ordinary GEMM.
+- Trajectory: `trajectory/iter-28-20260831-150450`.
 
 ### Baseline 512
 

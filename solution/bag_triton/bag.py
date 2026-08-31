@@ -52,14 +52,19 @@ def _prepare_three_term_blocks_kernel(
     stride_sa1,
     stride_sb0,
     stride_sb1,
+    COLUMN_MAJOR: tl.constexpr,
     BLOCK: tl.constexpr,
 ):
     """Materialize SA=A12-A21+A22 and SB=B12-B21+B22."""
 
     offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
     mask = offsets < half * half
-    rows = offsets // half
-    columns = offsets - rows * half
+    if COLUMN_MAJOR:
+        columns = offsets // half
+        rows = offsets - columns * half
+    else:
+        rows = offsets // half
+        columns = offsets - rows * half
 
     a12_offsets = rows * stride_a0 + (columns + half) * stride_a1
     a21_offsets = (rows + half) * stride_a0 + columns * stride_a1
@@ -89,14 +94,19 @@ def _inverse_basis_transform_kernel(
     half,
     stride_output0,
     stride_output1,
+    COLUMN_MAJOR: tl.constexpr,
     BLOCK: tl.constexpr,
 ):
     """Decode four C-psi blocks into C, in place."""
 
     offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
     mask = offsets < half * half
-    rows = offsets // half
-    columns = offsets - rows * half
+    if COLUMN_MAJOR:
+        columns = offsets // half
+        rows = offsets - columns * half
+    else:
+        rows = offsets // half
+        columns = offsets - rows * half
 
     c11_offsets = rows * stride_output0 + columns * stride_output1
     c12_offsets = rows * stride_output0 + (columns + half) * stride_output1
@@ -133,14 +143,19 @@ def _complete_four_term_blocks_kernel(
     stride_sa1,
     stride_sb0,
     stride_sb1,
+    COLUMN_MAJOR: tl.constexpr,
     BLOCK: tl.constexpr,
 ):
     """Convert SA/SB in place to SA-A11 and SB-B11 after M3."""
 
     offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
     mask = offsets < half * half
-    rows = offsets // half
-    columns = offsets - rows * half
+    if COLUMN_MAJOR:
+        columns = offsets // half
+        rows = offsets - columns * half
+    else:
+        rows = offsets // half
+        columns = offsets - rows * half
     sa_offsets = rows * stride_sa0 + columns * stride_sa1
     sb_offsets = rows * stride_sb0 + columns * stride_sb1
     a11_offsets = rows * stride_a0 + columns * stride_a1
@@ -287,6 +302,7 @@ def bag_matmul(
 
     element_count = half * half
     block = 256
+    column_major = all(_is_column_major(matrix) for matrix in (a, b, out, sa, sb))
     _prepare_three_term_blocks_kernel[(triton.cdiv(element_count, block),)](
         a,
         b,
@@ -301,6 +317,7 @@ def bag_matmul(
         sa.stride(1),
         sb.stride(0),
         sb.stride(1),
+        COLUMN_MAJOR=column_major,
         BLOCK=block,
         num_warps=4,
     )
@@ -354,6 +371,7 @@ def bag_matmul(
         sa.stride(1),
         sb.stride(0),
         sb.stride(1),
+        COLUMN_MAJOR=column_major,
         BLOCK=block,
         num_warps=4,
     )
@@ -386,6 +404,7 @@ def bag_matmul(
         half,
         out.stride(0),
         out.stride(1),
+        COLUMN_MAJOR=column_major,
         BLOCK=block,
         num_warps=4,
     )
