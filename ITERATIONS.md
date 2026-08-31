@@ -29,6 +29,7 @@
 | iter-20 | Reduce compact 32x32 tile from 4 to 2 warps | 0.052497 ms geomean; 0.793737x vs unfused | yes | reject; regression |
 | iter-21 | Test compact rectangular 32x64x16 tile | 0.047456 ms geomean; 0.870281x vs unfused | yes | reject; below best |
 | iter-22 | Reduce compact-tile GROUP_M from 8 to 4 | 0.046449 ms geomean; 0.885925x vs unfused | yes | tie; retain GROUP_M=8 |
+| iter-23 | Test 16x64x16 I/O-oriented tile | 0.058420 ms geomean; 0.718442x vs unfused | yes | reject; major regression |
 
 ## Baseline
 
@@ -387,3 +388,26 @@
 - Outcome: **tie/reject for simplicity**. Retain `GROUP_M=8`, which matches
   the established launch policy and is not slower.
 - Trajectory: `trajectory/iter-22-20260831-144131`.
+
+### Second stall reassessment after iteration 22
+
+- Iterations 20–22 ruled out fewer warps, compact rectangular reuse, and
+  smaller program grouping.
+- The remaining official I/O-bound configuration dimension not yet covered was
+  a 16-row output tile; it preserves a 256-CTA grid while changing dot operand
+  and atomic-output thread mapping.
+
+### Iteration 23 — 16-row I/O-oriented tile
+
+- Change: tested `16x64x16`, four warps, and three stages.
+- Hypothesis: retaining 256 CTAs while assigning a wider contiguous N segment
+  to each program might improve output atomics and right-operand loads.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.058420 ms**.
+- Geometric-mean speedup vs unfused: **0.718442x**.
+- Change vs iteration-16 best (0.046449 ms): **25.77% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0717`, IEEE row-major
+  `0.0717`, TF32 column-major `0.0471`, TF32 row-major `0.0481`.
+- Outcome: **reject**. The asymmetric tile loses too much operand reuse and/or
+  produces a worse dot layout; the square compact tile remains superior.
+- Trajectory: `trajectory/iter-23-20260831-144210`.
