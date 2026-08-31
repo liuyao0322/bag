@@ -17,6 +17,7 @@
 | iter-10 | Use 128x128x16 tiles for large tall/wide GEMMs | 1.091716 ms geomean; 0.733427x vs unfused | yes | keep; new best |
 | iter-11 | Extend fused 128x128x16 tiles down to short edge 1024 | 0.991254 ms geomean; 0.807483x vs unfused | yes | keep; new best |
 | iter-12 | Test 128x128x8 with four pipeline stages | benchmark failed to compile | no result | reject; unsupported K tile |
+| iter-13 | Reduce fused 128x128 program grouping from 8 to 4 | 0.991427 ms geomean; 0.807330x vs unfused | yes | reject; no gain |
 
 ## Baseline
 
@@ -185,3 +186,15 @@
 - Failure: Triton 3.6's NVIDIA `tl.dot` lowering requires the K dimension to be at least 16; `BK=8` triggers `Input shapes should have ... K >= 16`.
 - Outcome: **reject**. BK=16 is the minimum supported dot tile on this stack, so this direction is exhausted.
 - Trajectory: no snapshot was created because compilation failed before the benchmark snapshot step.
+
+## Iteration 13 — smaller program grouping
+
+- Change: restored the iteration-11 `128x128x16`, 8-warp, 3-stage body and reduced `GROUP_M` from 8 to 4 for its fused shape buckets.
+- Hypothesis: shorter M groups might improve L2 locality or tail scheduling across square and aspect-ratio problems.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.991427 ms**.
+- Geometric-mean speedup vs unfused: **0.807330x**.
+- Change vs iteration-11 best (0.991254 ms): **0.02% slower**.
+- Per-shape fused latency (ms): square-1024 `0.2212`, square-2048 `1.3558`, square-4096 `8.3835`, tall `0.8018`, wide `0.7987`, large-k `0.5898`.
+- Outcome: **reject/no material difference**. The current shapes are not sensitive to GROUP_M=4 versus 8 at the required 3% threshold.
+- Trajectory: `trajectory/iter-13-20260831-142252`.
