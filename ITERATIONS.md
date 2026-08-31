@@ -34,6 +34,7 @@
 | final-512 | Restore and remeasure iteration 16 | 0.047132 ms geomean; 0.890515x vs unfused | yes | final 512 winner |
 | iter-25 | One-level BAG with two quarter-block transforms and seven fused primitives | 2.240755 ms geomean; 0.330219x vs cuBLAS GEMM | yes | baseline for end-to-end BAG phase |
 | iter-26 | Non-atomic output accumulation for same-stream BAG calls | 2.069139 ms geomean; 0.356438x vs cuBLAS GEMM | yes | keep; new end-to-end best |
+| iter-27 | Materialize terminal four-term inputs to remove right-combination IEEE cliff | 1.853898 ms geomean; 0.397718x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 
 ## Baseline
 
@@ -298,6 +299,29 @@
 - Outcome: keep as the new best. Next replace only the plain overwrite M3/M4
   products with cuBLAS while retaining Triton primitives for fused products.
 - Trajectory: `trajectory/iter-26-20260831-150040`.
+
+### Iteration 27 — materialize terminal four-term combinations
+
+- Change: after M3 consumes the three-term SA/SB buffers, a linear Triton
+  kernel subtracts A11/B11 in place. M6 and M7 then consume these completed
+  four-term inputs without fused GEMM-loop subtraction.
+- Hypothesis: event profiling showed a physical-right-only IEEE combination
+  taking about 73.6 ms versus 6-8 ms for every peer at half-size 4096; moving
+  that subtraction to a bandwidth-bound pass should remove the lowering cliff.
+- Correctness: the 18-case quick BAG suite passed and the full benchmark
+  reported `CORRECT=True` across 20 cases with unchanged errors.
+- BAG geometric-mean latency: **1.853898 ms**, 10.40% below iteration 26 and
+  17.26% below the end-to-end baseline.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.397718x**.
+- At N=8192, IEEE improved from `115.3761/128.9400 ms` to
+  `52.3080/66.8774 ms` for row/column-major; row-major speedup reached 0.850x.
+  Row-major TF32 reached 0.888x at N=8192.
+- Analysis: the pathological right-combination code generation is eliminated.
+  Column-major pointwise transforms now account for roughly 20 ms at N=8192,
+  versus under 2 ms row-major, exposing the next dominant layout issue.
+- Outcome: keep as new best. Make pointwise kernels traverse physical
+  contiguous order for column-major storage.
+- Trajectory: `trajectory/iter-27-20260831-150336`.
 
 ### Baseline 512
 

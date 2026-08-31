@@ -118,6 +118,47 @@ def _inverse_basis_transform_kernel(
     )
 
 
+@triton.jit
+def _complete_four_term_blocks_kernel(
+    a_ptr,
+    b_ptr,
+    sa_ptr,
+    sb_ptr,
+    half,
+    stride_a0,
+    stride_a1,
+    stride_b0,
+    stride_b1,
+    stride_sa0,
+    stride_sa1,
+    stride_sb0,
+    stride_sb1,
+    BLOCK: tl.constexpr,
+):
+    """Convert SA/SB in place to SA-A11 and SB-B11 after M3."""
+
+    offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
+    mask = offsets < half * half
+    rows = offsets // half
+    columns = offsets - rows * half
+    sa_offsets = rows * stride_sa0 + columns * stride_sa1
+    sb_offsets = rows * stride_sb0 + columns * stride_sb1
+    a11_offsets = rows * stride_a0 + columns * stride_a1
+    b11_offsets = rows * stride_b0 + columns * stride_b1
+    tl.store(
+        sa_ptr + sa_offsets,
+        tl.load(sa_ptr + sa_offsets, mask=mask)
+        - tl.load(a_ptr + a11_offsets, mask=mask),
+        mask=mask,
+    )
+    tl.store(
+        sb_ptr + sb_offsets,
+        tl.load(sb_ptr + sb_offsets, mask=mask)
+        - tl.load(b_ptr + b11_offsets, mask=mask),
+        mask=mask,
+    )
+
+
 def _is_column_major(tensor: torch.Tensor) -> bool:
     rows, columns = tensor.shape
     return (rows <= 1 or tensor.stride(0) == 1) and (
@@ -295,6 +336,27 @@ def bag_matmul(
         delta=0, epsilon=0, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
+    # M3 was the last consumer of the three-term blocks.  Complete both
+    # four-term combinations in place so M6/M7 avoid an input subtraction in
+    # every K tile.  This also avoids a severe IEEE lowering cliff when the
+    # physical right operand alone contains a fused linear combination.
+    _complete_four_term_blocks_kernel[(triton.cdiv(element_count, block),)](
+        a,
+        b,
+        sa,
+        sb,
+        half,
+        a.stride(0),
+        a.stride(1),
+        b.stride(0),
+        b.stride(1),
+        sa.stride(0),
+        sa.stride(1),
+        sb.stride(0),
+        sb.stride(1),
+        BLOCK=block,
+        num_warps=4,
+    )
     bag_primitive(
         a11, None, b11, None, c_psi11, None,
         delta=0, epsilon=0, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
@@ -306,16 +368,16 @@ def bag_matmul(
         delta=0, epsilon=0, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
-    # M6=(SA-A11)*B12, subtracted from Cpsi12 and Cpsi22.
+    # M6=SA'*B12, where SA' now stores SA-A11.
     bag_primitive(
-        sa, a11, b12, None, c_psi12, c_psi22,
-        delta=-1, epsilon=0, gamma_d=-1, gamma_e=-1, allow_tf32=allow_tf32,
+        sa, None, b12, None, c_psi12, c_psi22,
+        delta=0, epsilon=0, gamma_d=-1, gamma_e=-1, allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
-    # M7=A21*(SB-B11), added to Cpsi12 and Cpsi21.
+    # M7=A21*SB', where SB' now stores SB-B11.
     bag_primitive(
-        a21, None, sb, b11, c_psi12, c_psi21,
-        delta=0, epsilon=-1, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
+        a21, None, sb, None, c_psi12, c_psi21,
+        delta=0, epsilon=0, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
 
