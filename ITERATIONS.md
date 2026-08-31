@@ -417,6 +417,21 @@
   improvement while auto-gating event overhead out of all other buckets.
 - Trajectory: `trajectory/final-20260831-151619`.
 
+### Published end-to-end BAG validation
+
+- Published iteration 30 byte-for-byte from `solution/bag_triton` to
+  `src/bag_triton`, including the depth-1 BAG API, internal same-stream
+  non-atomic specialization, and dependency-batched auto scheduler.
+- Published correctness: all **28** BAG cases passed across IEEE/TF32 and
+  row-major/column-major/sliced layouts, including non-default caller-stream
+  replay. All **26** primitive cases also passed, including concurrent atomic
+  accumulation from two CUDA streams.
+- Result artifacts: `benchmark_results/bag_vs_gemm_rtx3090.csv` and
+  `benchmark_results/bag_vs_gemm_rtx3090.md`.
+- The user requirement that CUDA stream creation remain outside measurement is
+  enforced by constructing all four streams in the preallocated workspace;
+  the benchmark callable receives that workspace and never creates streams.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with

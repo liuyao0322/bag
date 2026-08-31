@@ -305,6 +305,65 @@ PYTHONPATH=src python scripts/test_triton_primitive.py
 
 ---
 
+## One-level Triton BAG matrix multiplication
+
+`src/bag_triton/bag.py` assembles a complete depth-1 BAG operation from seven
+primitive products.  It avoids full transformed copies of A and B by
+materializing only two quarter-matrix blocks:
+
+```text
+SA = A12 - A21 + A22
+SB = B12 - B21 + B22
+```
+
+M3 consumes `SA` and `SB`.  The same buffers are then updated in place to
+`SA-A11` and `SB-B11` for M6/M7, and the large-size path reuses them once more
+to materialize M1/M2 inputs.  Total workspace is therefore `N^2/2` FP32
+elements instead of two full transformed matrices.
+
+The auto scheduler uses two dependency-batched multi-stream waves at N=2048:
+M1-M4 first on four streams, then atomic M5-M7 on three streams.  Other sizes
+use the serial schedule selected by measurement.  All workers wait on the
+caller's current stream before reading inputs, and the inverse transform is
+joined back onto that caller stream.
+
+Create output, workspace, and streams outside repeated or timed calls:
+
+```python
+import torch
+from bag_triton import allocate_bag_workspace, bag_matmul
+
+a = torch.randn((2048, 2048), device="cuda", dtype=torch.float32)
+b = torch.randn_like(a)
+out = torch.empty_like(a)
+
+# Allocates two quarter-matrix buffers and four reusable CUDA streams.
+workspace = allocate_bag_workspace(a, b, out, multistream=True)
+
+# No allocation or stream construction occurs in this call.
+bag_matmul(
+    a,
+    b,
+    out=out,
+    workspace=workspace,
+    allow_tf32=False,
+    schedule="auto",
+)
+```
+
+Run correctness and the end-to-end BAG-vs-cuBLAS benchmark with:
+
+```bash
+PYTHONPATH=src python scripts/test_triton_bag.py
+PYTHONPATH=src python scripts/benchmark_triton_bag.py --output bag-results.csv
+```
+
+`speedup` in the CSV is `ordinary_GEMM_ms / BAG_ms`; a value above one means
+BAG is faster.  The repository result report is
+`benchmark_results/bag_vs_gemm_rtx3090.md`.
+
+---
+
 ## Inverse Transformation (`basis_trans_inverse`)
 
 The inverse transformation:

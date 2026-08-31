@@ -62,6 +62,7 @@ def _bag_primitive_kernel(
     EPSILON: tl.constexpr,
     GAMMA_D: tl.constexpr,
     GAMMA_E: tl.constexpr,
+    ATOMIC_ACCUMULATE: tl.constexpr,
     INPUT_PRECISION: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
@@ -122,9 +123,17 @@ def _bag_primitive_kernel(
     if GAMMA_D != 0:
         d_offsets = offsets_m[:, None] * stride_dm + offsets_n[None, :] * stride_dn
         if GAMMA_D == 1:
-            tl.atomic_add(d_ptr + d_offsets, accumulator, mask=output_mask)
+            if ATOMIC_ACCUMULATE:
+                tl.atomic_add(d_ptr + d_offsets, accumulator, mask=output_mask)
+            else:
+                previous = tl.load(d_ptr + d_offsets, mask=output_mask, other=0.0)
+                tl.store(d_ptr + d_offsets, previous + accumulator, mask=output_mask)
         elif GAMMA_D == -1:
-            tl.atomic_add(d_ptr + d_offsets, -accumulator, mask=output_mask)
+            if ATOMIC_ACCUMULATE:
+                tl.atomic_add(d_ptr + d_offsets, -accumulator, mask=output_mask)
+            else:
+                previous = tl.load(d_ptr + d_offsets, mask=output_mask, other=0.0)
+                tl.store(d_ptr + d_offsets, previous - accumulator, mask=output_mask)
         elif GAMMA_D == 2:
             tl.store(d_ptr + d_offsets, accumulator, mask=output_mask)
         elif GAMMA_D == -2:
@@ -133,9 +142,17 @@ def _bag_primitive_kernel(
     if GAMMA_E != 0:
         e_offsets = offsets_m[:, None] * stride_em + offsets_n[None, :] * stride_en
         if GAMMA_E == 1:
-            tl.atomic_add(e_ptr + e_offsets, accumulator, mask=output_mask)
+            if ATOMIC_ACCUMULATE:
+                tl.atomic_add(e_ptr + e_offsets, accumulator, mask=output_mask)
+            else:
+                previous = tl.load(e_ptr + e_offsets, mask=output_mask, other=0.0)
+                tl.store(e_ptr + e_offsets, previous + accumulator, mask=output_mask)
         elif GAMMA_E == -1:
-            tl.atomic_add(e_ptr + e_offsets, -accumulator, mask=output_mask)
+            if ATOMIC_ACCUMULATE:
+                tl.atomic_add(e_ptr + e_offsets, -accumulator, mask=output_mask)
+            else:
+                previous = tl.load(e_ptr + e_offsets, mask=output_mask, other=0.0)
+                tl.store(e_ptr + e_offsets, previous - accumulator, mask=output_mask)
         elif GAMMA_E == 2:
             tl.store(e_ptr + e_offsets, accumulator, mask=output_mask)
         elif GAMMA_E == -2:
@@ -249,6 +266,7 @@ def bag_primitive(
     gamma_d: int,
     gamma_e: int,
     allow_tf32: bool = False,
+    _atomic_accumulate: bool = True,
 ) -> tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
     """Run the fused BAG primitive on CUDA tensors.
 
@@ -288,6 +306,10 @@ def bag_primitive(
     _check_coefficient("gamma_e", gamma_e, (-2, -1, 0, 1, 2))
     if not isinstance(allow_tf32, bool):
         raise TypeError(f"allow_tf32 must be bool, got {type(allow_tf32).__name__}")
+    if not isinstance(_atomic_accumulate, bool):
+        raise TypeError(
+            f"_atomic_accumulate must be bool, got {type(_atomic_accumulate).__name__}"
+        )
 
     if not isinstance(x, torch.Tensor) or x.ndim != 2:
         raise ValueError("x must be a two-dimensional torch.Tensor")
@@ -427,6 +449,7 @@ def bag_primitive(
         EPSILON=kernel_epsilon,
         GAMMA_D=gamma_d,
         GAMMA_E=gamma_e,
+        ATOMIC_ACCUMULATE=_atomic_accumulate,
         INPUT_PRECISION=input_precision,
         BLOCK_M=config.block_m,
         BLOCK_N=config.block_n,
