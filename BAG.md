@@ -258,6 +258,53 @@ The implementation performs the following steps:
 
 ---
 
+# Triton Fused Primitive
+
+The Triton implementation is available in `src/bag_triton/primitive.py`.  It
+implements the fused BAG primitive without materializing either input linear
+combination:
+
+```text
+P = (X + delta * Y) @ (V + epsilon * W)
+D += gamma_d * P
+E += gamma_e * P
+```
+
+`delta` and `epsilon` are compile-time specializations in `{-1, 0, 1}`.  For
+compatibility with the CUDA kernels, output modes `gamma_d` and `gamma_e` use
+the following encoding:
+
+* `0`: skip the output entirely;
+* `1` / `-1`: atomically accumulate `+P` / `-P`;
+* `2` / `-2`: directly overwrite the output with `+P` / `-P`.
+
+The public `bag_primitive` wrapper accepts FP32 CUDA tensors with row-major,
+column-major, or sliced positive strides.  Boundary masks support dimensions
+that are not multiples of a kernel tile.  IEEE FP32 dot products are used by
+default; pass `allow_tf32=True` to use TF32 tensor-core products.
+
+Example:
+
+```python
+from bag_triton import bag_primitive
+
+bag_primitive(
+    x, y, v, w, d, e,
+    delta=-1,
+    epsilon=1,
+    gamma_d=1,
+    gamma_e=-1,
+)
+```
+
+Run the GPU correctness suite from the repository root with:
+
+```bash
+PYTHONPATH=src python scripts/test_triton_primitive.py
+```
+
+---
+
 ## Inverse Transformation (`basis_trans_inverse`)
 
 The inverse transformation:
