@@ -964,3 +964,48 @@
   repeatable end-to-end improvement. Restore BK=16 for both precision modes
   in the N=512 bucket and retain iteration 37 as the selected implementation.
 - Trajectory: `trajectory/iter-38-20260831-170816`.
+
+### Iteration 39 — last-completer decode for small TF32 buckets
+
+- Change: specialize full N=512 and N=1024 TF32 grouped BAG so the existing
+  prepare launch clears 32/64 per-spatial-tile counters in the otherwise
+  unused `grouped_left[4]` plane.  After each product CTA stores its tile, it
+  publishes one GPU-scope acquire/release atomic arrival; the seventh CTA
+  decodes all seven products directly into the four output quadrants in
+  1024-element chunks.  This keeps the product-major seven-GEMM launch while
+  removing the independent decode launch.  IEEE and N>=2048 retain the
+  iteration-37 path byte-for-byte at the specialization level.
+- Hypothesis: at half sizes 256 and 512, the 32/64 last-completer tails can be
+  overlapped with the remaining grouped GEMM work, while only 224/448 scalar
+  counter atomics are required.  A 1024-element decode chunk should amortize
+  address/loop overhead without spilling on sm86.
+- Focused same-process A/B before the formal run measured N=512 TF32
+  row/column `23.304/23.191 -> 22.763/22.667 us` (**1.0238x/1.0231x**) and
+  N=1024 TF32 `96.944/97.081 -> 92.436/92.623 us`
+  (**1.0488x/1.0481x**).  Three-seed row/column replay and thousands of timed
+  calls found no stale-counter or visibility failure.  The fused grouped
+  specialization uses 80 registers/thread, 12/16 KiB shared memory for
+  N=512/N=1024, and zero spills.
+- Correctness: `CORRECT=True` on all 20 formal benchmark cases.
+- Formal N=512 TF32 BAG latency: column/row **0.0225/0.0225 ms**, versus
+  iteration 37's **0.0236/0.0225 ms**.  The two-layout geomean falls from
+  about **0.02304 ms to 0.02250 ms** (**2.36% lower**); the row result is on
+  the same CUDA-event quantization step while the focused continuous A/B
+  still measured a repeatable row improvement.
+- Formal N=1024 TF32 BAG latency: column/row **0.0922/0.0923 ms**, versus
+  iteration 37's **0.0973/0.0973 ms**.  The two-layout geomean is about
+  **0.09225 ms**, **5.19% lower**.
+- Full-suite BAG geometric-mean latency: **0.812858 ms**, **0.96% lower**
+  than iteration 37's 0.820715 ms and the best formal result so far.
+  Full-suite geometric-mean `GEMM/BAG` speedup: **0.925748x**, up from
+  0.913709x in iteration 37.
+- Large TF32 remains faster than ordinary GEMM at N=4096
+  (**1.056x/1.057x**) and N=8192 (**1.013x/1.029x**) for column/row-major.
+- Rejected companion experiments: tile-major last-completer ordering;
+  workspace-free 3+4 and 5+2 two-wave BAG; N=512 two-wave fusion; and 29
+  additional N=512 grouped tile/warp/stage configurations.  They either lost
+  to the product-major last-completer or regressed at least one layout.
+- Outcome: **accept as the new winner**.  It improves both targeted TF32
+  small-matrix buckets, preserves seven genuine half-size GEMMs, creates no
+  streams or events in the measured call, and improves the complete suite.
+- Trajectory: `trajectory/iter-39-20260831-175410`.
