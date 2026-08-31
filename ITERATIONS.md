@@ -31,6 +31,7 @@
 | iter-22 | Reduce compact-tile GROUP_M from 8 to 4 | 0.046449 ms geomean; 0.885925x vs unfused | yes | tie; retain GROUP_M=8 |
 | iter-23 | Test 16x64x16 I/O-oriented tile | 0.058420 ms geomean; 0.718442x vs unfused | yes | reject; major regression |
 | iter-24 | Reduce best compact-tile pipeline from 3 to 2 stages | 0.049067 ms geomean; 0.855399x vs unfused | yes | reject; regression |
+| final-512 | Restore and remeasure iteration 16 | 0.047132 ms geomean; 0.890515x vs unfused | yes | final 512 winner |
 
 ## Baseline
 
@@ -428,3 +429,23 @@
 - Outcome: **reject**. Three stages are required to hide four-input load
   latency; with iterations 19 and 24, stages 2/3/4 are now fully compared.
 - Trajectory: `trajectory/iter-24-20260831-144240`.
+
+### Final square-512 verification
+
+- Restored source: iteration 16, commit `688bf32`.
+- Selected configuration: `32x32x16`, four warps, three stages,
+  `GROUP_M=8`.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.047132 ms**.
+- Geometric-mean speedup vs unfused: **0.890515x**.
+- Change vs 512 baseline (0.077348 ms): **1.641x faster / 39.07% lower
+  latency**.
+- Per-mode fused latency (ms): IEEE column-major `0.0563`, IEEE row-major
+  `0.0522`, TF32 column-major `0.0410`, TF32 row-major `0.0410`.
+- The final fused geomean is within 1.47% of iteration 16 and the implementation
+  remains correct, confirming the selected winner.
+- Stop rationale: all principal configuration directions were tested with at
+  least three distinct axes—tile/grid shape (16, 21, 23), reduction/pipeline
+  shape (17, 19, 24), warp count (18, 20), and launch grouping (22). None
+  exceeded iteration 16, so the viable configuration search is exhausted.
+- Trajectory: `trajectory/final-20260831-144315`.
