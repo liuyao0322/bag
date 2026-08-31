@@ -67,3 +67,14 @@ Source: user prompt, 2026-08-31 (continue optimization after upper-bound audit).
 - Prioritize genuine end-to-end latency reduction, including candidates that
   reduce intermediate product traffic, while retaining the existing full
   correctness and measurement contract.
+
+Source: user prompt, 2026-08-31 (small-matrix BAG follow-up).
+
+- Prioritize end-to-end BAG latency for N=512 and N=1024 across row-major and
+  column-major layouts and both IEEE and TF32 precision modes; use N=2048 as a
+  boundary-regression signal before the final all-shape replay.
+- Preserve a genuine seven-product BAG execution path. Do not substitute an
+  ordinary GEMM fallback, weaken correctness, or omit unfavorable cases to
+  improve the reported small-matrix ratios.
+- Target fixed launch cost, intermediate-product traffic, and small-batch CTA
+  utilization while retaining the established workspace and timing contract.

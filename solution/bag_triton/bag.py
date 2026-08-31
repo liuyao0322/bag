@@ -1118,8 +1118,8 @@ def bag_matmul(
             block_m, block_n, block_k = 32, 32, 16
             num_warps, num_stages = 4, 3
         elif half <= 256:
-            block_m, block_n, block_k = 64, 64, 32
-            num_warps, num_stages = 4, 4
+            block_m, block_n, block_k = 32, 64, 16
+            num_warps, num_stages = 4, 3
         elif half <= 512:
             block_m, block_n = 64, 64
             block_k = 16 if allow_tf32 else 32

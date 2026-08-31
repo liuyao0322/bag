@@ -892,3 +892,32 @@
 - The arithmetic-only upper bound remains `8/7=1.142857x`; the prior measured
   IEEE column-major finite-shape bound near `1.1325x` is retained separately
   from this final run's end-to-end result.
+
+### Iteration 36 — increase N=512 grouped-GEMM work supply
+
+- Change: specialize the `half<=256` grouped leaf GEMM from `64x64x32`, four
+  warps, four stages to `32x64x16`, four warps, three stages. The N=512 launch
+  grows from 112 to 224 CTAs across the seven products while preserving the
+  sparse prepare and direct decode kernels.
+- Hypothesis: the former 1.37-CTA-per-SM grid under-supplies the RTX 3090's 82
+  SMs; doubling spatial work supply and shortening the K pipeline should hide
+  latency better than the larger tile's extra reuse.
+- Correctness: `CORRECT=True` on all 20 formal benchmark cases covering five
+  sizes, both layouts, and IEEE/TF32.
+- Full-suite BAG geometric-mean latency: **0.818945 ms**; geometric-mean
+  `GEMM/BAG` speedup: **0.915502x**.
+- Change versus iteration 35 (0.828137 ms): **1.11% lower latency**. Change
+  versus the previously published independent final (0.832332 ms): **1.61%
+  lower latency**.
+- N=512 BAG latencies: IEEE column/row **0.0317/0.0287 ms**, TF32 column/row
+  **0.0236/0.0225 ms**; their latency geomean is **0.02636 ms**, about **8.0%
+  below** the prior published N=512 aggregate latency of 0.028662 ms.
+- N=512 `GEMM/BAG` ratios: IEEE column/row **0.871x/0.929x**, TF32 column/row
+  **0.783x/0.727x**. Ordinary-GEMM timing varied across runs, so selection is
+  based primarily on BAG latency while retaining every ratio.
+- N>=1024 uses the prior implementation unchanged. Large TF32 remains above
+  ordinary GEMM at N=2048 column-major (1.020x), N=4096 (1.054x/1.056x), and
+  N=8192 (1.020x/1.023x).
+- Outcome: **accept as the new provisional best** and continue with the
+  independent N=1024 pointwise/IEEE-GEMM candidates before final publication.
+- Trajectory: `trajectory/iter-36-20260831-170515`.
