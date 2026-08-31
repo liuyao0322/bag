@@ -1275,3 +1275,28 @@
 - Outcome: **reject** and restore the exact iteration-47 source before the next
   last-completer/dataflow candidate.
 - Trajectory: `trajectory/iter-48-20260831-223726`.
+
+### Iteration 49 — shallower N=1024 IEEE grouped pipeline
+
+- Change: restored the exact iteration-47 last-completer decoder, then changed
+  only full N=1024 IEEE (`half=512`, `BK=32`) from three pipeline stages to
+  two.  The other 19 formal specializations remain source-identical to the
+  clean baseline.
+- Motivation/resource evidence: the baseline N=1024 IEEE product kernel uses
+  **96 registers/thread** and about **32 KiB shared memory/CTA**, allowing only
+  roughly three CTAs per sm86 SM.  This was the strongest remaining occupancy
+  anomaly.  Separately, iteration 48's staged decoder compiled to **64**
+  registers at N=512 but remained **80** at N=1024; despite the N=512 reduction
+  from the baseline's 80, its measured latency did not improve.
+- Correctness: all 20 formal cases report `CORRECT=True`.
+- Targeted result: N=1024 IEEE measured **0.1300/0.1290 ms** for column/row
+  major, versus the adjacent clean baseline's **0.1290/0.1270 ms**.  N=512
+  IEEE and all four small TF32 cases retained their baseline event bins.
+- Full-suite BAG geometric mean was **0.813653 ms**, 0.05% above iteration 47;
+  selection is based on the directly affected IEEE bucket, which consistently
+  moved in the wrong direction.
+- Analysis: the third pipeline stage hides enough operand latency to outweigh
+  its lower static occupancy.  Occupancy is a constraint rather than a direct
+  objective, and this bucket is not improved by reducing it mechanically.
+- Outcome: **reject**; restore the three-stage N=1024 IEEE specialization.
+- Trajectory: `trajectory/iter-49-20260831-223954`.
