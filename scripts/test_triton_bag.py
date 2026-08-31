@@ -85,6 +85,33 @@ def _run_interface_checks() -> None:
         raise AssertionError("non-FP32 input must be rejected")
 
 
+def _run_multistream_replay_case() -> None:
+    """Exercise caller-stream handoff and repeated worker-stream batches."""
+
+    size = 128
+    a = _matrix(size, "row-major")
+    b = _matrix(size, "row-major")
+    output = _matrix(size, "row-major")
+    reference = torch.mm(a, b)
+    workspace = allocate_bag_workspace(a, b, output, multistream=True)
+    caller = torch.cuda.Stream()
+    ready = torch.cuda.Event()
+    ready.record()
+    caller.wait_event(ready)
+    with torch.cuda.stream(caller):
+        # A second invocation must wait for all workers used by the first one
+        # before it overwrites the shared workspace and output.
+        bag_matmul(a, b, out=output, workspace=workspace, schedule="multistream")
+        bag_matmul(a, b, out=output, workspace=workspace, schedule="multistream")
+    caller.synchronize()
+    difference = output - reference
+    relative_l2 = float(
+        torch.linalg.vector_norm(difference) / torch.linalg.vector_norm(reference)
+    )
+    if relative_l2 > 3.0e-4:
+        raise AssertionError(f"multistream replay relative error {relative_l2:.6e}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=20260831)
@@ -108,6 +135,8 @@ def main() -> None:
                     f"rel_l2={relative_l2:.3e} max_abs={max_absolute:.3e}"
                 )
     _run_interface_checks()
+    _run_multistream_replay_case()
+    print("PASS non-default caller stream and repeated multistream batches")
     print(f"All {count} Triton BAG numerical cases and interface checks passed.")
 
 

@@ -28,3 +28,11 @@ Source: user prompt, 2026-08-31 (end-to-end BAG implementation).
   random-data generation, and library initialization from timed regions.
 - Preserve exact BAG algebra and report IEEE and TF32 numerical error honestly;
   do not weaken correctness thresholds or omit slow buckets to claim speedup.
+
+Source: user prompt, 2026-08-31 (BAG launch scheduling follow-up).
+
+- Use multi-stream and dependency-batched scheduling for the seven BAG
+  primitive products where it improves latency.
+- Preserve caller-stream semantics, synchronize batches with CUDA events, and
+  keep overlapping output updates race-free; do not count stream creation or
+  graph construction in steady-state timings.

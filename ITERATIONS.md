@@ -37,6 +37,7 @@
 | iter-27 | Materialize terminal four-term inputs to remove right-combination IEEE cliff | 1.853898 ms geomean; 0.397718x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 | iter-28 | Traverse pointwise transforms in physical contiguous order | 1.580899 ms geomean; 0.469512x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 | iter-29 | Reuse workspace to materialize M1/M2 inputs for N>=4096 | 1.552825 ms geomean; 0.477185x vs cuBLAS GEMM | yes | keep; new end-to-end best |
+| iter-30 | Two dependency-batched multi-stream waves for N=2048 | 1.538423 ms geomean; 0.481222x vs cuBLAS GEMM | yes | keep; targeted N=2048 win |
 
 ## Baseline
 
@@ -368,6 +369,36 @@
 - Outcome: keep as new best. Preserve the honest all-BAG benchmark rather
   than hiding small sizes behind a GEMM fallback.
 - Trajectory: `trajectory/iter-29-20260831-150740`.
+
+### Iteration 30 — dependency-batched multi-stream launch
+
+- Change: preallocated four worker streams in `BagWorkspace`. For N=2048,
+  batch 1 launches M1/M2/M3/M4 on four streams with distinct overwrite
+  outputs; batch 2 launches M5/M6/M7 on three streams using atomic updates for
+  the shared C-psi-12 block. Caller/worker dependencies use CUDA events and
+  the inverse transform is joined back onto the caller's current stream.
+- Measurement boundary: stream objects and workspace are created before the
+  benchmark callable. Timed execution includes real event fork/join and GPU
+  waits, but excludes stream creation, allocation, JIT, and library startup.
+- Pre-screen: forcing multi-stream at N=512/1024 regressed latency from about
+  0.20-0.24 ms to 0.43-0.45 ms due event overhead; therefore auto scheduling
+  enables it only at N=2048 and keeps serial iter-29 scheduling elsewhere.
+- Correctness: quick IEEE/TF32 tests passed across row/column/sliced layouts,
+  including two consecutive batched calls from a non-default caller stream;
+  all 20 formal benchmark cases reported `CORRECT=True`.
+- BAG geometric-mean latency: **1.538423 ms**, 0.93% below iteration 29 and
+  31.34% below the end-to-end baseline.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.481222x**.
+- N=2048 latency was `1.0373/1.0445 ms` IEEE and `0.7199/0.7055 ms` TF32 for
+  column/row-major. Relative to the serial pre-screen this is approximately a
+  5-8% targeted improvement; other size buckets intentionally remain serial.
+- Analysis: multi-stream helps only where a sub-GEMM underfills the RTX 3090
+  enough to amortize seven event dependencies. It cannot reduce launch count,
+  so smaller buckets require graph/grouped submission rather than more streams.
+- Outcome: keep the auto-gated path because it materially improves N=2048
+  without changing other buckets, despite the all-suite geomean gain being
+  below the general 3% threshold.
+- Trajectory: `trajectory/iter-30-20260831-151531`.
 
 ### Baseline 512
 

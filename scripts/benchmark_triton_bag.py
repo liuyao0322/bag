@@ -31,6 +31,7 @@ DEFAULT_SIZES = (512, 1024, 2048, 4096, 8192)
 @dataclass(frozen=True)
 class Result:
     gpu: str
+    schedule: str
     precision: str
     layout: str
     n: int
@@ -73,6 +74,7 @@ def _run_one(
     precision: str,
     warmup_ms: int,
     rep_ms: int,
+    schedule: str,
 ) -> Result:
     allow_tf32 = precision == "tf32"
     torch.backends.cuda.matmul.allow_tf32 = allow_tf32
@@ -82,7 +84,9 @@ def _run_one(
     b = _matrix(size, layout)
     bag_output = _matrix(size, layout, random=False)
     gemm_output = _matrix(size, layout, random=False)
-    workspace = allocate_bag_workspace(a, b, bag_output)
+    workspace = allocate_bag_workspace(
+        a, b, bag_output, multistream=schedule != "serial"
+    )
 
     def run_bag() -> None:
         bag_matmul(
@@ -91,6 +95,7 @@ def _run_one(
             out=bag_output,
             workspace=workspace,
             allow_tf32=allow_tf32,
+            schedule=schedule,
         )
 
     def run_gemm() -> None:
@@ -128,6 +133,7 @@ def _run_one(
     bag_gemm_flops = 7.0 * 2.0 * (size // 2) ** 3
     return Result(
         gpu=torch.cuda.get_device_name(),
+        schedule=schedule,
         precision=precision,
         layout=layout,
         n=size,
@@ -182,6 +188,11 @@ def main() -> None:
     parser.add_argument("--rep-ms", type=int, default=200)
     parser.add_argument("--seed", type=int, default=20260831)
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--schedule",
+        choices=("auto", "serial", "multistream"),
+        default="auto",
+    )
     args = parser.parse_args()
 
     if any(size <= 0 or size % 2 for size in args.size):
@@ -191,12 +202,20 @@ def main() -> None:
     print(f"Implementation: {IMPLEMENTATION_ROOT}")
     print("BAG: depth=1, seven N/2 GEMMs, fused primitive inputs, preallocated workspace")
     print("GEMM: torch.mm(out=...), cuBLAS, preallocated output")
+    print(f"Schedule: {args.schedule}")
 
     results: list[Result] = []
     for precision in args.precision:
         for layout in args.layout:
             for size in args.size:
-                result = _run_one(size, layout, precision, args.warmup_ms, args.rep_ms)
+                result = _run_one(
+                    size,
+                    layout,
+                    precision,
+                    args.warmup_ms,
+                    args.rep_ms,
+                    args.schedule,
+                )
                 results.append(result)
                 _print_result(result)
 

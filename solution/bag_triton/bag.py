@@ -35,6 +35,7 @@ class BagWorkspace(NamedTuple):
 
     transformed_a12: torch.Tensor
     transformed_b12: torch.Tensor
+    streams: Optional[tuple[torch.cuda.Stream, ...]] = None
 
 
 @triton.jit
@@ -270,6 +271,8 @@ def allocate_bag_workspace(
     a: torch.Tensor,
     b: Optional[torch.Tensor] = None,
     out: Optional[torch.Tensor] = None,
+    *,
+    multistream: bool = True,
 ) -> BagWorkspace:
     """Allocate the two quarter-matrix buffers needed by one BAG level.
 
@@ -291,9 +294,14 @@ def allocate_bag_workspace(
     use_column_major = all(_is_column_major(matrix) for matrix in matrices)
     half = size // 2
     strides = (1, half) if use_column_major else (half, 1)
+    if not isinstance(multistream, bool):
+        raise TypeError(f"multistream must be bool, got {type(multistream).__name__}")
     sa = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     sb = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
-    return BagWorkspace(sa, sb)
+    streams = None
+    if multistream:
+        streams = tuple(torch.cuda.Stream(device=a.device) for _ in range(4))
+    return BagWorkspace(sa, sb, streams)
 
 
 def bag_matmul(
@@ -303,6 +311,7 @@ def bag_matmul(
     out: Optional[torch.Tensor] = None,
     workspace: Optional[BagWorkspace] = None,
     allow_tf32: bool = False,
+    schedule: str = "auto",
 ) -> torch.Tensor:
     """Compute ``out = a @ b`` with one level of the BAG algorithm.
 
@@ -315,6 +324,10 @@ def bag_matmul(
             Supplying one prevents allocation on every call.
         allow_tf32: Select TF32 tensor-core products.  The default is IEEE
             FP32, matching :func:`bag_primitive`.
+        schedule: ``"serial"`` always submits on the caller's current stream;
+            ``"multistream"`` uses two dependency batches for N below 4096;
+            ``"auto"`` selects it for N=2048, the measured RTX 3090 bucket
+            where subproblems underfill the GPU but event overhead is amortized.
 
     Returns:
         ``out`` when supplied, otherwise a newly allocated output tensor.
@@ -336,6 +349,10 @@ def bag_matmul(
         raise ValueError(f"BAG requires a positive even matrix size, got {size}")
     if not isinstance(allow_tf32, bool):
         raise TypeError(f"allow_tf32 must be bool, got {type(allow_tf32).__name__}")
+    if schedule not in ("auto", "serial", "multistream"):
+        raise ValueError(
+            f"schedule must be 'auto', 'serial', or 'multistream', got {schedule!r}"
+        )
 
     device = a.device
     _check_square_matrix("a", a, size, device)
@@ -347,7 +364,7 @@ def bag_matmul(
         _check_square_matrix("out", out, size, device, output=True)
 
     if workspace is None:
-        workspace = allocate_bag_workspace(a, b, out)
+        workspace = allocate_bag_workspace(a, b, out, multistream=schedule != "serial")
     elif not isinstance(workspace, BagWorkspace):
         try:
             workspace = BagWorkspace(*workspace)
@@ -355,9 +372,24 @@ def bag_matmul(
             raise TypeError("workspace must be a BagWorkspace or a pair of tensors") from error
 
     half = size // 2
-    sa, sb = workspace
+    sa = workspace.transformed_a12
+    sb = workspace.transformed_b12
     _check_square_matrix("workspace.transformed_a12", sa, half, device, output=True)
     _check_square_matrix("workspace.transformed_b12", sb, half, device, output=True)
+    worker_streams = workspace.streams
+    if worker_streams is not None:
+        if len(worker_streams) < 4:
+            raise ValueError("multistream workspace must contain at least four CUDA streams")
+        if any(stream.device != device for stream in worker_streams):
+            raise ValueError("every workspace stream must be on the input device")
+    auto_multistream = schedule == "auto" and size == 2048
+    forced_multistream = schedule == "multistream" and size < 4096
+    use_multistream = (auto_multistream or forced_multistream) and worker_streams is not None
+    if schedule == "multistream" and size < 4096 and worker_streams is None:
+        raise ValueError(
+            "schedule='multistream' requires workspace from "
+            "allocate_bag_workspace(..., multistream=True)"
+        )
 
     element_count = half * half
     block = 256
@@ -393,6 +425,90 @@ def bag_matmul(
     c_psi12 = out[:half, half:]
     c_psi21 = out[half:, :half]
     c_psi22 = out[half:, half:]
+
+    if use_multistream:
+        # Batch 1 has four independent output blocks.  Every worker waits for
+        # the caller-stream preparation kernel, preserving arbitrary upstream
+        # producer dependencies without a host synchronization.
+        caller_stream = torch.cuda.current_stream(device=device)
+        stream_m1, stream_m2, stream_m3, stream_m4 = worker_streams[:4]
+        for stream in (stream_m1, stream_m2, stream_m3, stream_m4):
+            stream.wait_stream(caller_stream)
+        with torch.cuda.stream(stream_m1):
+            bag_primitive(
+                a12, a22, b12, b22, c_psi22, None,
+                delta=1, epsilon=1, gamma_d=2, gamma_e=0,
+                allow_tf32=allow_tf32, _atomic_accumulate=False,
+            )
+        with torch.cuda.stream(stream_m2):
+            bag_primitive(
+                a22, a21, b22, b21, c_psi21, None,
+                delta=-1, epsilon=-1, gamma_d=2, gamma_e=0,
+                allow_tf32=allow_tf32, _atomic_accumulate=False,
+            )
+        with torch.cuda.stream(stream_m3):
+            bag_primitive(
+                sa, None, sb, None, c_psi12, None,
+                delta=0, epsilon=0, gamma_d=2, gamma_e=0,
+                allow_tf32=allow_tf32, _atomic_accumulate=False,
+            )
+            _complete_four_term_blocks_kernel[(triton.cdiv(element_count, block),)](
+                a,
+                b,
+                sa,
+                sb,
+                half,
+                a.stride(0), a.stride(1),
+                b.stride(0), b.stride(1),
+                sa.stride(0), sa.stride(1),
+                sb.stride(0), sb.stride(1),
+                COLUMN_MAJOR=column_major,
+                BLOCK=block,
+                num_warps=4,
+            )
+        with torch.cuda.stream(stream_m4):
+            bag_primitive(
+                a11, None, b11, None, c_psi11, None,
+                delta=0, epsilon=0, gamma_d=2, gamma_e=0,
+                allow_tf32=allow_tf32, _atomic_accumulate=False,
+            )
+
+        # Join batch 1 on the caller stream, then make the three workers wait
+        # for that join before atomically accumulating the overlapping batch.
+        for stream in (stream_m1, stream_m2, stream_m3, stream_m4):
+            caller_stream.wait_stream(stream)
+        for stream in (stream_m1, stream_m2, stream_m3):
+            stream.wait_stream(caller_stream)
+        with torch.cuda.stream(stream_m1):
+            bag_primitive(
+                a12, None, b21, None, c_psi11, c_psi12,
+                delta=0, epsilon=0, gamma_d=1, gamma_e=1,
+                allow_tf32=allow_tf32, _atomic_accumulate=True,
+            )
+        with torch.cuda.stream(stream_m2):
+            bag_primitive(
+                sa, None, b12, None, c_psi12, c_psi22,
+                delta=0, epsilon=0, gamma_d=-1, gamma_e=-1,
+                allow_tf32=allow_tf32, _atomic_accumulate=True,
+            )
+        with torch.cuda.stream(stream_m3):
+            bag_primitive(
+                a21, None, sb, None, c_psi12, c_psi21,
+                delta=0, epsilon=0, gamma_d=1, gamma_e=1,
+                allow_tf32=allow_tf32, _atomic_accumulate=True,
+            )
+        for stream in (stream_m1, stream_m2, stream_m3):
+            caller_stream.wait_stream(stream)
+        _inverse_basis_transform_kernel[(triton.cdiv(element_count, block),)](
+            out,
+            half,
+            out.stride(0),
+            out.stride(1),
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+        return out
 
     materialize_outer_products = half >= 2048
     if not materialize_outer_products:
