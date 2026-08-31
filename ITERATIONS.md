@@ -13,6 +13,7 @@
 | iter-6 | Reduce large-square pipeline from 3 to 2 stages | 1.205704 ms geomean; 0.661972x vs unfused | yes | reject; regression |
 | iter-7 | Compile-time unmasked fast path for exact tiles | benchmark failed to compile | no result | fix API usage and retry |
 | iter-8 | Corrected exact-tile unmasked load path | 1.175801 ms geomean; 0.679223x vs unfused | yes | reject; no gain |
+| iter-9 | Canonical-contiguous address specialization | 1.155336 ms geomean; 0.692094x vs unfused | yes | reject; below 3% threshold |
 
 ## Baseline
 
@@ -134,3 +135,15 @@
 - Per-shape fused latency (ms): square-1024 `0.2928`, square-2048 `1.3517`, square-4096 `8.7388`, tall `0.9431`, wide `0.9544`, large-k `0.8489`.
 - Outcome: **reject**. The compiler already handles the regular masks effectively; explicit branching increases specialization/code complexity without a repeatable speedup.
 - Trajectory: `trajectory/iter-8-20260831-141852`.
+
+## Iteration 9 — canonical-contiguous address specialization
+
+- Change: removed the iteration-8 exact-tile branches and specialized canonical row-major physical views so inner unit strides do not participate in address multiplications. Arbitrary positive strides retain the general formula.
+- Hypothesis: simpler pointer expressions for the column-major-transposed benchmark path would lower integer address-generation overhead inside the K loop.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **1.155336 ms**.
+- Geometric-mean speedup vs unfused: **0.692094x**.
+- Change vs iteration-5 best (1.158568 ms): **0.28% faster**, below the required 3% meaningful-improvement threshold.
+- Per-shape fused latency (ms): square-1024 `0.2857`, square-2048 `1.3353`, square-4096 `8.5606`, tall `0.9523`, wide `0.9370`, large-k `0.8161`.
+- Outcome: **reject as inconclusive/no material gain**. Runtime strides are evidently already simplified or amortized by Triton's compiler, so the extra specialization is not justified.
+- Trajectory: `trajectory/iter-9-20260831-142018`.
