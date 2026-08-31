@@ -178,7 +178,7 @@ def _select_launch_config(
         # Large square matrices benefit from the greater output-tile reuse;
         # halve K so four pipelined inputs remain within shared-memory limits.
         if has_input_combination:
-            return _LaunchConfig(128, 128, 16, 8, 8, 3)
+            return _LaunchConfig(128, 128, 16, 8, 8, 2)
         return _LaunchConfig(128, 128, block_k, 8, 8, 3)
     if has_input_combination:
         return _LaunchConfig(128, 64, block_k, 8, 8, 2)

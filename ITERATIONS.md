@@ -9,6 +9,8 @@
 | iter-2 | Rectangular `128x64x32`, 8-warps, 2-stage main tiles | 1.422233 ms geomean; 0.560589x vs unfused | yes | reject; regression |
 | iter-3 | Size-specific rectangular standard tile + square large tile | 1.309330 ms geomean; 0.609487x vs unfused | yes | keep; new best |
 | iter-4 | Reduce standard rectangular tile from 8 to 4 warps | 1.370751 ms geomean; 0.583013x vs unfused | yes | reject; regression |
+| iter-5 | Expand tall/wide fused tiles to 64 on the short edge | 1.158568 ms geomean; 0.692941x vs unfused | yes | keep; new best |
+| iter-6 | Reduce large-square pipeline from 3 to 2 stages | 1.205704 ms geomean; 0.661972x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -97,3 +99,15 @@
 - Per-shape fused latency (ms): square-1024 `0.2857`, square-2048 `1.3302`, square-4096 `8.5791`, tall `0.9610`, wide `0.9452`, large-k `0.8167`.
 - Outcome: **new best**; the improvement is concentrated in tall and wide shapes, while square and large-K performance remains effectively unchanged.
 - Trajectory: `trajectory/iter-5-20260831-141626`.
+
+## Iteration 6 — reduce large-square pipeline depth
+
+- Change: reduced only the fused large-square `128x128x16` path from 3 pipeline stages to 2.
+- Hypothesis: a smaller shared-memory footprint could improve residency or reduce pipeline overhead for the large-square GEMM body.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **1.205704 ms**.
+- Geometric-mean speedup vs unfused: **0.661972x**.
+- Change vs iteration-5 best (1.158568 ms): **4.07% slower**.
+- Per-shape fused latency (ms): square-1024 `0.2857`, square-2048 `1.5493`, square-4096 `9.5898`, tall `0.9503`, wide `0.9344`, large-k `0.8151`.
+- Outcome: **reject**. The 2048 and 4096 square cases regress by about 16% and 12%, respectively, proving that the third pipeline stage is needed to hide the four fused input streams' load latency.
+- Trajectory: `trajectory/iter-6-20260831-141734`.
