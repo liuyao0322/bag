@@ -656,6 +656,8 @@ def _grouped_bag_gemm_kernel(
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
     GROUP_M: tl.constexpr,
+    PREP_PROGRAMS_M: tl.constexpr,
+    PREP_PROGRAMS_N: tl.constexpr,
     PRODUCT_PHASE: tl.constexpr,
     INTERLEAVE_PREP: tl.constexpr,
     TRANSPOSE_PROBLEM: tl.constexpr,
@@ -769,10 +771,11 @@ def _grouped_bag_gemm_kernel(
                 current_k[:, None] * stride_right_k
                 + offsets_n[None, :] * stride_right_n
             )
-            # M4 owns the canonical-left transformed operands.  Restricting
-            # writes to program_n==0 gives every (m,k) fragment one owner.
+            # M4 owns the canonical-left transformed operands.  Rotate the
+            # unique owner across N tiles at each K step so every (m,k)
+            # fragment is written once without creating long edge CTAs.
             if local_product_id == 0:
-                if program_n == 0:
+                if program_n == k_start % PREP_PROGRAMS_N:
                     if TRANSPOSE_PROBLEM:
                         left12 = tl.load(left56_ptr + left_offsets, mask=left_mask, other=0.0)
                         left21 = tl.load(left4_ptr + left_offsets, mask=left_mask, other=0.0)
@@ -809,10 +812,10 @@ def _grouped_bag_gemm_kernel(
                             mask=left_mask,
                         )
 
-            # M5 owns the canonical-right transformed operands.  Restricting
-            # writes to program_m==0 gives every (k,n) fragment one owner.
+            # M5 symmetrically rotates each (k,n) fragment's unique owner
+            # across M tiles.
             if local_product_id == 1:
-                if program_m == 0:
+                if program_m == k_start % PREP_PROGRAMS_M:
                     right11 = tl.load(right3_ptr + right_offsets, mask=right_mask, other=0.0)
                     if TRANSPOSE_PROBLEM:
                         right12 = right
@@ -1420,6 +1423,8 @@ def bag_matmul(
                 BLOCK_N=block_n,
                 BLOCK_K=block_k,
                 GROUP_M=8,
+                PREP_PROGRAMS_M=triton.cdiv(half, block_m),
+                PREP_PROGRAMS_N=triton.cdiv(half, block_n),
                 PRODUCT_PHASE=1,
                 INTERLEAVE_PREP=True,
                 TRANSPOSE_PROBLEM=column_major,
@@ -1470,6 +1475,8 @@ def bag_matmul(
             BLOCK_N=block_n,
             BLOCK_K=block_k,
             GROUP_M=8,
+            PREP_PROGRAMS_M=triton.cdiv(half, block_m),
+            PREP_PROGRAMS_N=triton.cdiv(half, block_n),
             PRODUCT_PHASE=product_phase,
             INTERLEAVE_PREP=False,
             TRANSPOSE_PROBLEM=column_major,

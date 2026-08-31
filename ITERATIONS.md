@@ -1173,3 +1173,29 @@
   a rotating unique owner per K-step so the same prepare work and fragment
   reuse are distributed across all raw-product CTAs.
 - Trajectory: `trajectory/iter-44-20260831-222310`.
+
+### Iteration 45 — rotate raw2 prepare owners by K step
+
+- Change: kept iteration 44's algebra, two launches, transformed-plane traffic,
+  and counter protocol, but selected the unique canonical-left owner as
+  `program_n = k_step mod Pn` and the unique canonical-right owner as
+  `program_m = k_step mod Pm`.  `Pm/Pn` are compile-time constants.  This
+  distributes prepare across every M4/M5 CTA while preserving one writer per
+  transformed tile and reuse of the current raw dot fragment.
+- Correctness: all 20 formal cases report `CORRECT=True` with baseline IEEE
+  and TF32 error levels.
+- BAG geometric-mean latency: **0.820979 ms**, 0.98% above the independent
+  **0.813021 ms** product-major baseline, but 4.26% below the fixed-edge
+  iteration 44.
+- Targeted result: N=512 TF32 improved from iteration 44's **0.0328 ms** to
+  **0.0256 ms**, yet remains about 13.8% slower than the **0.0225 ms** winner.
+  N=1024 improved from **0.1116 ms** to **0.0932 ms**, one approximately
+  1.024-us event bin above the **0.0922 ms** winner.
+- Analysis: balancing confirms that edge-owner tail skew caused most of the
+  prior regression.  N=512 still pays for a 64-CTA raw launch that underfills
+  82 SMs and for the phase boundary; N=1024 is effectively near the timer's
+  resolution and needs component timing before any further specialization.
+- Outcome: **reject raw2 for N=512; retain N=1024 only as an experimental
+  candidate pending phase timing/resource inspection**.  Do not replace the
+  published small-TF32 path yet.
+- Trajectory: `trajectory/iter-45-20260831-222455`.
