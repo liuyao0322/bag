@@ -162,7 +162,7 @@ def _select_launch_config(
     has_input_combination = delta != 0 or epsilon != 0
     if m >= 4 * n:
         if has_input_combination and n >= 512:
-            return _LaunchConfig(128, 128, 16, 4, 8, 3)
+            return _LaunchConfig(128, 128, 16, 8, 16, 3)
         # Eight warps keep per-thread accumulators bounded while a 64-wide
         # output tile improves reuse along the short matrix dimension.
         num_stages = 2 if has_input_combination else 3
@@ -171,7 +171,7 @@ def _select_launch_config(
         return _LaunchConfig(128, block_n, block_k, 8, num_warps, num_stages)
     if n >= 4 * m:
         if has_input_combination and m >= 512:
-            return _LaunchConfig(128, 128, 16, 4, 8, 3)
+            return _LaunchConfig(128, 128, 16, 8, 16, 3)
         num_stages = 2 if has_input_combination else 3
         num_warps = 8 if has_input_combination else 4
         block_m = 64 if has_input_combination else 32
@@ -182,7 +182,7 @@ def _select_launch_config(
         # Large square matrices benefit from the greater output-tile reuse;
         # halve K so four pipelined inputs remain within shared-memory limits.
         if has_input_combination:
-            return _LaunchConfig(128, 128, 16, 4, 8, 3)
+            return _LaunchConfig(128, 128, 16, 8, 16, 3)
         if min(m, n) >= 2048:
             return _LaunchConfig(128, 128, block_k, 8, 8, 3)
     if has_input_combination:

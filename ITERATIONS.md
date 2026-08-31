@@ -18,6 +18,7 @@
 | iter-11 | Extend fused 128x128x16 tiles down to short edge 1024 | 0.991254 ms geomean; 0.807483x vs unfused | yes | keep; new best |
 | iter-12 | Test 128x128x8 with four pipeline stages | benchmark failed to compile | no result | reject; unsupported K tile |
 | iter-13 | Reduce fused 128x128 program grouping from 8 to 4 | 0.991427 ms geomean; 0.807330x vs unfused | yes | reject; no gain |
+| iter-14 | Increase fused 128x128 CTA from 8 to 16 warps | 0.958616 ms geomean; 0.834934x vs unfused | yes | keep; new best |
 
 ## Baseline
 
@@ -198,3 +199,16 @@
 - Per-shape fused latency (ms): square-1024 `0.2212`, square-2048 `1.3558`, square-4096 `8.3835`, tall `0.8018`, wide `0.7987`, large-k `0.5898`.
 - Outcome: **reject/no material difference**. The current shapes are not sensitive to GROUP_M=4 versus 8 at the required 3% threshold.
 - Trajectory: `trajectory/iter-13-20260831-142252`.
+
+## Iteration 14 — increase per-CTA warps
+
+- Change: restored `GROUP_M=8` and increased fused `128x128x16` configurations from 8 to 16 warps while retaining three pipeline stages.
+- Hypothesis: the four-input, three-stage tile likely permits only one CTA per SM due to shared-memory use; 16 warps should expose more independent work inside that CTA and reduce per-thread accumulator pressure.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.958616 ms**.
+- Geometric-mean speedup vs unfused: **0.834934x**.
+- Change vs iteration-11 best (0.991254 ms): **3.29% faster**.
+- Change vs baseline (2.185636 ms): **2.2800x faster**.
+- Per-shape fused latency (ms): square-1024 `0.2007`, square-2048 `1.3332`, square-4096 `8.5699`, tall `0.7465`, wide `0.7567`, large-k `0.5990`.
+- Outcome: **new best**. The added warps materially improve 1024-square and aspect-ratio cases; large-K regresses slightly, suggesting a separate K-dominant policy may be useful.
+- Trajectory: `trajectory/iter-14-20260831-142323`.
