@@ -22,6 +22,7 @@
 | iter-15 | Increase fused 128x128 CTA from 16 to 32 warps | 1.229815 ms geomean; 0.649229x vs unfused | yes | reject; major regression |
 | final | Restore and independently remeasure iteration 14 | 0.963284 ms geomean; 0.831807x vs unfused | yes | final |
 | baseline-512 | Existing 128x64x32 bucket on four 512 modes | 0.077348 ms geomean; 0.534826x vs unfused | yes | 512 phase baseline |
+| iter-16 | Compact 32x32x16 tile for medium-small fused GEMMs | 0.046449 ms geomean; 0.871591x vs unfused | yes | keep; new 512 best |
 
 ## Baseline
 
@@ -256,3 +257,21 @@
   two-stage tile carries an estimated 98,304-byte pipeline payload and thus
   cannot recover latency hiding through multi-CTA residency.
 - Trajectory: `trajectory/baseline-20260831-143739`.
+
+### Iteration 16 — compact high-grid tile
+
+- Change: added a fused near-square bucket up to 512 using `32x32x16`, 4
+  warps, and 3 stages.
+- Hypothesis: increasing the 512 output grid from 32 to 256 CTAs and reducing
+  the estimated four-input pipeline footprint from 98,304 to 24,576 bytes
+  would outweigh the loss of per-CTA input reuse.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.046449 ms**.
+- Geometric-mean speedup vs unfused: **0.871591x**.
+- Change vs 512 baseline (0.077348 ms): **1.665x faster / 39.95% lower
+  latency**.
+- Per-mode fused latency (ms): IEEE column-major `0.0553`, IEEE row-major
+  `0.0502`, TF32 column-major `0.0410`, TF32 row-major `0.0410`.
+- Outcome: **new 512 best**. The broad improvement confirms that whole-GPU
+  underfill and shared-memory-constrained residency dominated the old bucket.
+- Trajectory: `trajectory/iter-16-20260831-143818`.

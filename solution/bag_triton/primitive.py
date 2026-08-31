@@ -178,6 +178,13 @@ def _select_launch_config(
         return _LaunchConfig(block_m, 128, block_k, 8, num_warps, num_stages)
     if max(m, n) <= 256:
         return _LaunchConfig(32, 32, block_k, 8, 4, 3)
+    if max(m, n) <= 512 and has_input_combination:
+        # Medium-small fused GEMMs need enough CTAs to fill the GPU.  The
+        # previous 128x64 tile launches only 32 programs for a 512x512 output
+        # and nearly fills an Ampere SM's shared memory with four input
+        # streams.  A compact tile exposes 256 programs and permits multiple
+        # resident CTAs while retaining a three-stage reduction pipeline.
+        return _LaunchConfig(32, 32, 16, 8, 4, 3)
     if min(m, n) >= 1024:
         # Large square matrices benefit from the greater output-tile reuse;
         # halve K so four pipelined inputs remain within shared-memory limits.
