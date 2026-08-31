@@ -30,6 +30,7 @@
 | iter-21 | Test compact rectangular 32x64x16 tile | 0.047456 ms geomean; 0.870281x vs unfused | yes | reject; below best |
 | iter-22 | Reduce compact-tile GROUP_M from 8 to 4 | 0.046449 ms geomean; 0.885925x vs unfused | yes | tie; retain GROUP_M=8 |
 | iter-23 | Test 16x64x16 I/O-oriented tile | 0.058420 ms geomean; 0.718442x vs unfused | yes | reject; major regression |
+| iter-24 | Reduce best compact-tile pipeline from 3 to 2 stages | 0.049067 ms geomean; 0.855399x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -411,3 +412,19 @@
 - Outcome: **reject**. The asymmetric tile loses too much operand reuse and/or
   produces a worse dot layout; the square compact tile remains superior.
 - Trajectory: `trajectory/iter-23-20260831-144210`.
+
+### Iteration 24 — shallower best-tile pipeline
+
+- Change: restored the best `32x32x16`, four-warp, `GROUP_M=8` tile and
+  reduced the pipeline from three to two stages.
+- Hypothesis: a 16-KiB estimated pipeline footprint could improve CTA
+  residency and reduce synchronization overhead.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.049067 ms**.
+- Geometric-mean speedup vs unfused: **0.855399x**.
+- Change vs iteration-16 best (0.046449 ms): **5.64% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0573`, IEEE row-major
+  `0.0573`, TF32 column-major `0.0420`, TF32 row-major `0.0420`.
+- Outcome: **reject**. Three stages are required to hide four-input load
+  latency; with iterations 19 and 24, stages 2/3/4 are now fully compared.
+- Trajectory: `trajectory/iter-24-20260831-144240`.
