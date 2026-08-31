@@ -499,6 +499,40 @@
   leaf kernel to remove launch overhead in the small buckets.
 - Trajectory: `trajectory/iter-32-20260831-154247`.
 
+### Iteration 33 — one-launch grouped Triton BAG products
+
+- Change: added three preallocated `(7,N/2,N/2)` buffers. One Triton kernel
+  materializes all seven left/right input pairs, a two-dimensional Triton grid
+  computes all seven independent GEMMs in one launch, and the direct-decode
+  kernel writes the final C basis. No CUDA streams or atomic output updates are
+  needed on this path.
+- Hypothesis: batching the seven leaf products into one GPU launch would retain
+  BAG's 7/8 arithmetic while eliminating the seven-launch and event overhead
+  that dominated the N=512/1024 buckets.
+- Auto policy: select grouped execution for N<=4096 when grouped workspace is
+  available; retain the serial large-matrix path at N=8192. All grouped buffers
+  are allocated before timing.
+- Correctness: `CORRECT=True` across all 20 formal cases. The separate quick
+  suite also passed the grouped schedule in column-major storage.
+- BAG geometric-mean latency: **0.883871 ms**.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.843987x**.
+- Change vs iteration-30 pure-Triton best (1.538423 ms): **42.55% lower
+  latency / 1.740x faster**.
+- Change vs iteration-32 hybrid geomean (1.153518 ms): **23.38% lower**, driven
+  by the launch-bound small and medium buckets while remaining pure Triton.
+- Representative grouped results: N=512 IEEE/TF32 row-major
+  `0.0348/0.0266 ms`; N=2048 `0.8970/0.5990 ms`; N=4096
+  `6.2510/4.0458 ms`.
+- N=4096 reaches `0.930--0.941x` in IEEE and `0.974--0.979x` in TF32.
+  N=8192 remains on the prior serial path at about `48.6--49.3 ms` IEEE and
+  `30.22--30.28 ms` TF32.
+- Analysis: launch batching fixes the small-bucket anomaly and nearly closes
+  the medium TF32 gap. At N=8192, GEMM throughput and O(N^2) transforms still
+  dominate, so batching cannot produce the arithmetic-only 8/7 ratio.
+- Outcome: **new pure-Triton winner**. Continue with full correctness and a
+  final independent benchmark before publishing.
+- Trajectory: `trajectory/iter-33-20260831-154625`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with

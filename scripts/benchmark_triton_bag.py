@@ -88,9 +88,10 @@ def _run_one(
         a,
         b,
         bag_output,
-        multistream=schedule not in ("serial", "hybrid"),
+        multistream=schedule in ("multistream", "seven-stream"),
         full_concurrency=schedule == "seven-stream",
         hybrid=schedule == "hybrid",
+        grouped=schedule == "grouped" or (schedule == "auto" and size <= 4096),
     )
 
     def run_bag() -> None:
@@ -195,7 +196,9 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     parser.add_argument(
         "--schedule",
-        choices=("auto", "serial", "multistream", "seven-stream", "hybrid"),
+        choices=(
+            "auto", "serial", "multistream", "seven-stream", "hybrid", "grouped"
+        ),
         default="auto",
     )
     args = parser.parse_args()

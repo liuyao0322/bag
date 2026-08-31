@@ -38,7 +38,6 @@ srun \
             --size 512 1024 2048 4096 8192 \
             --warmup-ms 20 \
             --rep-ms 80 \
-            --schedule hybrid \
             --output "$TRAJ_DIR/results.csv" \
     2>&1 | tee _bench_output.txt
 

@@ -39,6 +39,9 @@ class BagWorkspace(NamedTuple):
     transformed_a12_m6: Optional[torch.Tensor] = None
     transformed_b12_m7: Optional[torch.Tensor] = None
     leaf_product: Optional[torch.Tensor] = None
+    grouped_left: Optional[torch.Tensor] = None
+    grouped_right: Optional[torch.Tensor] = None
+    grouped_products: Optional[torch.Tensor] = None
 
 
 @triton.jit
@@ -529,6 +532,160 @@ def _decode_hybrid_products_kernel(
     tl.store(output_ptr + c22_offsets, m1 + m2 - m3 - m5, mask=mask)
 
 
+@triton.jit
+def _prepare_grouped_inputs_kernel(
+    a_ptr,
+    b_ptr,
+    left_ptr,
+    right_ptr,
+    half,
+    stride_a0,
+    stride_a1,
+    stride_b0,
+    stride_b1,
+    stride_left_batch,
+    stride_left0,
+    stride_left1,
+    stride_right_batch,
+    stride_right0,
+    stride_right1,
+    COLUMN_MAJOR: tl.constexpr,
+    BLOCK: tl.constexpr,
+):
+    """Materialize all seven BAG input pairs for one grouped GEMM launch."""
+
+    offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
+    mask = offsets < half * half
+    if COLUMN_MAJOR:
+        columns = offsets // half
+        rows = offsets - columns * half
+    else:
+        rows = offsets // half
+        columns = offsets - rows * half
+    a11_offsets = rows * stride_a0 + columns * stride_a1
+    a12_offsets = rows * stride_a0 + (columns + half) * stride_a1
+    a21_offsets = (rows + half) * stride_a0 + columns * stride_a1
+    a22_offsets = (rows + half) * stride_a0 + (columns + half) * stride_a1
+    b11_offsets = rows * stride_b0 + columns * stride_b1
+    b12_offsets = rows * stride_b0 + (columns + half) * stride_b1
+    b21_offsets = (rows + half) * stride_b0 + columns * stride_b1
+    b22_offsets = (rows + half) * stride_b0 + (columns + half) * stride_b1
+    a11 = tl.load(a_ptr + a11_offsets, mask=mask)
+    a12 = tl.load(a_ptr + a12_offsets, mask=mask)
+    a21 = tl.load(a_ptr + a21_offsets, mask=mask)
+    a22 = tl.load(a_ptr + a22_offsets, mask=mask)
+    b11 = tl.load(b_ptr + b11_offsets, mask=mask)
+    b12 = tl.load(b_ptr + b12_offsets, mask=mask)
+    b21 = tl.load(b_ptr + b21_offsets, mask=mask)
+    b22 = tl.load(b_ptr + b22_offsets, mask=mask)
+    left_offsets = rows * stride_left0 + columns * stride_left1
+    right_offsets = rows * stride_right0 + columns * stride_right1
+
+    # Product order matches BAG's M1..M7 notation.
+    tl.store(left_ptr + 0 * stride_left_batch + left_offsets, a12 + a22, mask=mask)
+    tl.store(left_ptr + 1 * stride_left_batch + left_offsets, a22 - a21, mask=mask)
+    tl.store(
+        left_ptr + 2 * stride_left_batch + left_offsets,
+        a12 - a21 + a22,
+        mask=mask,
+    )
+    tl.store(left_ptr + 3 * stride_left_batch + left_offsets, a11, mask=mask)
+    tl.store(left_ptr + 4 * stride_left_batch + left_offsets, a12, mask=mask)
+    tl.store(
+        left_ptr + 5 * stride_left_batch + left_offsets,
+        a12 - a21 + a22 - a11,
+        mask=mask,
+    )
+    tl.store(left_ptr + 6 * stride_left_batch + left_offsets, a21, mask=mask)
+    tl.store(right_ptr + 0 * stride_right_batch + right_offsets, b12 + b22, mask=mask)
+    tl.store(right_ptr + 1 * stride_right_batch + right_offsets, b22 - b21, mask=mask)
+    tl.store(
+        right_ptr + 2 * stride_right_batch + right_offsets,
+        b12 - b21 + b22,
+        mask=mask,
+    )
+    tl.store(right_ptr + 3 * stride_right_batch + right_offsets, b11, mask=mask)
+    tl.store(right_ptr + 4 * stride_right_batch + right_offsets, b21, mask=mask)
+    tl.store(right_ptr + 5 * stride_right_batch + right_offsets, b12, mask=mask)
+    tl.store(
+        right_ptr + 6 * stride_right_batch + right_offsets,
+        b12 - b21 + b22 - b11,
+        mask=mask,
+    )
+
+
+@triton.jit
+def _grouped_bag_gemm_kernel(
+    left_ptr,
+    right_ptr,
+    products_ptr,
+    half,
+    stride_left_batch,
+    stride_left_m,
+    stride_left_k,
+    stride_right_batch,
+    stride_right_k,
+    stride_right_n,
+    stride_products_batch,
+    stride_products_m,
+    stride_products_n,
+    INPUT_PRECISION: tl.constexpr,
+    BLOCK_M: tl.constexpr,
+    BLOCK_N: tl.constexpr,
+    BLOCK_K: tl.constexpr,
+    GROUP_M: tl.constexpr,
+):
+    """Compute seven independent, materialized BAG products in one launch."""
+
+    program_id = tl.program_id(axis=0)
+    product_id = tl.program_id(axis=1)
+    num_programs_m = tl.cdiv(half, BLOCK_M)
+    num_programs_n = tl.cdiv(half, BLOCK_N)
+    programs_per_group = GROUP_M * num_programs_n
+    group_id = program_id // programs_per_group
+    first_program_m = group_id * GROUP_M
+    group_size_m = tl.minimum(num_programs_m - first_program_m, GROUP_M)
+    program_m = first_program_m + ((program_id % programs_per_group) % group_size_m)
+    program_n = (program_id % programs_per_group) // group_size_m
+    offsets_m = program_m * BLOCK_M + tl.arange(0, BLOCK_M)
+    offsets_n = program_n * BLOCK_N + tl.arange(0, BLOCK_N)
+    offsets_k = tl.arange(0, BLOCK_K)
+    accumulator = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
+    left_base = left_ptr + product_id * stride_left_batch
+    right_base = right_ptr + product_id * stride_right_batch
+    for k_start in range(0, tl.cdiv(half, BLOCK_K)):
+        current_k = k_start * BLOCK_K + offsets_k
+        left_offsets = (
+            offsets_m[:, None] * stride_left_m
+            + current_k[None, :] * stride_left_k
+        )
+        right_offsets = (
+            current_k[:, None] * stride_right_k
+            + offsets_n[None, :] * stride_right_n
+        )
+        left = tl.load(
+            left_base + left_offsets,
+            mask=(offsets_m[:, None] < half) & (current_k[None, :] < half),
+            other=0.0,
+        )
+        right = tl.load(
+            right_base + right_offsets,
+            mask=(current_k[:, None] < half) & (offsets_n[None, :] < half),
+            other=0.0,
+        )
+        accumulator += tl.dot(left, right, input_precision=INPUT_PRECISION)
+    product_offsets = (
+        product_id * stride_products_batch
+        + offsets_m[:, None] * stride_products_m
+        + offsets_n[None, :] * stride_products_n
+    )
+    tl.store(
+        products_ptr + product_offsets,
+        accumulator,
+        mask=(offsets_m[:, None] < half) & (offsets_n[None, :] < half),
+    )
+
+
 def _is_column_major(tensor: torch.Tensor) -> bool:
     rows, columns = tensor.shape
     return (rows <= 1 or tensor.stride(0) == 1) and (
@@ -570,6 +727,7 @@ def allocate_bag_workspace(
     multistream: bool = True,
     full_concurrency: bool = False,
     hybrid: bool = False,
+    grouped: bool = False,
 ) -> BagWorkspace:
     """Allocate the precomputed quarter-matrix buffers needed by one BAG level.
 
@@ -599,6 +757,8 @@ def allocate_bag_workspace(
         )
     if not isinstance(hybrid, bool):
         raise TypeError(f"hybrid must be bool, got {type(hybrid).__name__}")
+    if not isinstance(grouped, bool):
+        raise TypeError(f"grouped must be bool, got {type(grouped).__name__}")
     sa = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     sb = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     ua = None
@@ -615,11 +775,35 @@ def allocate_bag_workspace(
         leaf_product = torch.empty_strided(
             (half, half), strides, dtype=torch.float32, device=a.device
         )
+    grouped_left = None
+    grouped_right = None
+    grouped_products = None
+    if grouped:
+        batch_strides = (half * half, strides[0], strides[1])
+        grouped_left = torch.empty_strided(
+            (7, half, half), batch_strides, dtype=torch.float32, device=a.device
+        )
+        grouped_right = torch.empty_strided(
+            (7, half, half), batch_strides, dtype=torch.float32, device=a.device
+        )
+        grouped_products = torch.empty_strided(
+            (7, half, half), batch_strides, dtype=torch.float32, device=a.device
+        )
     streams = None
     if multistream or full_concurrency:
         stream_count = 7 if full_concurrency else 4
         streams = tuple(torch.cuda.Stream(device=a.device) for _ in range(stream_count))
-    return BagWorkspace(sa, sb, streams, ua, ub, leaf_product)
+    return BagWorkspace(
+        sa,
+        sb,
+        streams,
+        ua,
+        ub,
+        leaf_product,
+        grouped_left,
+        grouped_right,
+        grouped_products,
+    )
 
 
 def bag_matmul(
@@ -648,8 +832,11 @@ def bag_matmul(
             independent precomputed inputs and atomic output accumulation;
             ``"hybrid"`` uses Triton transforms around seven serial cuBLAS
             leaf GEMMs as a diagnostic upper-bound implementation;
-            ``"auto"`` selects it for N=2048, the measured RTX 3090 bucket
-            where subproblems underfill the GPU but event overhead is amortized.
+            ``"grouped"`` materializes seven pairs and executes all seven
+            products in one batched Triton launch;
+            ``"auto"`` selects grouped execution through N=4096 when grouped
+            workspace is supplied, and otherwise uses the measured serial or
+            dependency-batched fallback.
 
     Returns:
         ``out`` when supplied, otherwise a newly allocated output tensor.
@@ -672,11 +859,11 @@ def bag_matmul(
     if not isinstance(allow_tf32, bool):
         raise TypeError(f"allow_tf32 must be bool, got {type(allow_tf32).__name__}")
     if schedule not in (
-        "auto", "serial", "multistream", "seven-stream", "hybrid"
+        "auto", "serial", "multistream", "seven-stream", "hybrid", "grouped"
     ):
         raise ValueError(
             "schedule must be 'auto', 'serial', 'multistream', "
-            f"'seven-stream', or 'hybrid', got {schedule!r}"
+            f"'seven-stream', 'hybrid', or 'grouped', got {schedule!r}"
         )
 
     device = a.device
@@ -693,9 +880,10 @@ def bag_matmul(
             a,
             b,
             out,
-            multistream=schedule not in ("serial", "hybrid"),
+            multistream=schedule in ("multistream", "seven-stream"),
             full_concurrency=schedule == "seven-stream",
             hybrid=schedule == "hybrid",
+            grouped=schedule == "grouped" or (schedule == "auto" and size <= 4096),
         )
     elif not isinstance(workspace, BagWorkspace):
         try:
@@ -719,6 +907,17 @@ def bag_matmul(
     use_multistream = (auto_multistream or forced_multistream) and worker_streams is not None
     use_seven_stream = schedule == "seven-stream"
     use_hybrid = schedule == "hybrid"
+    grouped_workspace_available = all(
+        isinstance(tensor, torch.Tensor)
+        for tensor in (
+            workspace.grouped_left,
+            workspace.grouped_right,
+            workspace.grouped_products,
+        )
+    )
+    use_grouped = schedule == "grouped" or (
+        schedule == "auto" and size <= 4096 and grouped_workspace_available
+    )
     if schedule == "multistream" and size < 4096 and worker_streams is None:
         raise ValueError(
             "schedule='multistream' requires workspace from "
@@ -755,6 +954,24 @@ def bag_matmul(
                 "schedule='hybrid' requires torch.backends.cuda.matmul.allow_tf32 "
                 "to match allow_tf32"
             )
+    grouped_left = workspace.grouped_left
+    grouped_right = workspace.grouped_right
+    grouped_products = workspace.grouped_products
+    if use_grouped:
+        for name, tensor in (
+            ("workspace.grouped_left", grouped_left),
+            ("workspace.grouped_right", grouped_right),
+            ("workspace.grouped_products", grouped_products),
+        ):
+            if not isinstance(tensor, torch.Tensor):
+                raise ValueError(
+                    "schedule='grouped' requires workspace from "
+                    "allocate_bag_workspace(..., grouped=True)"
+                )
+            if tuple(tensor.shape) != (7, half, half):
+                raise ValueError(f"{name} must have shape (7, {half}, {half})")
+            if tensor.device != device or tensor.dtype != torch.float32:
+                raise ValueError(f"{name} must be an FP32 tensor on {device}")
 
     element_count = half * half
     block = 256
@@ -784,7 +1001,7 @@ def bag_matmul(
             BLOCK=block,
             num_warps=4,
         )
-    else:
+    elif not use_grouped:
         _prepare_three_term_blocks_kernel[(triton.cdiv(element_count, block),)](
             a,
             b,
@@ -816,6 +1033,87 @@ def bag_matmul(
     c_psi12 = out[:half, half:]
     c_psi21 = out[half:, :half]
     c_psi22 = out[half:, half:]
+
+    if use_grouped:
+        _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, block),)](
+            a,
+            b,
+            grouped_left,
+            grouped_right,
+            half,
+            a.stride(0), a.stride(1),
+            b.stride(0), b.stride(1),
+            grouped_left.stride(0), grouped_left.stride(1), grouped_left.stride(2),
+            grouped_right.stride(0), grouped_right.stride(1), grouped_right.stride(2),
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+        if half <= 256:
+            block_m, block_n, block_k, num_warps, num_stages = 32, 32, 16, 4, 3
+        elif half <= 1024:
+            block_m, block_n, block_k, num_warps, num_stages = 64, 64, 32, 4, 3
+        else:
+            block_m, block_n, block_k, num_warps, num_stages = 128, 128, 32, 8, 4
+        if column_major:
+            kernel_left = grouped_right
+            kernel_right = grouped_left
+            stride_left_m, stride_left_k = grouped_right.stride(2), grouped_right.stride(1)
+            stride_right_k, stride_right_n = grouped_left.stride(2), grouped_left.stride(1)
+            stride_products_m = grouped_products.stride(2)
+            stride_products_n = grouped_products.stride(1)
+        else:
+            kernel_left = grouped_left
+            kernel_right = grouped_right
+            stride_left_m, stride_left_k = grouped_left.stride(1), grouped_left.stride(2)
+            stride_right_k, stride_right_n = grouped_right.stride(1), grouped_right.stride(2)
+            stride_products_m = grouped_products.stride(1)
+            stride_products_n = grouped_products.stride(2)
+        grouped_grid = (
+            triton.cdiv(half, block_m) * triton.cdiv(half, block_n),
+            7,
+        )
+        _grouped_bag_gemm_kernel[grouped_grid](
+            kernel_left,
+            kernel_right,
+            grouped_products,
+            half,
+            kernel_left.stride(0),
+            stride_left_m,
+            stride_left_k,
+            kernel_right.stride(0),
+            stride_right_k,
+            stride_right_n,
+            grouped_products.stride(0),
+            stride_products_m,
+            stride_products_n,
+            INPUT_PRECISION="tf32" if allow_tf32 else "ieee",
+            BLOCK_M=block_m,
+            BLOCK_N=block_n,
+            BLOCK_K=block_k,
+            GROUP_M=8,
+            num_warps=num_warps,
+            num_stages=num_stages,
+        )
+        products = tuple(grouped_products[index] for index in range(7))
+        _decode_hybrid_products_kernel[(triton.cdiv(element_count, block),)](
+            products[0], products[1], products[2], products[3],
+            products[4], products[5], products[6], out,
+            element_count,
+            half,
+            products[0].stride(0), products[0].stride(1),
+            products[1].stride(0), products[1].stride(1),
+            products[2].stride(0), products[2].stride(1),
+            products[3].stride(0), products[3].stride(1),
+            products[4].stride(0), products[4].stride(1),
+            products[5].stride(0), products[5].stride(1),
+            products[6].stride(0), products[6].stride(1),
+            out.stride(0), out.stride(1),
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+        return out
 
     if use_hybrid:
         # Store all seven products in four output blocks and three buffers,
