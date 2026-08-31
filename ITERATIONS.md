@@ -20,6 +20,7 @@
 | iter-13 | Reduce fused 128x128 program grouping from 8 to 4 | 0.991427 ms geomean; 0.807330x vs unfused | yes | reject; no gain |
 | iter-14 | Increase fused 128x128 CTA from 8 to 16 warps | 0.958616 ms geomean; 0.834934x vs unfused | yes | keep; new best |
 | iter-15 | Increase fused 128x128 CTA from 16 to 32 warps | 1.229815 ms geomean; 0.649229x vs unfused | yes | reject; major regression |
+| final | Restore and independently remeasure iteration 14 | 0.963284 ms geomean; 0.831807x vs unfused | yes | final |
 
 ## Baseline
 
@@ -225,3 +226,15 @@
 - Per-shape fused latency (ms): square-1024 `0.2478`, square-2048 `1.7326`, square-4096 `11.4739`, tall `0.9385`, wide `0.9339`, large-k `0.8013`.
 - Outcome: **reject**. A full 1024-thread CTA introduces substantial scheduling/communication overhead; 16 warps is the optimum tested point on this axis.
 - Trajectory: `trajectory/iter-15-20260831-142356`.
+
+## Final signal verification
+
+- Restored source: iteration 14, commit `9f3c931`.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.963284 ms**.
+- Geometric-mean speedup vs unfused: **0.831807x**.
+- Change vs baseline (2.185636 ms): **2.269x faster / 55.93% lower latency**.
+- Per-shape fused latency (ms): square-1024 `0.2007`, square-2048 `1.3312`, square-4096 `8.6148`, tall `0.7506`, wide `0.7629`, large-k `0.6062`.
+- The final rerun is within 0.49% of iteration 14's signal geomean, confirming the selected implementation.
+- Relative to the strong preallocated unfused sequence, the fused primitive reaches 0.832x geometric-mean speedup (about 20.2% slower); this remaining gap includes two required atomic output accumulations and IEEE FP32 dot execution.
+- Trajectory: `trajectory/final-20260831-142428`.
