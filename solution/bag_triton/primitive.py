@@ -161,13 +161,17 @@ def _select_launch_config(
     block_k = 16 if k < 32 else 32
     has_input_combination = delta != 0 or epsilon != 0
     if m >= 4 * n:
-        # Four pipelined inputs at stages=3 need 100 KiB for this tile, just
-        # over the 99 KiB RTX 3090 limit.  Two stages retain BLOCK_K=32.
+        # Eight warps keep per-thread accumulators bounded while a 64-wide
+        # output tile improves reuse along the short matrix dimension.
         num_stages = 2 if has_input_combination else 3
-        return _LaunchConfig(128, 32, block_k, 8, 4, num_stages)
+        num_warps = 8 if has_input_combination else 4
+        block_n = 64 if has_input_combination else 32
+        return _LaunchConfig(128, block_n, block_k, 8, num_warps, num_stages)
     if n >= 4 * m:
         num_stages = 2 if has_input_combination else 3
-        return _LaunchConfig(32, 128, block_k, 8, 4, num_stages)
+        num_warps = 8 if has_input_combination else 4
+        block_m = 64 if has_input_combination else 32
+        return _LaunchConfig(block_m, 128, block_k, 8, num_warps, num_stages)
     if max(m, n) <= 256:
         return _LaunchConfig(32, 32, block_k, 8, 4, 3)
     if min(m, n) >= 2048:
@@ -177,7 +181,7 @@ def _select_launch_config(
             return _LaunchConfig(128, 128, 16, 8, 8, 3)
         return _LaunchConfig(128, 128, block_k, 8, 8, 3)
     if has_input_combination:
-        return _LaunchConfig(128, 64, block_k, 8, 4, 2)
+        return _LaunchConfig(128, 64, block_k, 8, 8, 2)
     return _LaunchConfig(64, 64, block_k, 8, 4, 3)
 
 

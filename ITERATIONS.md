@@ -84,3 +84,16 @@
 - Analysis: Four warps likely create excessive per-thread accumulator/register
   pressure for four-input fusion. Eight warps are decisively better for this
   rectangular tile and should be retained.
+
+## Iteration 5 — expand tall/wide tiles
+
+- Change: restored the iteration-3 standard path (`128x64x32`, 8 warps, 2 stages) and expanded aspect-ratio-specialized tiles from `128x32`/`32x128` to `128x64`/`64x128`, using 8 warps for the fused-input path.
+- Hypothesis: doubling work along the short output dimension keeps the per-thread accumulator footprint roughly constant while increasing operand reuse and amortizing launch/scheduling overhead for tall and wide GEMMs.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **1.158568 ms**.
+- Geometric-mean speedup vs unfused: **0.692941x**.
+- Change vs baseline (2.185636 ms): **1.8868x faster**.
+- Change vs previous best, iteration 3 (1.309330 ms): **11.52% faster**.
+- Per-shape fused latency (ms): square-1024 `0.2857`, square-2048 `1.3302`, square-4096 `8.5791`, tall `0.9610`, wide `0.9452`, large-k `0.8167`.
+- Outcome: **new best**; the improvement is concentrated in tall and wide shapes, while square and large-K performance remains effectively unchanged.
+- Trajectory: `trajectory/iter-5-20260831-141626`.
