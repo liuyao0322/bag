@@ -27,6 +27,7 @@
 | iter-18 | Increase compact 32x32 tile from 4 to 8 warps | 0.060066 ms geomean; 0.685031x vs unfused | yes | reject; major regression |
 | iter-19 | Deepen compact 32x32x16 pipeline from 3 to 4 stages | 0.053670 ms geomean; 0.782033x vs unfused | yes | reject; regression |
 | iter-20 | Reduce compact 32x32 tile from 4 to 2 warps | 0.052497 ms geomean; 0.793737x vs unfused | yes | reject; regression |
+| iter-21 | Test compact rectangular 32x64x16 tile | 0.047456 ms geomean; 0.870281x vs unfused | yes | reject; below best |
 
 ## Baseline
 
@@ -353,3 +354,19 @@
 - Outcome: **reject**. Two warps leave insufficient latency-hiding capacity;
   four warps is the optimum tested warp count.
 - Trajectory: `trajectory/iter-20-20260831-144027`.
+
+### Iteration 21 — compact rectangular tile
+
+- Change: tested `32x64x16`, four warps, and three stages, producing 128
+  output CTAs with an estimated 36-KiB pipeline payload.
+- Hypothesis: doubling N-side output reuse might outweigh halving the launch
+  grid while retaining enough programs to cover the 82-SM GPU.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.047456 ms**.
+- Geometric-mean speedup vs unfused: **0.870281x**.
+- Change vs iteration-16 best (0.046449 ms): **2.17% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0573`, IEEE row-major
+  `0.0502`, TF32 column-major `0.0420`, TF32 row-major `0.0420`.
+- Outcome: **reject**. The additional reuse nearly ties but does not beat the
+  256-CTA square tile; whole-GPU work supply remains more valuable.
+- Trajectory: `trajectory/iter-21-20260831-144100`.
