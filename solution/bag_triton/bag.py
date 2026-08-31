@@ -564,8 +564,7 @@ def _prepare_grouped_inputs_kernel(
         # Reuse an otherwise-unused grouped-left plane.  Only the spatial
         # tile counters are touched, so the existing prepare launch can reset
         # them without adding another launch or allocation.
-        counter_i32_ptr = counter_ptr.to(tl.pointer_type(tl.int32))
-        tl.store(counter_i32_ptr + offsets, 0, mask=offsets < num_product_tiles)
+        tl.store(counter_ptr + offsets, 0.0, mask=offsets < num_product_tiles)
     if COLUMN_MAJOR:
         columns = offsets // half
         rows = offsets - columns * half
@@ -762,14 +761,13 @@ def _grouped_bag_gemm_kernel(
         # blocks, eliminating the separate decode launch.  The CTA barrier
         # orders every lane's product stores before the GPU-scope release.
         tl.debug_barrier()
-        counter_i32_ptr = counter_ptr.to(tl.pointer_type(tl.int32))
         old = tl.atomic_add(
-            counter_i32_ptr + program_id,
-            1,
+            counter_ptr + program_id,
+            1.0,
             sem="acq_rel",
             scope="gpu",
         )
-        if old == 6:
+        if old == 6.0:
             # A 1024-element vector amortizes loop/address overhead while the
             # resulting 80-register kernel remains spill-free on sm86.
             for decode_start in tl.static_range(0, BLOCK_M * BLOCK_N, 1024):

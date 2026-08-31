@@ -1382,3 +1382,41 @@
   for source simplicity.
 - Outcome: **formal tie / provisional reject**.
 - Trajectory: `trajectory/iter-52-20260831-225557`.
+
+### Stall reassessment after iterations 48--52
+
+- Last-completer register scheduling lowered N=512 from 80 to 64 registers but
+  did not improve latency; N=1024 remained at 80 and regressed.
+- N=1024 IEEE resource reductions (`stages=2`, and a separate read-only BK16
+  A/B) lowered shared-memory pressure but lost the K-loop latency hiding of the
+  selected `BK32/stages3` configuration.
+- The papers' ordered AB/ABC candidate was implemented as a real six-plus-one
+  BAG schedule.  Its final M7 kernel was healthy (54 registers, zero spill),
+  yet both `32x32` and `32x64` variants lost because the phase boundary removes
+  batched cross-product scheduling freedom.
+- Integer counter SASS uses the same strong GPU-scope global atomic and the
+  same 80-register allocation, but Triton additionally emits lane-id, vote,
+  find-first, popcount, shuffle, and integer-add instructions for warp
+  aggregation.  It does not reduce the seven serialized arrivals per tile.
+- Decision: close load-order, local occupancy, ordered-signature, and atomic
+  representation axes.  The remaining proposed self-accumulator optimization
+  has only a 0.28/1.12-us absolute DRAM upper bound for N=512/1024 and raises
+  accumulator live ranges; after five non-winning iterations it does not meet
+  the evidence threshold for more production complexity.
+
+### Iteration 53 — final exact-winner restoration
+
+- Change: removed the integer-counter reinterpretation and restored
+  `solution/bag_triton/bag.py` byte-for-byte to the published iteration-39/47
+  product-major implementation before timing.
+- Correctness: all 20 formal cases report `CORRECT=True`.
+- BAG geometric-mean latency: **0.812709 ms**, 0.06% below iteration 47's
+  **0.813207 ms** and effectively identical to the published independent
+  **0.812665 ms** result.
+- Targeted result: N=512 TF32 is **0.0225 ms** and N=1024 TF32 is
+  **0.0922 ms** in both layouts.  N=512 IEEE is **0.0317/0.0287 ms** and
+  N=1024 IEEE is **0.1280/0.1280 ms** for column/row major.
+- Outcome: **retain iteration 39 as the winner**.  The new implementation work
+  supplied correctness-checked negative results and resource boundaries but
+  did not produce a candidate that beats the directly affected small buckets.
+- Trajectory: `trajectory/iter-53-20260831-225735`.
