@@ -449,3 +449,16 @@
   shape (17, 19, 24), warp count (18, 20), and launch grouping (22). None
   exceeded iteration 16, so the viable configuration search is exhausted.
 - Trajectory: `trajectory/final-20260831-144315`.
+
+### Published 512 validation
+
+- Published the iteration-16 winner from `solution/` to `src/`.
+- Correctness: all **26** cases passed, including the new non-aligned
+  `(511,509,513)` boundary case in row-major, column-major, and sliced
+  positive-stride layouts, plus concurrent two-stream atomic accumulation.
+- Full verdict: all 32 benchmark cases passed correctness with fused latency
+  geomean **0.354190 ms** and fused-vs-unfused geomean **0.899699x**.
+- Relative to the previously published optimized kernel, the full-suite fused
+  latency improves by **1.077x** even though only the 512 bucket changed.
+- Formal square-512 improvement: IEEE `0.079872 -> 0.051200 ms` (**1.560x**)
+  and TF32 `0.070656 -> 0.040960 ms` (**1.725x**) for both layouts.
