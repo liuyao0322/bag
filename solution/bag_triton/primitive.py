@@ -63,6 +63,9 @@ def _bag_primitive_kernel(
     GAMMA_D: tl.constexpr,
     GAMMA_E: tl.constexpr,
     INPUT_PRECISION: tl.constexpr,
+    EVEN_M: tl.constexpr,
+    EVEN_N: tl.constexpr,
+    EVEN_K: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -94,8 +97,14 @@ def _bag_primitive_kernel(
         current_k = k_start * BLOCK_K + offsets_k
         x_offsets = offsets_m[:, None] * stride_xm + current_k[None, :] * stride_xk
         v_offsets = current_k[:, None] * stride_vk + offsets_n[None, :] * stride_vn
-        x_mask = (offsets_m[:, None] < m) & (current_k[None, :] < k)
-        v_mask = (current_k[:, None] < k) & (offsets_n[None, :] < n)
+        if EVEN_M and EVEN_K:
+            x_mask = None
+        else:
+            x_mask = (offsets_m[:, None] < m) & (current_k[None, :] < k)
+        if EVEN_K and EVEN_N:
+            v_mask = None
+        else:
+            v_mask = (current_k[:, None] < k) & (offsets_n[None, :] < n)
 
         left = tl.load(x_ptr + x_offsets, mask=x_mask, other=0.0)
         if DELTA == 1:
@@ -115,7 +124,10 @@ def _bag_primitive_kernel(
 
         accumulator += tl.dot(left, right, input_precision=INPUT_PRECISION)
 
-    output_mask = (offsets_m[:, None] < m) & (offsets_n[None, :] < n)
+    if EVEN_M and EVEN_N:
+        output_mask = None
+    else:
+        output_mask = (offsets_m[:, None] < m) & (offsets_n[None, :] < n)
 
     # Additive modes are atomic so independent BAG primitives can be launched
     # concurrently even when they update the same output block.
@@ -178,7 +190,7 @@ def _select_launch_config(
         # Large square matrices benefit from the greater output-tile reuse;
         # halve K so four pipelined inputs remain within shared-memory limits.
         if has_input_combination:
-            return _LaunchConfig(128, 128, 16, 8, 8, 2)
+            return _LaunchConfig(128, 128, 16, 8, 8, 3)
         return _LaunchConfig(128, 128, block_k, 8, 8, 3)
     if has_input_combination:
         return _LaunchConfig(128, 64, block_k, 8, 8, 2)
@@ -416,6 +428,9 @@ def bag_primitive(
         GAMMA_D=gamma_d,
         GAMMA_E=gamma_e,
         INPUT_PRECISION=input_precision,
+        EVEN_M=kernel_m % config.block_m == 0,
+        EVEN_N=kernel_n % config.block_n == 0,
+        EVEN_K=k % config.block_k == 0,
         BLOCK_M=config.block_m,
         BLOCK_N=config.block_n,
         BLOCK_K=config.block_k,

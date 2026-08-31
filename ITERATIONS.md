@@ -11,6 +11,7 @@
 | iter-4 | Reduce standard rectangular tile from 8 to 4 warps | 1.370751 ms geomean; 0.583013x vs unfused | yes | reject; regression |
 | iter-5 | Expand tall/wide fused tiles to 64 on the short edge | 1.158568 ms geomean; 0.692941x vs unfused | yes | keep; new best |
 | iter-6 | Reduce large-square pipeline from 3 to 2 stages | 1.205704 ms geomean; 0.661972x vs unfused | yes | reject; regression |
+| iter-7 | Compile-time unmasked fast path for exact tiles | benchmark failed to compile | no result | fix API usage and retry |
 
 ## Baseline
 
@@ -111,3 +112,12 @@
 - Per-shape fused latency (ms): square-1024 `0.2857`, square-2048 `1.5493`, square-4096 `9.5898`, tall `0.9503`, wide `0.9344`, large-k `0.8151`.
 - Outcome: **reject**. The 2048 and 4096 square cases regress by about 16% and 12%, respectively, proving that the third pipeline stage is needed to hide the four fused input streams' load latency.
 - Trajectory: `trajectory/iter-6-20260831-141734`.
+
+## Iteration 7 — exact-tile unmasked fast path
+
+- Change: restored the iteration-5 large-square pipeline and added `EVEN_M`, `EVEN_N`, and `EVEN_K` compile-time flags intended to remove boundary predicates on exact tiles.
+- Hypothesis: eliminating masks from the GEMM K loop and output atomics for aligned benchmark shapes would reduce predicate/address-protection overhead while preserving the masked fallback for arbitrary dimensions.
+- Correctness/performance: **not measured** because Triton compilation failed before launch.
+- Failure: Triton 3.6 rejects `tl.load(..., mask=None, other=0.0)`; `other` must be omitted when no mask is supplied.
+- Outcome: implementation/API failure, not a performance verdict. Retain the direction and retry with explicitly separated masked and unmasked `tl.load` calls.
+- Trajectory: `trajectory/iter-7-20260831-141839` was not created because the benchmark exited before its snapshot step.
