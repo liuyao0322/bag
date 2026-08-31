@@ -91,7 +91,7 @@ def _run_one(
         multistream=schedule in ("multistream", "seven-stream"),
         full_concurrency=schedule == "seven-stream",
         hybrid=schedule == "hybrid",
-        grouped=schedule == "grouped" or (schedule == "auto" and size <= 4096),
+        grouped=schedule == "grouped" or (schedule == "auto" and size <= 8192),
     )
 
     def run_bag() -> None:

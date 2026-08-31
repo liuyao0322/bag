@@ -58,3 +58,12 @@ Source: user correction, 2026-08-31 (prior measured upper bound).
 - Report the exact shape, precision, numerator/denominator, and timing boundary
   for both measurements; do not generalize a result from N<=8192 to the
   asymptotic or previously measured regime.
+
+Source: user prompt, 2026-08-31 (continue optimization after upper-bound audit).
+
+- Continue active optimization toward the 8/7 target; changes may improve
+  either the Triton primitive GEMM body or the end-to-end BAG algorithm and
+  scheduling implementation.
+- Prioritize genuine end-to-end latency reduction, including candidates that
+  reduce intermediate product traffic, while retaining the existing full
+  correctness and measurement contract.

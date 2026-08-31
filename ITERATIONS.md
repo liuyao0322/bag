@@ -585,6 +585,40 @@
   reducing/overlapping input materialization and direct-decode traffic; do not
   treat 1.02x as evidence that further improvement is impossible.
 
+### Iteration 34 — sparse grouped inputs and precision-specific GEMM buckets
+
+- Change: retained the one-launch grouped Triton schedule, but materialized
+  only the eight BAG operands that are genuine linear combinations. The
+  grouped GEMM now reads unchanged A11/A12/A21 and B11/B12/B21 quadrants
+  directly through uniform product-id branches, eliminating six quarter-matrix
+  stores and their later reads. An offline, overwrite-safe Triton configuration
+  search selected static size/precision buckets; no online autotuning remains.
+- Auto policy: extended preallocated grouped execution from N<=4096 through
+  N<=8192. Workspace allocation and JIT remain outside the timed callable;
+  preparation, seven Triton products, and direct decoding remain inside it.
+- Hypothesis: removing redundant O(N^2) operand copies and selecting different
+  BK/pipeline depths for IEEE versus TF32 would reduce both transform traffic
+  and leaf-GEMM latency without reintroducing streams or atomic accumulation.
+- Correctness: the 18-case quick numerical/interface suite passed before the
+  formal run, including row-major, column-major, sliced layouts, both
+  precisions, non-default caller streams, and all retained explicit schedules.
+  The formal benchmark reported `CORRECT=True` for all 20 signal cases.
+- BAG geometric-mean latency: **0.831471 ms**, 5.93% below iteration 33's
+  **0.883871 ms** and 6.11% below the published rerun's **0.885580 ms**.
+- Geometric-mean speedup versus ordinary cuBLAS GEMM: **0.892095x**, up from
+  iteration 33's **0.843987x** and the published **0.847458x**.
+- Large buckets: at N=8192, IEEE column/row reached **0.995x/0.999x** and TF32
+  reached **1.013x/1.011x**. At N=4096, TF32 reached **1.052x/1.046x**.
+- Analysis: sparse input materialization and precision-specific tiles provide
+  a broad, repeatable end-to-end win. The largest shapes are now approximately
+  parity or modestly faster than ordinary GEMM, while N=512/1024 remains
+  dominated by fixed preparation/decode and launch overhead rather than the
+  seven-product arithmetic count.
+- Outcome: **new best**. Retain this implementation and continue with memory
+  footprint reduction and launch/epilogue work, prioritizing the small buckets
+  without weakening the all-shape reporting contract.
+- Trajectory: `trajectory/iter-34-20260831-162705`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with
