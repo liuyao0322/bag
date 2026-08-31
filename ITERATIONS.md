@@ -24,6 +24,7 @@
 | baseline-512 | Existing 128x64x32 bucket on four 512 modes | 0.077348 ms geomean; 0.534826x vs unfused | yes | 512 phase baseline |
 | iter-16 | Compact 32x32x16 tile for medium-small fused GEMMs | 0.046449 ms geomean; 0.871591x vs unfused | yes | keep; new 512 best |
 | iter-17 | Increase compact tile BK from 16 to 32 with two stages | 0.047569 ms geomean; 0.865065x vs unfused | yes | reject; regression |
+| iter-18 | Increase compact 32x32 tile from 4 to 8 warps | 0.060066 ms geomean; 0.685031x vs unfused | yes | reject; major regression |
 
 ## Baseline
 
@@ -292,3 +293,19 @@
 - Outcome: **reject**. Fewer K-loop iterations do not compensate for the
   shallower pipeline and larger per-stage loads, especially in TF32.
 - Trajectory: `trajectory/iter-17-20260831-143847`.
+
+### Iteration 18 — more warps per compact CTA
+
+- Change: restored `BK=16/stages=3` and increased the `32x32` tile from 4
+  to 8 warps.
+- Hypothesis: more intra-CTA parallelism and fewer accumulators per thread
+  might improve latency hiding.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.060066 ms**.
+- Geometric-mean speedup vs unfused: **0.685031x**.
+- Change vs iteration-16 best (0.046449 ms): **29.32% slower**.
+- Per-mode fused latency (ms): IEEE column-major `0.0758`, IEEE row-major
+  `0.0758`, TF32 column-major `0.0471`, TF32 row-major `0.0481`.
+- Outcome: **reject**. The small output tile does not contain enough work to
+  amortize eight-warp cooperation; four warps is decisively better.
+- Trajectory: `trajectory/iter-18-20260831-143913`.
