@@ -1225,3 +1225,26 @@
   limited, then close raw2 and restore the exact iteration-39 implementation
   before testing a genuinely different direction.
 - Trajectory: `trajectory/iter-46-20260831-223005`.
+
+### Iteration 47 — restore the exact product-major winner
+
+- Change: removed the raw2 phase machinery, extra raw-quadrant arguments,
+  interleaved K-loop preparation, and split host dispatch.  The resulting
+  `solution/bag_triton/bag.py` is byte-for-byte identical to the iteration-39
+  published implementation before benchmarking.
+- Resource conclusion from the rejected branch: changing the N=1024 raw phase
+  from three to two stages lowered its compiled allocation from **138** to
+  **128 registers/thread**, with zero stack/local spill in both cases, but did
+  not change the **0.0932 ms** end-to-end event bin.  Extra operand work,
+  transformed stores, and the phase boundary—not register occupancy alone—set
+  the remaining raw2 cost.
+- Correctness: all 20 formal cases report `CORRECT=True`.
+- BAG geometric-mean latency: **0.813207 ms**, within 0.03% of the independent
+  **0.813021 ms** iteration-39 replay.
+- Targeted result: N=512 TF32 returned to **0.0225 ms** and N=1024 TF32 to
+  **0.0922 ms** in both layouts.  This confirms that the gated-off generalized
+  raw2 kernel itself caused the small-bucket regression seen in iteration 46.
+- Outcome: **accept as the clean experimental base, not as a new winner**.
+  Close the raw2 direction and require future candidates to preserve the
+  untouched seven-product specialization as an explicit fallback.
+- Trajectory: `trajectory/iter-47-20260831-223302`.
