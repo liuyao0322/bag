@@ -1304,7 +1304,10 @@ def bag_matmul(
         # decode into the last product CTA.  Other sizes/precisions retain the
         # independent bandwidth kernel to avoid register-pressure regressions.
         fuse_last_decode = half in (256, 512) and allow_tf32
-        interleave_raw2 = fuse_last_decode
+        # The N=512 problem only exposes 64 CTAs in the two-product phase,
+        # which underfills the 82-SM RTX 3090 and loses to standalone prepare.
+        # Keep raw2 narrowly gated to N=1024 while tuning its resource use.
+        interleave_raw2 = half == 512 and allow_tf32
         num_product_tiles = 32 if half == 256 else 64 if half == 512 else 0
         if half <= 256:
             grouped_prepare_block = grouped_decode_block = 256
@@ -1430,7 +1433,12 @@ def bag_matmul(
                 TRANSPOSE_PROBLEM=column_major,
                 FUSE_LAST_DECODE=False,
                 num_warps=num_warps,
-                num_stages=num_stages,
+                # The transform stores keep substantially more values live
+                # than the ordinary product path (138 registers/thread with
+                # three stages at this bucket).  Use a shallower pipeline only
+                # for this first phase; the five-product phase stays at the
+                # established three-stage configuration.
+                num_stages=2,
             )
             grouped_grid = (num_spatial_tiles, 5)
             product_phase = 2

@@ -1199,3 +1199,29 @@
   candidate pending phase timing/resource inspection**.  Do not replace the
   published small-TF32 path yet.
 - Trajectory: `trajectory/iter-45-20260831-222455`.
+
+### Iteration 46 — reduce N=1024 raw2 pipeline depth
+
+- Change: disabled raw2 for N=512 after its confirmed underfill regression and
+  changed only the N=1024 raw two-product phase from three pipeline stages to
+  two.  The five-product/last-completer phase retained the established
+  three-stage configuration.
+- Correctness: all 20 formal cases report `CORRECT=True` with the expected IEEE
+  and TF32 error levels.
+- BAG geometric-mean latency: **0.825452 ms**, 1.53% above the independent
+  **0.813021 ms** product-major baseline.
+- Targeted result: N=1024 TF32 remained **0.0932 ms** in both layouts, exactly
+  the same measured event bin as iteration 45 and still above the **0.0922 ms**
+  winner.  N=512 TF32 measured **0.0266/0.0256 ms** for column/row major even
+  though raw2 was disabled, rather than returning to the published
+  **0.0225 ms**.
+- Analysis: reducing raw-phase pipeline depth does not improve end-to-end
+  latency.  Moreover, merely gating off raw2 is insufficient to recover the
+  small baseline while the generalized kernel signature and phase machinery
+  remain in the source; that experimental infrastructure must not remain in a
+  rejected final implementation.
+- Outcome: **reject the two-stage raw2 variant**.  Inspect its compiled resource
+  count once to determine whether the result is occupancy- or instruction-path
+  limited, then close raw2 and restore the exact iteration-39 implementation
+  before testing a genuinely different direction.
+- Trajectory: `trajectory/iter-46-20260831-223005`.
