@@ -1059,3 +1059,26 @@
 - Outcome: **reject**.  Retain the implementation mechanism long enough to
   test a larger G=16 endpoint; do not publish G=4.
 - Trajectory: `trajectory/iter-40-20260831-220905`.
+
+### Iteration 41 — sixteen-tile product microchunks
+
+- Change: enlarged only the N=512/1024 TF32 last-completer microchunk from
+  four to sixteen spatial tiles.  The current product-major implementation
+  remains unchanged for IEEE and every larger size.
+- Hypothesis: longer same-product runs might recover most operand-cache reuse
+  while still bounding the distance between a spatial tile's first and last
+  product more tightly than the full product-major grid.
+- Correctness: all 20 formal cases reported `CORRECT=True` with unchanged
+  numerical error.
+- BAG geometric-mean latency: **0.820826 ms**, 0.96% above the independent
+  **0.813021 ms** product-major baseline.
+- Targeted result: N=512 TF32 was **0.0236 ms** in both layouts versus the
+  **0.0225 ms** baseline (about 4.9% slower).  N=1024 TF32 was **0.0932 ms**
+  versus **0.0922 ms** (about 1.1% slower).
+- Analysis: increasing G moves performance monotonically back toward the
+  product-major endpoint but does not surpass it.  Together with iteration 40
+  and the prior tile-major rejection, this shows product-input locality is more
+  valuable than shortening product-workspace reuse distance for these grids.
+- Outcome: **reject and close this scheduling axis**.  Restore the exact
+  product-major launch before implementing interleaved preparation.
+- Trajectory: `trajectory/iter-41-20260831-221028`.
