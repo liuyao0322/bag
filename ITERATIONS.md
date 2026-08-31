@@ -945,3 +945,22 @@
   signal improves consistently in focused and formal measurements, while all
   other buckets retain their prior implementation.
 - Trajectory: `trajectory/iter-37-20260831-170655`.
+
+### Iteration 38 — precision-specific N=512 K tile
+
+- Change tested: retain the iteration-36 `32x64` spatial tile and use BK=32
+  for IEEE while retaining BK=16 for TF32; four warps, three stages, and
+  `GROUP_M=8` remain unchanged.
+- Hypothesis: IEEE tensor-core lowering may amortize a wider K tile better,
+  reducing loop/pipeline overhead without reducing the 224-CTA work supply.
+- Correctness: `CORRECT=True` on all 20 formal benchmark cases.
+- Focused pre-screen suggested a small IEEE column improvement (`0.0317 ->
+  0.0307 ms`) with IEEE row unchanged, but the formal replay measured exactly
+  **0.0317/0.0287 ms** for IEEE column/row, identical to iteration 37 at the
+  benchmark's resolution. TF32 was intentionally unchanged.
+- Full-suite BAG geomean is **0.823547 ms**, **0.35% slower** than iteration
+  37's 0.820715 ms; full-suite `GEMM/BAG` geomean is **0.912918x**.
+- Outcome: **reject**. The single-kernel signal did not translate into a
+  repeatable end-to-end improvement. Restore BK=16 for both precision modes
+  in the N=512 bucket and retain iteration 37 as the selected implementation.
+- Trajectory: `trajectory/iter-38-20260831-170816`.
