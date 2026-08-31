@@ -539,7 +539,9 @@ def _prepare_grouped_inputs_kernel(
     b_ptr,
     left_ptr,
     right_ptr,
+    counter_ptr,
     half,
+    num_product_tiles,
     stride_a0,
     stride_a1,
     stride_b0,
@@ -550,6 +552,7 @@ def _prepare_grouped_inputs_kernel(
     stride_right_batch,
     stride_right0,
     stride_right1,
+    RESET_COUNTERS: tl.constexpr,
     COLUMN_MAJOR: tl.constexpr,
     BLOCK: tl.constexpr,
 ):
@@ -557,6 +560,11 @@ def _prepare_grouped_inputs_kernel(
 
     offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
     mask = offsets < half * half
+    if RESET_COUNTERS:
+        # Reuse an otherwise-unused grouped-left plane.  Only the spatial
+        # tile counters are touched, so the existing prepare launch can reset
+        # them without adding another launch or allocation.
+        tl.store(counter_ptr + offsets, 0.0, mask=offsets < num_product_tiles)
     if COLUMN_MAJOR:
         columns = offsets // half
         rows = offsets - columns * half
@@ -620,6 +628,11 @@ def _grouped_bag_gemm_kernel(
     right4_ptr,
     right56_ptr,
     products_ptr,
+    counter_ptr,
+    c11_ptr,
+    c12_ptr,
+    c21_ptr,
+    c22_ptr,
     half,
     stride_left_batch,
     stride_left_m,
@@ -634,12 +647,15 @@ def _grouped_bag_gemm_kernel(
     stride_products_batch,
     stride_products_m,
     stride_products_n,
+    stride_output_m,
+    stride_output_n,
     INPUT_PRECISION: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
     GROUP_M: tl.constexpr,
     TRANSPOSE_PROBLEM: tl.constexpr,
+    FUSE_LAST_DECODE: tl.constexpr,
 ):
     """Compute seven BAG products, loading unchanged quadrants in place."""
 
@@ -739,6 +755,78 @@ def _grouped_bag_gemm_kernel(
         accumulator,
         mask=(offsets_m[:, None] < half) & (offsets_n[None, :] < half),
     )
+    if FUSE_LAST_DECODE:
+        # Publish this product tile.  The seventh arrival then consumes all
+        # seven tiles while they are still hot and writes the four final BAG
+        # blocks, eliminating the separate decode launch.  The CTA barrier
+        # orders every lane's product stores before the GPU-scope release.
+        tl.debug_barrier()
+        old = tl.atomic_add(
+            counter_ptr + program_id,
+            1.0,
+            sem="acq_rel",
+            scope="gpu",
+        )
+        if old == 6.0:
+            # A 1024-element vector amortizes loop/address overhead while the
+            # resulting 80-register kernel remains spill-free on sm86.
+            for decode_start in tl.static_range(0, BLOCK_M * BLOCK_N, 1024):
+                decode_linear = decode_start + tl.arange(0, 1024)
+                decode_m = program_m * BLOCK_M + decode_linear // BLOCK_N
+                decode_n = program_n * BLOCK_N + decode_linear % BLOCK_N
+                decode_mask = (decode_m < half) & (decode_n < half)
+                decode_offsets = (
+                    decode_m * stride_products_m
+                    + decode_n * stride_products_n
+                )
+                m1 = tl.load(
+                    products_ptr + 0 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m2 = tl.load(
+                    products_ptr + 1 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m3 = tl.load(
+                    products_ptr + 2 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m4 = tl.load(
+                    products_ptr + 3 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m5 = tl.load(
+                    products_ptr + 4 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m6 = tl.load(
+                    products_ptr + 5 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m7 = tl.load(
+                    products_ptr + 6 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                output_offsets = (
+                    decode_m * stride_output_m
+                    + decode_n * stride_output_n
+                )
+                tl.store(c11_ptr + output_offsets, m4 + m5, mask=decode_mask)
+                tl.store(
+                    c12_ptr + output_offsets,
+                    m3 + m5 - m6 - m2,
+                    mask=decode_mask,
+                )
+                tl.store(
+                    c21_ptr + output_offsets,
+                    m1 - m3 - m5 - m7,
+                    mask=decode_mask,
+                )
+                tl.store(
+                    c22_ptr + output_offsets,
+                    m1 + m2 - m3 - m5,
+                    mask=decode_mask,
+                )
 
 
 def _is_column_major(tensor: torch.Tensor) -> bool:
@@ -1094,20 +1182,33 @@ def bag_matmul(
     c_psi22 = out[half:, half:]
 
     if use_grouped:
-        grouped_prepare_block = 256 if half <= 512 else 2048
-        grouped_prepare_warps = 4 if half <= 512 else 8
-        grouped_decode_block = 256 if half <= 512 else 2048
-        grouped_decode_warps = 4 if half <= 512 else 8
+        # The two smallest benchmarked TF32 buckets benefit from folding
+        # decode into the last product CTA.  Other sizes/precisions retain the
+        # independent bandwidth kernel to avoid register-pressure regressions.
+        fuse_last_decode = half in (256, 512) and allow_tf32
+        num_product_tiles = 32 if half == 256 else 64 if half == 512 else 0
+        if half <= 256:
+            grouped_prepare_block = grouped_decode_block = 256
+            grouped_prepare_warps = grouped_decode_warps = 4
+        elif half <= 512:
+            grouped_prepare_block = grouped_decode_block = 1024
+            grouped_prepare_warps = grouped_decode_warps = 4
+        else:
+            grouped_prepare_block = grouped_decode_block = 2048
+            grouped_prepare_warps = grouped_decode_warps = 8
         _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, grouped_prepare_block),)](
             a,
             b,
             grouped_left,
             grouped_right,
+            grouped_left[4],
             half,
+            num_product_tiles,
             a.stride(0), a.stride(1),
             b.stride(0), b.stride(1),
             grouped_left.stride(0), grouped_left.stride(1), grouped_left.stride(2),
             grouped_right.stride(0), grouped_right.stride(1), grouped_right.stride(2),
+            RESET_COUNTERS=fuse_last_decode,
             COLUMN_MAJOR=column_major,
             BLOCK=grouped_prepare_block,
             num_warps=grouped_prepare_warps,
@@ -1118,8 +1219,8 @@ def bag_matmul(
             block_m, block_n, block_k = 32, 32, 16
             num_warps, num_stages = 4, 3
         elif half <= 256:
-            block_m, block_n, block_k = 64, 64, 32
-            num_warps, num_stages = 4, 4
+            block_m, block_n, block_k = 32, 64, 16
+            num_warps, num_stages = 4, 3
         elif half <= 512:
             block_m, block_n = 64, 64
             block_k = 16 if allow_tf32 else 32
@@ -1145,6 +1246,8 @@ def bag_matmul(
             stride_direct_right_k, stride_direct_right_n = a.stride(1), a.stride(0)
             stride_products_m = grouped_products.stride(2)
             stride_products_n = grouped_products.stride(1)
+            stride_output_m = out.stride(1)
+            stride_output_n = out.stride(0)
         else:
             kernel_left = grouped_left
             kernel_right = grouped_right
@@ -1156,6 +1259,8 @@ def bag_matmul(
             stride_direct_right_k, stride_direct_right_n = b.stride(0), b.stride(1)
             stride_products_m = grouped_products.stride(1)
             stride_products_n = grouped_products.stride(2)
+            stride_output_m = out.stride(0)
+            stride_output_n = out.stride(1)
         grouped_grid = (
             triton.cdiv(half, block_m) * triton.cdiv(half, block_n),
             7,
@@ -1170,6 +1275,11 @@ def bag_matmul(
             kernel_right4,
             kernel_right56,
             grouped_products,
+            grouped_left[4],
+            c_psi11,
+            c_psi12,
+            c_psi21,
+            c_psi22,
             half,
             kernel_left.stride(0),
             stride_left_m,
@@ -1184,33 +1294,37 @@ def bag_matmul(
             grouped_products.stride(0),
             stride_products_m,
             stride_products_n,
+            stride_output_m,
+            stride_output_n,
             INPUT_PRECISION="tf32" if allow_tf32 else "ieee",
             BLOCK_M=block_m,
             BLOCK_N=block_n,
             BLOCK_K=block_k,
             GROUP_M=8,
             TRANSPOSE_PROBLEM=column_major,
+            FUSE_LAST_DECODE=fuse_last_decode,
             num_warps=num_warps,
             num_stages=num_stages,
         )
-        products = tuple(grouped_products[index] for index in range(7))
-        _decode_hybrid_products_kernel[(triton.cdiv(element_count, grouped_decode_block),)](
-            products[0], products[1], products[2], products[3],
-            products[4], products[5], products[6], out,
-            element_count,
-            half,
-            products[0].stride(0), products[0].stride(1),
-            products[1].stride(0), products[1].stride(1),
-            products[2].stride(0), products[2].stride(1),
-            products[3].stride(0), products[3].stride(1),
-            products[4].stride(0), products[4].stride(1),
-            products[5].stride(0), products[5].stride(1),
-            products[6].stride(0), products[6].stride(1),
-            out.stride(0), out.stride(1),
-            COLUMN_MAJOR=column_major,
-            BLOCK=grouped_decode_block,
-            num_warps=grouped_decode_warps,
-        )
+        if not fuse_last_decode:
+            products = tuple(grouped_products[index] for index in range(7))
+            _decode_hybrid_products_kernel[(triton.cdiv(element_count, grouped_decode_block),)](
+                products[0], products[1], products[2], products[3],
+                products[4], products[5], products[6], out,
+                element_count,
+                half,
+                products[0].stride(0), products[0].stride(1),
+                products[1].stride(0), products[1].stride(1),
+                products[2].stride(0), products[2].stride(1),
+                products[3].stride(0), products[3].stride(1),
+                products[4].stride(0), products[4].stride(1),
+                products[5].stride(0), products[5].stride(1),
+                products[6].stride(0), products[6].stride(1),
+                out.stride(0), out.stride(1),
+                COLUMN_MAJOR=column_major,
+                BLOCK=grouped_decode_block,
+                num_warps=grouped_decode_warps,
+            )
         return out
 
     if use_hybrid:

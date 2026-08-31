@@ -1009,3 +1009,27 @@
   small-matrix buckets, preserves seven genuine half-size GEMMs, creates no
   streams or events in the measured call, and improves the complete suite.
 - Trajectory: `trajectory/iter-39-20260831-175410`.
+
+### Final small-matrix last-completer verification and publication
+
+- Published the complete iteration-36/37/39 winner from `solution/` to
+  `src/`; the two `bag.py` files are byte-for-byte identical.
+- Independent final benchmark: **0.812665 ms** BAG latency geometric mean and
+  **0.921138x** geometric-mean `GEMM/BAG` speedup, with `CORRECT=True` on all
+  20 cases.  The latency is 0.024% below iteration 39's 0.812858 ms, confirming
+  the winner at effectively identical full-suite performance.
+- Final N=512 BAG latency is IEEE column/row **0.0317/0.0287 ms** and TF32
+  column/row **0.0225/0.0225 ms**.  Final N=1024 is IEEE
+  **0.1280/0.1280 ms** and TF32 **0.0922/0.0922 ms** for column/row-major.
+- Full regression before publication passed all **28** BAG numerical/interface
+  cases and all **26** primitive cases.  A source-root replay then passed all
+  **18** quick numerical cases plus grouped, hybrid, multistream, and
+  seven-stream interface checks.
+- Refreshed `benchmark_results/bag_vs_gemm_rtx3090.csv` and the Markdown report
+  from the independent final trajectory.  The report retains the explicit
+  ratio definition `ordinary GEMM median / BAG median`; values above one mean
+  BAG is faster.
+- The timed grouped path creates no streams or events.  The winning small-TF32
+  specialization uses only the existing product grid, 32/64 workspace-backed
+  scalar counters, and one acquire/release arrival per product CTA.
+- Trajectory: `trajectory/final-20260831-175851`.
