@@ -308,8 +308,8 @@ PYTHONPATH=src python scripts/test_triton_primitive.py
 ## One-level Triton BAG matrix multiplication
 
 `src/bag_triton/bag.py` assembles a complete depth-1 BAG operation from seven
-primitive products.  It avoids full transformed copies of A and B by
-materializing only two quarter-matrix blocks:
+primitive products.  Its serial path avoids full transformed copies of A and
+B by materializing only two quarter-matrix blocks:
 
 ```text
 SA = A12 - A21 + A22
@@ -321,11 +321,18 @@ M3 consumes `SA` and `SB`.  The same buffers are then updated in place to
 to materialize M1/M2 inputs.  Total workspace is therefore `N^2/2` FP32
 elements instead of two full transformed matrices.
 
-The auto scheduler uses two dependency-batched multi-stream waves at N=2048:
-M1-M4 first on four streams, then atomic M5-M7 on three streams.  Other sizes
-use the serial schedule selected by measurement.  All workers wait on the
-caller's current stream before reading inputs, and the inverse transform is
-joined back onto that caller stream.
+For N<=4096, the optimized auto scheduler uses a true grouped/batched Triton
+path when grouped workspace is available. One coalesced kernel materializes
+all seven input pairs into `(7,N/2,N/2)` buffers, one two-dimensional Triton
+grid computes M1--M7, and one kernel decodes the seven stored products directly
+into C. This reduces the steady-state operation to three GPU launches and needs
+neither CUDA streams nor atomic output updates. N=8192 retains the lower-memory
+serial primitive path selected by measurement.
+
+Explicit `"multistream"` and `"seven-stream"` schedules remain available for
+experimentation. The seven-stream path precomputes independent M3/M6/M7 inputs
+and uses atomic accumulation, but it is not selected automatically because
+seven large GEMMs contend for the same GPU resources and measured slower.
 
 Create output, workspace, and streams outside repeated or timed calls:
 
@@ -337,8 +344,9 @@ a = torch.randn((2048, 2048), device="cuda", dtype=torch.float32)
 b = torch.randn_like(a)
 out = torch.empty_like(a)
 
-# Allocates two quarter-matrix buffers and four reusable CUDA streams.
-workspace = allocate_bag_workspace(a, b, out, multistream=True)
+# Default allocation includes grouped buffers for N<=4096. No stream is needed
+# by the grouped auto path; allocation remains outside repeated/timed calls.
+workspace = allocate_bag_workspace(a, b, out, multistream=False)
 
 # No allocation or stream construction occurs in this call.
 bag_matmul(

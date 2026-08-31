@@ -557,6 +557,19 @@
   O(N^2) transforms, not by omitted synchronization or allocation overhead.
 - Trajectory: `trajectory/final-20260831-154749`.
 
+### Published grouped-Triton validation
+
+- Published the iteration-33 grouped kernel and four-stage large plain-product
+  pipeline from `solution/bag_triton` to `src/bag_triton`.
+- Default `allocate_bag_workspace` now provisions grouped buffers automatically
+  through N=4096; callers may pass `grouped=False` to choose the lower-memory
+  fallback explicitly. Allocation remains outside `bag_matmul` timing.
+- Published result artifacts were refreshed from the independent final run:
+  `benchmark_results/bag_vs_gemm_rtx3090.csv` and
+  `benchmark_results/bag_vs_gemm_rtx3090.md`.
+- The all-case pure-Triton result is **0.885580 ms** BAG latency geomean and
+  **0.847458x** speedup geomean versus ordinary cuBLAS GEMM.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with

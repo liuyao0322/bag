@@ -31,43 +31,56 @@ Each row is the geometric mean of row/column-major and IEEE/TF32 cases.
 
 | N | BAG median (ms) | GEMM median (ms) | GEMM/BAG speedup |
 |---:|---:|---:|---:|
-| 512 | 0.201473 | 0.020759 | 0.103038x |
-| 1024 | 0.212300 | 0.092992 | 0.438023x |
-| 2048 | 0.861283 | 0.667939 | 0.775516x |
-| 4096 | 6.081674 | 4.792459 | 0.788016x |
-| 8192 | 38.463014 | 35.987420 | 0.935637x |
+| 512 | 0.031314 | 0.021685 | 0.692521x |
+| 1024 | 0.121122 | 0.093688 | 0.773502x |
+| 2048 | 0.729086 | 0.671485 | 0.920995x |
+| 4096 | 5.031416 | 4.825449 | 0.959064x |
+| 8192 | 39.148390 | 36.166375 | 0.923828x |
 
-Across all 20 cases, BAG latency geometric mean is **1.538423 ms** and the
-speedup geometric mean is **0.481222x**. This aggregate is dominated by the
-small launch-bound shapes. At N=8192, BAG reaches 91.4-92.5% of ordinary IEEE
-GEMM performance and 94.7-95.8% of ordinary TF32 GEMM performance.
+Across all 20 cases, BAG latency geometric mean is **0.885580 ms** and the
+speedup geometric mean is **0.847458x**. Relative to the previous
+dependency-batched implementation (`1.538423 ms`), the grouped implementation
+is **1.737x faster** and reduces geometric-mean latency by **42.44%**. At
+N=4096 it reaches 93.6-94.0% of ordinary IEEE GEMM performance and 98.0-98.1%
+of ordinary TF32 GEMM performance.
 
-## Multi-stream and dependency batches
+## Grouped/batched Triton launch
 
-The auto scheduler uses two dependency batches only at N=2048:
+The auto scheduler uses grouped execution for N<=4096 when the preallocated
+workspace contains its three `(7,N/2,N/2)` buffers:
 
 ```text
-prepare SA/SB
-    -> batch 1: M1 | M2 | M3 -> complete SA/SB | M4   (four streams)
-    -> event join
-    -> batch 2: M5 | M6 | M7                          (three streams)
-    -> event join
-    -> inverse basis transform on the caller stream
+materialize seven left/right pairs
+    -> one 2-D Triton grid: M1 | M2 | M3 | M4 | M5 | M6 | M7
+    -> direct decode of seven products into C
 ```
 
-M1-M4 overwrite four different transformed output quadrants. M5-M7 share
-`C_psi12`, so the second batch uses the primitive's atomic accumulation mode.
-The caller stream waits for the final worker events before launching the
-inverse transform, preserving normal CUDA stream semantics without a host
-synchronization.
+The product dimension is the second grid axis, so all seven independent GEMMs
+are issued by one Triton launch. Products are written to disjoint batch slices;
+the decode kernel therefore needs no atomic operations. Workspace allocation,
+including all batch buffers, occurs before warmup and timing. The timed auto
+path creates no streams.
 
-The streams are created by `allocate_bag_workspace` before the timed callable.
-Relative to the serial iteration, the N=2048 BAG latency geometric mean falls
-from **0.922183 ms** to **0.861283 ms**, a **6.60%** improvement. Forcing the
-same schedule at N=512/1024 costs roughly 0.22 ms in event fork/join overhead,
-so those buckets remain serial. N>=4096 also remains serial because individual
-sub-GEMMs already fill the GPU and the materialized workspace path has real
-dependencies.
+The benefit is largest where launch latency previously dominated: row-major
+IEEE/TF32 N=512 now takes `0.0348/0.0266 ms`, and N=1024 takes
+`0.1393/0.1044 ms`. At N=2048 the TF32 column-major case reaches `0.984x` of
+ordinary GEMM; at N=4096 the TF32 cases reach `0.980x/0.981x`.
+
+## Why the result does not reach 8/7
+
+The theoretical `8/7 = 1.142857x` assumes seven half-size GEMMs cost exactly
+7/8 of one full GEMM and assigns zero cost to input transforms, product
+storage, decoding, and launches. Those assumptions do not hold at finite N.
+An explicit hybrid diagnostic at N=8192 measured seven cuBLAS leaf GEMMs at
+`40.444928 ms` plus `2.772990 ms` of mandatory transformations/host gaps, for
+`43.217918 ms` total. Even this diagnostic upper-bound organization is only
+near 1.02x versus ordinary GEMM, not 8/7.
+
+A genuine seven-stream all-atomic Triton variant was also measured. It was
+slower (`2.284818 ms` all-case geomean) because the large sub-GEMMs compete for
+the same SMs, tensor cores, caches, and memory bandwidth; atomic correctness
+does not create extra execution capacity. It is retained only as an explicit
+diagnostic schedule.
 
 ## Accuracy
 
@@ -78,8 +91,9 @@ dependencies.
 
 All 20 benchmark cases passed their configured numerical thresholds. The
 published test suite additionally covers non-aligned sizes, sliced positive
-strides, a non-default caller stream, repeated multi-stream batches, and the
-primitive's concurrent atomic updates from two CUDA streams.
+strides, grouped column-major execution, a non-default caller stream, repeated
+multi-stream and seven-stream calls, and the primitive's concurrent atomic
+updates from two CUDA streams.
 
 The complete per-case measurements are in
 `benchmark_results/bag_vs_gemm_rtx3090.csv`.

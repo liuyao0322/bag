@@ -28,9 +28,10 @@ from .primitive import bag_primitive
 class BagWorkspace(NamedTuple):
     """Preallocated workspace for :func:`bag_matmul`.
 
-    Both tensors have shape ``(N / 2, N / 2)``.  Reusing this object keeps
-    allocation out of steady-state execution and is recommended for timing or
-    repeated calls.
+    Core transform tensors have shape ``(N / 2, N / 2)``; optional scheduling
+    buffers are populated by :func:`allocate_bag_workspace`. Reusing this
+    object keeps allocation out of steady-state execution and is recommended
+    for timing or repeated calls.
     """
 
     transformed_a12: torch.Tensor
@@ -727,7 +728,7 @@ def allocate_bag_workspace(
     multistream: bool = True,
     full_concurrency: bool = False,
     hybrid: bool = False,
-    grouped: bool = False,
+    grouped: Optional[bool] = None,
 ) -> BagWorkspace:
     """Allocate the precomputed quarter-matrix buffers needed by one BAG level.
 
@@ -757,8 +758,11 @@ def allocate_bag_workspace(
         )
     if not isinstance(hybrid, bool):
         raise TypeError(f"hybrid must be bool, got {type(hybrid).__name__}")
-    if not isinstance(grouped, bool):
-        raise TypeError(f"grouped must be bool, got {type(grouped).__name__}")
+    if grouped is not None and not isinstance(grouped, bool):
+        raise TypeError(
+            f"grouped must be bool or None, got {type(grouped).__name__}"
+        )
+    allocate_grouped = size <= 4096 if grouped is None else grouped
     sa = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     sb = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     ua = None
@@ -778,7 +782,7 @@ def allocate_bag_workspace(
     grouped_left = None
     grouped_right = None
     grouped_products = None
-    if grouped:
+    if allocate_grouped:
         batch_strides = (half * half, strides[0], strides[1])
         grouped_left = torch.empty_strided(
             (7, half, half), batch_strides, dtype=torch.float32, device=a.device

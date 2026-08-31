@@ -208,7 +208,7 @@ def main() -> None:
     torch.manual_seed(args.seed)
     print(f"GPU: {torch.cuda.get_device_name()}")
     print(f"Implementation: {IMPLEMENTATION_ROOT}")
-    print("BAG: depth=1, seven N/2 GEMMs, fused primitive inputs, preallocated workspace")
+    print("BAG: depth=1, seven N/2 GEMMs, preallocated schedule-specific workspace")
     print("GEMM: torch.mm(out=...), cuBLAS, preallocated output")
     print(f"Schedule: {args.schedule}")
 
