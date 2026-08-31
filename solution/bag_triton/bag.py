@@ -768,8 +768,8 @@ def _grouped_bag_gemm_kernel(
             scope="gpu",
         )
         if old == 6.0:
-            # A 1024-element vector amortizes loop/address overhead while the
-            # resulting 80-register kernel remains spill-free on sm86.
+            # A 1024-element vector amortizes loop/address overhead while
+            # remaining spill-free on sm86.
             for decode_start in tl.static_range(0, BLOCK_M * BLOCK_N, 1024):
                 decode_linear = decode_start + tl.arange(0, 1024)
                 decode_m = program_m * BLOCK_M + decode_linear // BLOCK_N
@@ -779,42 +779,47 @@ def _grouped_bag_gemm_kernel(
                     decode_m * stride_products_m
                     + decode_n * stride_products_n
                 )
-                m1 = tl.load(
-                    products_ptr + 0 * stride_products_batch + decode_offsets,
-                    mask=decode_mask,
-                )
-                m2 = tl.load(
-                    products_ptr + 1 * stride_products_batch + decode_offsets,
-                    mask=decode_mask,
-                )
-                m3 = tl.load(
-                    products_ptr + 2 * stride_products_batch + decode_offsets,
-                    mask=decode_mask,
-                )
-                m4 = tl.load(
-                    products_ptr + 3 * stride_products_batch + decode_offsets,
-                    mask=decode_mask,
-                )
                 m5 = tl.load(
                     products_ptr + 4 * stride_products_batch + decode_offsets,
-                    mask=decode_mask,
-                )
-                m6 = tl.load(
-                    products_ptr + 5 * stride_products_batch + decode_offsets,
-                    mask=decode_mask,
-                )
-                m7 = tl.load(
-                    products_ptr + 6 * stride_products_batch + decode_offsets,
                     mask=decode_mask,
                 )
                 output_offsets = (
                     decode_m * stride_output_m
                     + decode_n * stride_output_n
                 )
+                # Stage independent product loads close to their final use.
+                # This preserves the exact left-to-right BAG arithmetic while
+                # shortening vector live ranges in the last-completer CTA.
+                m4 = tl.load(
+                    products_ptr + 3 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
                 tl.store(c11_ptr + output_offsets, m4 + m5, mask=decode_mask)
+
+                m3 = tl.load(
+                    products_ptr + 2 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m6 = tl.load(
+                    products_ptr + 5 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m2 = tl.load(
+                    products_ptr + 1 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
                 tl.store(
                     c12_ptr + output_offsets,
                     m3 + m5 - m6 - m2,
+                    mask=decode_mask,
+                )
+
+                m1 = tl.load(
+                    products_ptr + 0 * stride_products_batch + decode_offsets,
+                    mask=decode_mask,
+                )
+                m7 = tl.load(
+                    products_ptr + 6 * stride_products_batch + decode_offsets,
                     mask=decode_mask,
                 )
                 tl.store(

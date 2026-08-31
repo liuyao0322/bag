@@ -1248,3 +1248,30 @@
   Close the raw2 direction and require future candidates to preserve the
   untouched seven-product specialization as an explicit fallback.
 - Trajectory: `trajectory/iter-47-20260831-223302`.
+
+### Iteration 48 — stage last-completer product loads
+
+- Change: kept the product GEMM, counter protocol, decode vector width, and
+  exact left-to-right BAG arithmetic unchanged, but moved the seven product
+  plane loads next to their first output use.  The source-level peak falls
+  from seven simultaneously named product vectors to about five, with the aim
+  of shortening decoder live ranges.
+- Correctness: all 20 formal cases report `CORRECT=True` with unchanged error
+  levels.
+- Targeted result: N=512 TF32 remained **0.0225 ms** for both layouts.  N=1024
+  TF32 measured **0.0932/0.0942 ms** for column/row major, versus the clean
+  baseline's **0.0922/0.0922 ms**.  The candidate therefore does not improve
+  either target bucket and regresses one by two approximately 1.024-us event
+  bins.
+- Full-suite BAG geometric mean was **0.811781 ms**, nominally below the
+  **0.813207 ms** adjacent baseline, but the apparent change comes from
+  N=4096/8192 specializations whose generated code is unaffected and whose
+  absolute latency varies between runs.  It is not evidence for this decoder
+  edit.
+- Analysis: source ordering alone either does not reduce compiled live ranges
+  or perturbs memory issue scheduling without helping occupancy.  Inspect the
+  generated resource count once; do not select a candidate that loses its
+  directly affected buckets on the strength of unrelated large-shape noise.
+- Outcome: **reject** and restore the exact iteration-47 source before the next
+  last-completer/dataflow candidate.
+- Trajectory: `trajectory/iter-48-20260831-223726`.
