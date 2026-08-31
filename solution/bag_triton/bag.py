@@ -654,13 +654,27 @@ def _grouped_bag_gemm_kernel(
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
     GROUP_M: tl.constexpr,
+    ORDER_CHUNK: tl.constexpr,
     TRANSPOSE_PROBLEM: tl.constexpr,
     FUSE_LAST_DECODE: tl.constexpr,
 ):
     """Compute seven BAG products, loading unchanged quadrants in place."""
 
-    program_id = tl.program_id(axis=0)
-    product_id = tl.program_id(axis=1)
+    if ORDER_CHUNK:
+        # Launch a small spatial chunk for every product before moving to the
+        # next chunk.  This keeps product-input reuse within each chunk while
+        # shortening the distance between the seven results consumed by the
+        # last-completer decoder.  The selected small-matrix grids are exactly
+        # divisible by ORDER_CHUNK, so every one-dimensional task is useful.
+        task_id = tl.program_id(axis=0)
+        tasks_per_chunk = 7 * ORDER_CHUNK
+        chunk_id = task_id // tasks_per_chunk
+        task_in_chunk = task_id % tasks_per_chunk
+        product_id = task_in_chunk // ORDER_CHUNK
+        program_id = chunk_id * ORDER_CHUNK + task_in_chunk % ORDER_CHUNK
+    else:
+        program_id = tl.program_id(axis=0)
+        product_id = tl.program_id(axis=1)
     num_programs_m = tl.cdiv(half, BLOCK_M)
     num_programs_n = tl.cdiv(half, BLOCK_N)
     programs_per_group = GROUP_M * num_programs_n
@@ -1261,9 +1275,12 @@ def bag_matmul(
             stride_products_n = grouped_products.stride(2)
             stride_output_m = out.stride(0)
             stride_output_n = out.stride(1)
+        num_spatial_tiles = triton.cdiv(half, block_m) * triton.cdiv(half, block_n)
+        order_chunk = 4 if fuse_last_decode else 0
         grouped_grid = (
-            triton.cdiv(half, block_m) * triton.cdiv(half, block_n),
-            7,
+            (num_spatial_tiles * 7,)
+            if order_chunk
+            else (num_spatial_tiles, 7)
         )
         _grouped_bag_gemm_kernel[grouped_grid](
             kernel_left,
@@ -1301,6 +1318,7 @@ def bag_matmul(
             BLOCK_N=block_n,
             BLOCK_K=block_k,
             GROUP_M=8,
+            ORDER_CHUNK=order_chunk,
             TRANSPOSE_PROBLEM=column_major,
             FUSE_LAST_DECODE=fuse_last_decode,
             num_warps=num_warps,

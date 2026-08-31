@@ -1033,3 +1033,29 @@
   specialization uses only the existing product grid, 32/64 workspace-backed
   scalar counters, and one acquire/release arrival per product CTA.
 - Trajectory: `trajectory/final-20260831-175851`.
+
+### Iteration 40 — four-tile product microchunks
+
+- Change: retained the existing two-dimensional product-major launch for every
+  non-fused bucket, but flattened the N=512/1024 TF32 last-completer grid into
+  four-spatial-tile microchunks.  Within each chunk the kernel launches M1--M7
+  before advancing to the next four tiles; algebra, tile sizes, workspace,
+  counter protocol, launch count, and numerical order are unchanged.
+- Hypothesis: bounding the launch distance between the seven products for one
+  spatial region would keep the product workspace hotter for the final CTA's
+  fused decode while retaining some same-product input reuse across four
+  neighboring tiles.
+- Correctness: all 20 formal layout/precision/size cases reported
+  `CORRECT=True` with unchanged IEEE and TF32 error levels.
+- BAG geometric-mean latency: **0.823267 ms**, 1.26% above this session's
+  independent **0.813021 ms** baseline.
+- Targeted regression: N=512 TF32 rose from **0.0225 ms** to **0.0246 ms** in
+  both layouts (about 9.3% slower); N=1024 TF32 rose from **0.0922 ms** to
+  **0.0983 ms** in both layouts (about 6.6% slower).
+- Analysis: at G=4 the loss of long same-product runs and their operand-cache
+  reuse outweighs any product-workspace locality gained by bringing the seven
+  arrivals closer together.  This agrees with the previously rejected fully
+  tile-major ordering and makes smaller chunks unattractive.
+- Outcome: **reject**.  Retain the implementation mechanism long enough to
+  test a larger G=16 endpoint; do not publish G=4.
+- Trajectory: `trajectory/iter-40-20260831-220905`.
