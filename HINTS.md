@@ -49,3 +49,12 @@ Source: user prompt, 2026-08-31 (continue toward the 8/7 bound).
 - If full concurrency is limited by GEMM resource contention, evaluate hybrid
   and grouped/batched leaf-GEMM execution without changing BAG algebra or
   hiding unfavorable buckets.
+
+Source: user correction, 2026-08-31 (prior measured upper bound).
+
+- Reconcile new finite-shape upper-bound claims with the previously observed
+  approximately 1.14x upper bound before drawing conclusions about what BAG
+  can reach.
+- Report the exact shape, precision, numerator/denominator, and timing boundary
+  for both measurements; do not generalize a result from N<=8192 to the
+  asymptotic or previously measured regime.

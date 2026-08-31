@@ -66,15 +66,25 @@ IEEE/TF32 N=512 now takes `0.0348/0.0266 ms`, and N=1024 takes
 `0.1393/0.1044 ms`. At N=2048 the TF32 column-major case reaches `0.984x` of
 ordinary GEMM; at N=4096 the TF32 cases reach `0.980x/0.981x`.
 
-## Why the result does not reach 8/7
+## Arithmetic upper bound versus measured end-to-end speedup
 
-The theoretical `8/7 = 1.142857x` assumes seven half-size GEMMs cost exactly
-7/8 of one full GEMM and assigns zero cost to input transforms, product
-storage, decoding, and launches. Those assumptions do not hold at finite N.
-An explicit hybrid diagnostic at N=8192 measured seven cuBLAS leaf GEMMs at
-`40.444928 ms` plus `2.772990 ms` of mandatory transformations/host gaps, for
-`43.217918 ms` total. Even this diagnostic upper-bound organization is only
-near 1.02x versus ordinary GEMM, not 8/7.
+The zero-overhead arithmetic upper bound remains `8/7 = 1.142857x`: BAG
+executes seven half-size GEMMs where a classical blocked GEMM executes eight.
+It is distinct from an end-to-end measurement that includes transforms,
+product storage, decoding, and launches.
+
+The same final-run cuBLAS measurements give the following finite-shape,
+GEMM-only bound `T_gemm(N) / (7*T_gemm(N/2))` at N=8192: IEEE
+column/row-major `1.1325x/1.0875x`, and TF32 column/row-major
+`1.0288x/1.0373x`. The IEEE column-major result confirms a measured leaf-GEMM
+bound close to 1.14x.
+
+Separately, one explicit hybrid end-to-end run measured seven cuBLAS leaves at
+`40.444928 ms` plus `2.772990 ms` of transformations/host gaps, for
+`43.217918 ms` total. Its approximately 1.02x result is one finite-shape
+end-to-end observation, not a replacement for the 1.14x arithmetic upper
+bound. Closing the gap requires reducing or overlapping the O(N^2) work and
+matching the favorable half-size GEMM throughput.
 
 A genuine seven-stream all-atomic Triton variant was also measured. It was
 slower (`2.284818 ms` all-case geomean) because the large sub-GEMMs compete for

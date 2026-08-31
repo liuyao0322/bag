@@ -489,11 +489,10 @@
 - Component result at N=8192 IEEE row-major: seven cuBLAS leaves totalled
   `40.444928 ms`; transformations and host gaps totalled `2.772990 ms`, down
   from `3.560448 ms` before direct decode.
-- Analysis: even idealized leaves do not reach 8/7 at this finite size. Seven
-  half-size cuBLAS calls scale to about 40.5 ms rather than exactly 7/8 of the
-  full GEMM, and unavoidable input materialization/direct decoding adds about
-  2.8 ms. The hybrid path establishes a measured practical ceiling near
-  1.02x for IEEE N=8192 on this GPU.
+- Analysis: this measured hybrid point does not reach 8/7. Seven half-size
+  cuBLAS calls total about 40.5 ms, and input materialization/direct decoding
+  adds about 2.8 ms. The approximately 1.02x result is an end-to-end
+  observation for this run, not a global or arithmetic ceiling.
 - Outcome: **keep as an explicit diagnostic/performance backend**, not as the
   claimed pure-Triton primitive implementation. Continue with a grouped Triton
   leaf kernel to remove launch overhead in the small buckets.
@@ -569,6 +568,22 @@
   `benchmark_results/bag_vs_gemm_rtx3090.md`.
 - The all-case pure-Triton result is **0.885580 ms** BAG latency geomean and
   **0.847458x** speedup geomean versus ordinary cuBLAS GEMM.
+
+### Post-publication upper-bound clarification
+
+- User correction: a previous approximately 1.14x upper bound must not be
+  replaced by iteration 32's approximately 1.02x hybrid measurement.
+- Correct distinction: `8/7=1.142857x` is the zero-overhead arithmetic upper
+  bound; `T_gemm(N)/(7*T_gemm(N/2))` is the finite-shape GEMM-only bound; the
+  reported hybrid ratio is a specific end-to-end observation after BAG
+  overhead.
+- From the same final CSV at N=8192, the GEMM-only bounds are IEEE
+  column/row-major `1.1325x/1.0875x` and TF32 column/row-major
+  `1.0288x/1.0373x`. Thus the IEEE column-major data does retain a measured
+  leaf-GEMM upper bound close to 1.14x.
+- Optimization implication: preserve 1.14x as the target ceiling and focus on
+  reducing/overlapping input materialization and direct-decode traffic; do not
+  treat 1.02x as evidence that further improvement is impossible.
 
 ### Baseline 512
 
