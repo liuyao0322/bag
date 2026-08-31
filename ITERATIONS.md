@@ -12,6 +12,7 @@
 | iter-5 | Expand tall/wide fused tiles to 64 on the short edge | 1.158568 ms geomean; 0.692941x vs unfused | yes | keep; new best |
 | iter-6 | Reduce large-square pipeline from 3 to 2 stages | 1.205704 ms geomean; 0.661972x vs unfused | yes | reject; regression |
 | iter-7 | Compile-time unmasked fast path for exact tiles | benchmark failed to compile | no result | fix API usage and retry |
+| iter-8 | Corrected exact-tile unmasked load path | 1.175801 ms geomean; 0.679223x vs unfused | yes | reject; no gain |
 
 ## Baseline
 
@@ -121,3 +122,15 @@
 - Failure: Triton 3.6 rejects `tl.load(..., mask=None, other=0.0)`; `other` must be omitted when no mask is supplied.
 - Outcome: implementation/API failure, not a performance verdict. Retain the direction and retry with explicitly separated masked and unmasked `tl.load` calls.
 - Trajectory: `trajectory/iter-7-20260831-141839` was not created because the benchmark exited before its snapshot step.
+
+## Iteration 8 — corrected exact-tile unmasked path
+
+- Change: separated masked and unmasked input loads into compile-time branches, omitting both `mask` and `other` for exact tiles. The iteration-5 three-stage large-square path was restored.
+- Hypothesis: removing all input boundary predicates for aligned signal shapes would shorten the hot K loop.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **1.175801 ms**.
+- Geometric-mean speedup vs unfused: **0.679223x**.
+- Change vs iteration-5 best (1.158568 ms): **1.49% slower**.
+- Per-shape fused latency (ms): square-1024 `0.2928`, square-2048 `1.3517`, square-4096 `8.7388`, tall `0.9431`, wide `0.9544`, large-k `0.8489`.
+- Outcome: **reject**. The compiler already handles the regular masks effectively; explicit branching increases specialization/code complexity without a repeatable speedup.
+- Trajectory: `trajectory/iter-8-20260831-141852`.

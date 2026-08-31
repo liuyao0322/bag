@@ -98,29 +98,40 @@ def _bag_primitive_kernel(
         x_offsets = offsets_m[:, None] * stride_xm + current_k[None, :] * stride_xk
         v_offsets = current_k[:, None] * stride_vk + offsets_n[None, :] * stride_vn
         if EVEN_M and EVEN_K:
-            x_mask = None
+            left = tl.load(x_ptr + x_offsets)
+            if DELTA == 1:
+                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
+                left += tl.load(y_ptr + y_offsets)
+            elif DELTA == -1:
+                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
+                left -= tl.load(y_ptr + y_offsets)
         else:
             x_mask = (offsets_m[:, None] < m) & (current_k[None, :] < k)
+            left = tl.load(x_ptr + x_offsets, mask=x_mask, other=0.0)
+            if DELTA == 1:
+                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
+                left += tl.load(y_ptr + y_offsets, mask=x_mask, other=0.0)
+            elif DELTA == -1:
+                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
+                left -= tl.load(y_ptr + y_offsets, mask=x_mask, other=0.0)
+
         if EVEN_K and EVEN_N:
-            v_mask = None
+            right = tl.load(v_ptr + v_offsets)
+            if EPSILON == 1:
+                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
+                right += tl.load(w_ptr + w_offsets)
+            elif EPSILON == -1:
+                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
+                right -= tl.load(w_ptr + w_offsets)
         else:
             v_mask = (current_k[:, None] < k) & (offsets_n[None, :] < n)
-
-        left = tl.load(x_ptr + x_offsets, mask=x_mask, other=0.0)
-        if DELTA == 1:
-            y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
-            left += tl.load(y_ptr + y_offsets, mask=x_mask, other=0.0)
-        elif DELTA == -1:
-            y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
-            left -= tl.load(y_ptr + y_offsets, mask=x_mask, other=0.0)
-
-        right = tl.load(v_ptr + v_offsets, mask=v_mask, other=0.0)
-        if EPSILON == 1:
-            w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
-            right += tl.load(w_ptr + w_offsets, mask=v_mask, other=0.0)
-        elif EPSILON == -1:
-            w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
-            right -= tl.load(w_ptr + w_offsets, mask=v_mask, other=0.0)
+            right = tl.load(v_ptr + v_offsets, mask=v_mask, other=0.0)
+            if EPSILON == 1:
+                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
+                right += tl.load(w_ptr + w_offsets, mask=v_mask, other=0.0)
+            elif EPSILON == -1:
+                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
+                right -= tl.load(w_ptr + w_offsets, mask=v_mask, other=0.0)
 
         accumulator += tl.dot(left, right, input_precision=INPUT_PRECISION)
 
