@@ -174,6 +174,65 @@ def _complete_four_term_blocks_kernel(
     )
 
 
+@triton.jit
+def _prepare_two_term_product_kernel(
+    x_ptr,
+    y_ptr,
+    v_ptr,
+    w_ptr,
+    left_ptr,
+    right_ptr,
+    half,
+    stride_x0,
+    stride_x1,
+    stride_y0,
+    stride_y1,
+    stride_v0,
+    stride_v1,
+    stride_w0,
+    stride_w1,
+    stride_left0,
+    stride_left1,
+    stride_right0,
+    stride_right1,
+    SIGN: tl.constexpr,
+    COLUMN_MAJOR: tl.constexpr,
+    BLOCK: tl.constexpr,
+):
+    """Materialize two same-sign input combinations for a plain product."""
+
+    offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
+    mask = offsets < half * half
+    if COLUMN_MAJOR:
+        columns = offsets // half
+        rows = offsets - columns * half
+    else:
+        rows = offsets // half
+        columns = offsets - rows * half
+    x_offsets = rows * stride_x0 + columns * stride_x1
+    y_offsets = rows * stride_y0 + columns * stride_y1
+    v_offsets = rows * stride_v0 + columns * stride_v1
+    w_offsets = rows * stride_w0 + columns * stride_w1
+    left_offsets = rows * stride_left0 + columns * stride_left1
+    right_offsets = rows * stride_right0 + columns * stride_right1
+    if SIGN == 1:
+        left = tl.load(x_ptr + x_offsets, mask=mask) + tl.load(
+            y_ptr + y_offsets, mask=mask
+        )
+        right = tl.load(v_ptr + v_offsets, mask=mask) + tl.load(
+            w_ptr + w_offsets, mask=mask
+        )
+    else:
+        left = tl.load(x_ptr + x_offsets, mask=mask) - tl.load(
+            y_ptr + y_offsets, mask=mask
+        )
+        right = tl.load(v_ptr + v_offsets, mask=mask) - tl.load(
+            w_ptr + w_offsets, mask=mask
+        )
+    tl.store(left_ptr + left_offsets, left, mask=mask)
+    tl.store(right_ptr + right_offsets, right, mask=mask)
+
+
 def _is_column_major(tensor: torch.Tensor) -> bool:
     rows, columns = tensor.shape
     return (rows <= 1 or tensor.stride(0) == 1) and (
@@ -335,18 +394,19 @@ def bag_matmul(
     c_psi21 = out[half:, :half]
     c_psi22 = out[half:, half:]
 
-    # M1=(A12+A22)(B12+B22) -> Cpsi22
-    bag_primitive(
-        a12, a22, b12, b22, c_psi22, None,
-        delta=1, epsilon=1, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
-        _atomic_accumulate=False,
-    )
-    # M2=(A22-A21)(B22-B21) -> Cpsi21
-    bag_primitive(
-        a22, a21, b22, b21, c_psi21, None,
-        delta=-1, epsilon=-1, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
-        _atomic_accumulate=False,
-    )
+    materialize_outer_products = half >= 2048
+    if not materialize_outer_products:
+        # At smaller sizes, fusing each combination avoids two extra launches.
+        bag_primitive(
+            a12, a22, b12, b22, c_psi22, None,
+            delta=1, epsilon=1, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
+            _atomic_accumulate=False,
+        )
+        bag_primitive(
+            a22, a21, b22, b21, c_psi21, None,
+            delta=-1, epsilon=-1, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
+            _atomic_accumulate=False,
+        )
     # M3=SA*SB -> Cpsi12; M4=A11*B11 -> Cpsi11
     bag_primitive(
         sa, None, sb, None, c_psi12, None,
@@ -386,18 +446,79 @@ def bag_matmul(
         delta=0, epsilon=0, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
-    # M6=SA'*B12, where SA' now stores SA-A11.
+    # M6=SA'*B12, where SA' now stores SA-A11.  On the large materialized
+    # path this product initializes Cpsi22 with -M6 before M1 is added.
     bag_primitive(
         sa, None, b12, None, c_psi12, c_psi22,
-        delta=0, epsilon=0, gamma_d=-1, gamma_e=-1, allow_tf32=allow_tf32,
+        delta=0,
+        epsilon=0,
+        gamma_d=-1,
+        gamma_e=-2 if materialize_outer_products else -1,
+        allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
-    # M7=A21*SB', where SB' now stores SB-B11.
+    # M7=A21*SB'.  The large path initializes Cpsi21 with M7 before M2.
     bag_primitive(
         a21, None, sb, None, c_psi12, c_psi21,
-        delta=0, epsilon=0, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
+        delta=0,
+        epsilon=0,
+        gamma_d=1,
+        gamma_e=2 if materialize_outer_products else 1,
+        allow_tf32=allow_tf32,
         _atomic_accumulate=False,
     )
+
+    if materialize_outer_products:
+        # SA/SB are dead after M6/M7.  Reuse them to materialize M1 and M2,
+        # trading two coalesced linear passes for fewer loads in O(N^3) loops.
+        _prepare_two_term_product_kernel[(triton.cdiv(element_count, block),)](
+            a12,
+            a22,
+            b12,
+            b22,
+            sa,
+            sb,
+            half,
+            a12.stride(0), a12.stride(1),
+            a22.stride(0), a22.stride(1),
+            b12.stride(0), b12.stride(1),
+            b22.stride(0), b22.stride(1),
+            sa.stride(0), sa.stride(1),
+            sb.stride(0), sb.stride(1),
+            SIGN=1,
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+        bag_primitive(
+            sa, None, sb, None, c_psi22, None,
+            delta=0, epsilon=0, gamma_d=1, gamma_e=0, allow_tf32=allow_tf32,
+            _atomic_accumulate=False,
+        )
+        _prepare_two_term_product_kernel[(triton.cdiv(element_count, block),)](
+            a22,
+            a21,
+            b22,
+            b21,
+            sa,
+            sb,
+            half,
+            a22.stride(0), a22.stride(1),
+            a21.stride(0), a21.stride(1),
+            b22.stride(0), b22.stride(1),
+            b21.stride(0), b21.stride(1),
+            sa.stride(0), sa.stride(1),
+            sb.stride(0), sb.stride(1),
+            SIGN=-1,
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+        bag_primitive(
+            sa, None, sb, None, c_psi21, None,
+            delta=0, epsilon=0, gamma_d=1, gamma_e=0, allow_tf32=allow_tf32,
+            _atomic_accumulate=False,
+        )
 
     _inverse_basis_transform_kernel[(triton.cdiv(element_count, block),)](
         out,

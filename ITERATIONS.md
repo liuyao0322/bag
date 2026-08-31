@@ -36,6 +36,7 @@
 | iter-26 | Non-atomic output accumulation for same-stream BAG calls | 2.069139 ms geomean; 0.356438x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 | iter-27 | Materialize terminal four-term inputs to remove right-combination IEEE cliff | 1.853898 ms geomean; 0.397718x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 | iter-28 | Traverse pointwise transforms in physical contiguous order | 1.580899 ms geomean; 0.469512x vs cuBLAS GEMM | yes | keep; new end-to-end best |
+| iter-29 | Reuse workspace to materialize M1/M2 inputs for N>=4096 | 1.552825 ms geomean; 0.477185x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 
 ## Baseline
 
@@ -344,6 +345,29 @@
 - Outcome: keep as new best. Investigate fusing the small pointwise kernels
   and size-gating BAG so launch-bound buckets use ordinary GEMM.
 - Trajectory: `trajectory/iter-28-20260831-150450`.
+
+### Iteration 29 — materialize large M1/M2 inputs
+
+- Change: for N>=4096, reordered the independent BAG products so M6/M7
+  consume the four-term workspace first, then reused those two buffers to
+  materialize M1 and M2 input pairs. Their O(N^3) loops now use the faster
+  plain-product primitive; smaller N retains fused pairs and fewer launches.
+- Hypothesis: two coalesced O(N^2) passes should cost less than repeatedly
+  loading and combining four inputs across two large O(N^3) GEMM loops.
+- Correctness: a large-size pre-screen and all 20 formal benchmark cases
+  passed with unchanged IEEE/TF32 error metrics.
+- BAG geometric-mean latency: **1.552825 ms**, 1.78% below iteration 28 and
+  30.70% below iteration 25.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.477185x**.
+- N=8192 reached `0.924x/0.936x` of IEEE GEMM and `0.958x/0.947x` of TF32
+  GEMM for column/row-major respectively. N=4096 improved to about 0.78x IEEE
+  and 0.80x TF32.
+- Analysis: materialization is increasingly favorable as N grows, bringing
+  the largest bucket within 4-8% of cuBLAS while retaining seven products.
+  Small buckets remain dominated by fixed launch overhead.
+- Outcome: keep as new best. Preserve the honest all-BAG benchmark rather
+  than hiding small sizes behind a GEMM fallback.
+- Trajectory: `trajectory/iter-29-20260831-150740`.
 
 ### Baseline 512
 
