@@ -1330,3 +1330,30 @@
   crossover: write-once fusion is not automatically beneficial when it turns
   a batched GPU GEMM into ordered phases.
 - Trajectory: `trajectory/iter-50-20260831-224844`.
+
+### Iteration 51 — widen the ordered-final M7 tile
+
+- Change: kept iteration 50's IEEE-only ordered 6+1 dataflow and widened only
+  the final M7/write-once kernel from `32x32x32` to `32x64x32`.  Its grid falls
+  from 256 to 128 CTAs, still above the RTX 3090's 82 SMs, to increase operand
+  reuse and reduce CTA/address overhead.
+- Resource motivation: the rejected `32x32` final kernel compiled to only
+  **54 registers/thread**, with zero stack/local spill, while the unchanged
+  six-product phase remained at **96 registers/thread**.  The final tile was
+  therefore widened rather than assuming register pressure caused iteration
+  50's loss.
+- Correctness: all 20 formal cases report `CORRECT=True`.
+- Targeted result: N=1024 IEEE measured **0.1372/0.1301 ms** for column/row
+  major.  Widening improved row-major from iteration 50's 0.1331 ms but still
+  loses to the clean 0.1270 ms baseline; column-major became slower than both
+  iteration 50's 0.1352 ms and the 0.1290 ms baseline.
+- Full-suite BAG geometric mean was **0.814828 ms**; the lower number than
+  iteration 50 comes from unchanged large-shape variation and does not alter
+  the target-bucket rejection.
+- Analysis: final-phase tile reuse and CTA count trade differently by layout,
+  but neither point approaches the batched product-major baseline.  A further
+  `64x64` point would reduce the final grid below one CTA per SM and cannot
+  address the demonstrated ordered-phase serialization.
+- Outcome: **reject and close ordered 6+1**.  Restore the exact iteration-47
+  product-major path rather than retaining a layout-specific regression.
+- Trajectory: `trajectory/iter-51-20260831-225016`.

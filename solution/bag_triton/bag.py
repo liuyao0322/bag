@@ -1442,7 +1442,7 @@ def bag_matmul(
             num_stages=num_stages,
         )
         if ordered_final_m7:
-            final_block_m = final_block_n = final_block_k = 32
+            final_block_m, final_block_n, final_block_k = 32, 64, 32
             final_grid = (
                 triton.cdiv(half, final_block_m)
                 * triton.cdiv(half, final_block_n),
