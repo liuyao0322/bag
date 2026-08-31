@@ -19,6 +19,7 @@
 | iter-12 | Test 128x128x8 with four pipeline stages | benchmark failed to compile | no result | reject; unsupported K tile |
 | iter-13 | Reduce fused 128x128 program grouping from 8 to 4 | 0.991427 ms geomean; 0.807330x vs unfused | yes | reject; no gain |
 | iter-14 | Increase fused 128x128 CTA from 8 to 16 warps | 0.958616 ms geomean; 0.834934x vs unfused | yes | keep; new best |
+| iter-15 | Increase fused 128x128 CTA from 16 to 32 warps | 1.229815 ms geomean; 0.649229x vs unfused | yes | reject; major regression |
 
 ## Baseline
 
@@ -212,3 +213,15 @@
 - Per-shape fused latency (ms): square-1024 `0.2007`, square-2048 `1.3332`, square-4096 `8.5699`, tall `0.7465`, wide `0.7567`, large-k `0.5990`.
 - Outcome: **new best**. The added warps materially improve 1024-square and aspect-ratio cases; large-K regresses slightly, suggesting a separate K-dominant policy may be useful.
 - Trajectory: `trajectory/iter-14-20260831-142323`.
+
+## Iteration 15 — maximum-size CTA
+
+- Change: increased fused `128x128x16` configurations from 16 to 32 warps (1024 threads per CTA).
+- Hypothesis: maximizing active warps in the one-resident-CTA regime might further hide memory and instruction latency.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **1.229815 ms**.
+- Geometric-mean speedup vs unfused: **0.649229x**.
+- Change vs iteration-14 best (0.958616 ms): **28.3% slower**.
+- Per-shape fused latency (ms): square-1024 `0.2478`, square-2048 `1.7326`, square-4096 `11.4739`, tall `0.9385`, wide `0.9339`, large-k `0.8013`.
+- Outcome: **reject**. A full 1024-thread CTA introduces substantial scheduling/communication overhead; 16 warps is the optimum tested point on this axis.
+- Trajectory: `trajectory/iter-15-20260831-142356`.
