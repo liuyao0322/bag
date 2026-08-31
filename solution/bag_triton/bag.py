@@ -281,35 +281,42 @@ def bag_matmul(
     bag_primitive(
         a12, a22, b12, b22, c_psi22, None,
         delta=1, epsilon=1, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
     # M2=(A22-A21)(B22-B21) -> Cpsi21
     bag_primitive(
         a22, a21, b22, b21, c_psi21, None,
         delta=-1, epsilon=-1, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
     # M3=SA*SB -> Cpsi12; M4=A11*B11 -> Cpsi11
     bag_primitive(
         sa, None, sb, None, c_psi12, None,
         delta=0, epsilon=0, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
     bag_primitive(
         a11, None, b11, None, c_psi11, None,
         delta=0, epsilon=0, gamma_d=2, gamma_e=0, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
     # M5 simplifies to A12*B21 and contributes to two transformed outputs.
     bag_primitive(
         a12, None, b21, None, c_psi11, c_psi12,
         delta=0, epsilon=0, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
     # M6=(SA-A11)*B12, subtracted from Cpsi12 and Cpsi22.
     bag_primitive(
         sa, a11, b12, None, c_psi12, c_psi22,
         delta=-1, epsilon=0, gamma_d=-1, gamma_e=-1, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
     # M7=A21*(SB-B11), added to Cpsi12 and Cpsi21.
     bag_primitive(
         a21, None, sb, b11, c_psi12, c_psi21,
         delta=0, epsilon=-1, gamma_d=1, gamma_e=1, allow_tf32=allow_tf32,
+        _atomic_accumulate=False,
     )
 
     _inverse_basis_transform_kernel[(triton.cdiv(element_count, block),)](

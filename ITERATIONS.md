@@ -33,6 +33,7 @@
 | iter-24 | Reduce best compact-tile pipeline from 3 to 2 stages | 0.049067 ms geomean; 0.855399x vs unfused | yes | reject; regression |
 | final-512 | Restore and remeasure iteration 16 | 0.047132 ms geomean; 0.890515x vs unfused | yes | final 512 winner |
 | iter-25 | One-level BAG with two quarter-block transforms and seven fused primitives | 2.240755 ms geomean; 0.330219x vs cuBLAS GEMM | yes | baseline for end-to-end BAG phase |
+| iter-26 | Non-atomic output accumulation for same-stream BAG calls | 2.069139 ms geomean; 0.356438x vs cuBLAS GEMM | yes | keep; new end-to-end best |
 
 ## Baseline
 
@@ -252,6 +253,51 @@
 - Trajectory: `trajectory/final-20260831-142428`.
 
 ## Square-512 optimization phase
+
+## End-to-end BAG phase
+
+### Iteration 25 — minimal-workspace one-level BAG baseline
+
+- Change: implemented one BAG recursion level using two materialized quarter
+  blocks (`SA=A12-A21+A22`, `SB=B12-B21+B22`), seven fused primitive calls,
+  direct transformed-output accumulation, and an in-place inverse transform.
+- Hypothesis: reducing GEMM work from eight to seven half-size products while
+  avoiding full transformed A/B copies could offset transform and launch
+  overhead at sufficiently large N.
+- Correctness: 28 BAG cases passed across IEEE/TF32 and row-major,
+  column-major, and sliced layouts; the original primitive's 26-case suite
+  also passed. The benchmark reported `CORRECT=True` on all 20 signal cases.
+- BAG geometric-mean latency: **2.240755 ms**.
+- Geometric-mean speedup vs ordinary preallocated cuBLAS GEMM: **0.330219x**.
+- Large row-major TF32 speedups were `0.681x`, `0.710x`, and `0.808x` at
+  N=2048/4096/8192; large row-major IEEE remained `0.387x` to `0.389x`.
+- Analysis: the 12.5% reduction in multiplication count is visible only at
+  the largest TF32 bucket. Custom sub-GEMM throughput and six atomic output
+  updates dominate; small N is additionally launch-bound.
+- Outcome: correct end-to-end baseline, not performance winner. Test a
+  non-atomic sequential accumulation specialization while preserving the
+  public primitive's atomic default.
+- Trajectory: `trajectory/iter-25-20260831-145757`.
+
+### Iteration 26 — same-stream non-atomic accumulation
+
+- Change: retained atomic accumulation as the public primitive default, but
+  specialized the seven serial BAG calls to load/add/store output tiles.
+- Hypothesis: BAG launches are ordered on one CUDA stream, so atomics provide
+  no correctness benefit internally and add avoidable output-update cost.
+- Correctness: quick BAG regression and all 26 primitive tests passed,
+  including the unchanged default atomic updates from two CUDA streams. The
+  full benchmark reported `CORRECT=True` on 20 cases.
+- BAG geometric-mean latency: **2.069139 ms**, 7.66% lower than iteration 25.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.356438x**, up from 0.330219x.
+- Row-major TF32 reached `0.750x`, `0.760x`, and `0.842x` at
+  N=2048/4096/8192. Row-major IEEE improved at N=1024/2048 but remained
+  about `0.38x` for N=4096/8192.
+- Analysis: removing atomics materially helps small and TF32 buckets, but the
+  large IEEE plateau confirms the custom GEMM bodies are now dominant.
+- Outcome: keep as the new best. Next replace only the plain overwrite M3/M4
+  products with cuBLAS while retaining Triton primitives for fused products.
+- Trajectory: `trajectory/iter-26-20260831-150040`.
 
 ### Baseline 512
 

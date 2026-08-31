@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -11,7 +12,10 @@ import torch
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
+IMPLEMENTATION_ROOT = Path(
+    os.environ.get("BAG_TRITON_IMPL_ROOT", REPOSITORY_ROOT / "src")
+).resolve()
+sys.path.insert(0, str(IMPLEMENTATION_ROOT))
 
 from bag_triton import bag_primitive  # noqa: E402
 
