@@ -184,7 +184,7 @@ def _select_launch_config(
         # and nearly fills an Ampere SM's shared memory with four input
         # streams.  A compact tile exposes 256 programs and permits multiple
         # resident CTAs while retaining a three-stage reduction pipeline.
-        return _LaunchConfig(32, 64, 16, 8, 4, 3)
+        return _LaunchConfig(32, 32, 16, 4, 4, 3)
     if min(m, n) >= 1024:
         # Large square matrices benefit from the greater output-tile reuse;
         # halve K so four pipelined inputs remain within shared-memory limits.

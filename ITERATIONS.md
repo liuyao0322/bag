@@ -28,6 +28,7 @@
 | iter-19 | Deepen compact 32x32x16 pipeline from 3 to 4 stages | 0.053670 ms geomean; 0.782033x vs unfused | yes | reject; regression |
 | iter-20 | Reduce compact 32x32 tile from 4 to 2 warps | 0.052497 ms geomean; 0.793737x vs unfused | yes | reject; regression |
 | iter-21 | Test compact rectangular 32x64x16 tile | 0.047456 ms geomean; 0.870281x vs unfused | yes | reject; below best |
+| iter-22 | Reduce compact-tile GROUP_M from 8 to 4 | 0.046449 ms geomean; 0.885925x vs unfused | yes | tie; retain GROUP_M=8 |
 
 ## Baseline
 
@@ -370,3 +371,19 @@
 - Outcome: **reject**. The additional reuse nearly ties but does not beat the
   256-CTA square tile; whole-GPU work supply remains more valuable.
 - Trajectory: `trajectory/iter-21-20260831-144100`.
+
+### Iteration 22 — smaller program super-group
+
+- Change: restored the iteration-16 tile and reduced `GROUP_M` from 8 to 4.
+- Hypothesis: a smaller grouped-ordering working set might improve L2 locality
+  or tail scheduling on the 16x16 output grid.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **0.046449 ms**, exactly tied with iteration
+  16 at benchmark resolution.
+- Geometric-mean speedup vs unfused: **0.885925x**; the change from iteration
+  16 is caused by reference timing variation, not lower fused latency.
+- Per-mode fused latency (ms): IEEE column-major `0.0553`, IEEE row-major
+  `0.0502`, TF32 column-major `0.0410`, TF32 row-major `0.0410`.
+- Outcome: **tie/reject for simplicity**. Retain `GROUP_M=8`, which matches
+  the established launch policy and is not slower.
+- Trajectory: `trajectory/iter-22-20260831-144131`.
