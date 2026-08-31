@@ -17,3 +17,14 @@ Source: user prompt, 2026-08-31 (512-bucket follow-up).
   column-major layouts and both IEEE and TF32 precision modes.
 - Retain the previously selected large-shape configuration and require a full
   correctness/performance regression before publishing the 512-bucket winner.
+
+Source: user prompt, 2026-08-31 (end-to-end BAG implementation).
+
+- Implement the depth-1 BAG matrix-multiplication algorithm with the Triton
+  primitive, including the forward combinations, seven products, and inverse
+  basis transform.
+- Compare end-to-end BAG latency against ordinary `torch.mm`/cuBLAS GEMM with
+  preallocated outputs and workspace; exclude allocation, JIT compilation,
+  random-data generation, and library initialization from timed regions.
+- Preserve exact BAG algebra and report IEEE and TF32 numerical error honestly;
+  do not weaken correctness thresholds or omit slow buckets to claim speedup.

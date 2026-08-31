@@ -32,6 +32,7 @@
 | iter-23 | Test 16x64x16 I/O-oriented tile | 0.058420 ms geomean; 0.718442x vs unfused | yes | reject; major regression |
 | iter-24 | Reduce best compact-tile pipeline from 3 to 2 stages | 0.049067 ms geomean; 0.855399x vs unfused | yes | reject; regression |
 | final-512 | Restore and remeasure iteration 16 | 0.047132 ms geomean; 0.890515x vs unfused | yes | final 512 winner |
+| iter-25 | One-level BAG with two quarter-block transforms and seven fused primitives | 2.240755 ms geomean; 0.330219x vs cuBLAS GEMM | yes | baseline for end-to-end BAG phase |
 
 ## Baseline
 

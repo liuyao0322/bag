@@ -32,12 +32,13 @@ srun \
         PYTHONNOUSERSITE="$PYTHONNOUSERSITE" \
         BAG_TRITON_IMPL_ROOT="$BAG_TRITON_IMPL_ROOT" \
         TRITON_CACHE_DIR="$TRITON_CACHE_DIR" \
-        "$PYTHON_BIN" -s scripts/benchmark_triton_primitive.py \
+        "$PYTHON_BIN" -s scripts/benchmark_triton_bag.py \
             --layout column-major row-major \
             --precision ieee tf32 \
-            --shape square-512 \
+            --size 512 1024 2048 4096 8192 \
             --warmup-ms 20 \
             --rep-ms 80 \
+            --output "$TRAJ_DIR/results.csv" \
     2>&1 | tee _bench_output.txt
 
 cp -r solution/* "$TRAJ_DIR/"
