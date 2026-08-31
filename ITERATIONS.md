@@ -14,6 +14,7 @@
 | iter-7 | Compile-time unmasked fast path for exact tiles | benchmark failed to compile | no result | fix API usage and retry |
 | iter-8 | Corrected exact-tile unmasked load path | 1.175801 ms geomean; 0.679223x vs unfused | yes | reject; no gain |
 | iter-9 | Canonical-contiguous address specialization | 1.155336 ms geomean; 0.692094x vs unfused | yes | reject; below 3% threshold |
+| iter-10 | Use 128x128x16 tiles for large tall/wide GEMMs | 1.091716 ms geomean; 0.733427x vs unfused | yes | keep; new best |
 
 ## Baseline
 
@@ -147,3 +148,16 @@
 - Per-shape fused latency (ms): square-1024 `0.2857`, square-2048 `1.3353`, square-4096 `8.5606`, tall `0.9523`, wide `0.9370`, large-k `0.8161`.
 - Outcome: **reject as inconclusive/no material gain**. Runtime strides are evidently already simplified or amortized by Triton's compiler, so the extra specialization is not justified.
 - Trajectory: `trajectory/iter-9-20260831-142018`.
+
+## Iteration 10 — square tiles for large tall/wide GEMMs
+
+- Change: returned to the iteration-5 general address path and selected the large-square `128x128x16`, 8-warp, 3-stage GEMM body for fused tall/wide problems whose short edge is at least 512.
+- Hypothesis: the additional reuse from doubling the short tile edge again would outweigh the lower K tile and increased accumulator footprint.
+- Correctness: `CORRECT=True`.
+- Fused geometric-mean latency: **1.091716 ms**.
+- Geometric-mean speedup vs unfused: **0.733427x**.
+- Change vs iteration-5 best (1.158568 ms): **5.77% faster**.
+- Change vs baseline (2.185636 ms): **2.0020x faster**.
+- Per-shape fused latency (ms): square-1024 `0.2847`, square-2048 `1.3384`, square-4096 `8.5340`, tall `0.7987`, wide `0.8028`, large-k `0.8120`.
+- Outcome: **new best**. Tall and wide latency improve another 16.9% and 15.1% over iteration 5, respectively, without degrading the other shape buckets.
+- Trajectory: `trajectory/iter-10-20260831-142124`.

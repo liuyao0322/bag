@@ -63,7 +63,6 @@ def _bag_primitive_kernel(
     GAMMA_D: tl.constexpr,
     GAMMA_E: tl.constexpr,
     INPUT_PRECISION: tl.constexpr,
-    CANONICAL_CONTIGUOUS: tl.constexpr,
     BLOCK_M: tl.constexpr,
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
@@ -93,41 +92,25 @@ def _bag_primitive_kernel(
     # pointer, loads, and arithmetic for the common X@V specialization.
     for k_start in range(0, tl.cdiv(k, BLOCK_K)):
         current_k = k_start * BLOCK_K + offsets_k
-        if CANONICAL_CONTIGUOUS:
-            x_offsets = offsets_m[:, None] * stride_xm + current_k[None, :]
-            v_offsets = current_k[:, None] * stride_vk + offsets_n[None, :]
-        else:
-            x_offsets = offsets_m[:, None] * stride_xm + current_k[None, :] * stride_xk
-            v_offsets = current_k[:, None] * stride_vk + offsets_n[None, :] * stride_vn
+        x_offsets = offsets_m[:, None] * stride_xm + current_k[None, :] * stride_xk
+        v_offsets = current_k[:, None] * stride_vk + offsets_n[None, :] * stride_vn
         x_mask = (offsets_m[:, None] < m) & (current_k[None, :] < k)
         v_mask = (current_k[:, None] < k) & (offsets_n[None, :] < n)
 
         left = tl.load(x_ptr + x_offsets, mask=x_mask, other=0.0)
         if DELTA == 1:
-            if CANONICAL_CONTIGUOUS:
-                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :]
-            else:
-                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
+            y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
             left += tl.load(y_ptr + y_offsets, mask=x_mask, other=0.0)
         elif DELTA == -1:
-            if CANONICAL_CONTIGUOUS:
-                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :]
-            else:
-                y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
+            y_offsets = offsets_m[:, None] * stride_ym + current_k[None, :] * stride_yk
             left -= tl.load(y_ptr + y_offsets, mask=x_mask, other=0.0)
 
         right = tl.load(v_ptr + v_offsets, mask=v_mask, other=0.0)
         if EPSILON == 1:
-            if CANONICAL_CONTIGUOUS:
-                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :]
-            else:
-                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
+            w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
             right += tl.load(w_ptr + w_offsets, mask=v_mask, other=0.0)
         elif EPSILON == -1:
-            if CANONICAL_CONTIGUOUS:
-                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :]
-            else:
-                w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
+            w_offsets = current_k[:, None] * stride_wk + offsets_n[None, :] * stride_wn
             right -= tl.load(w_ptr + w_offsets, mask=v_mask, other=0.0)
 
         accumulator += tl.dot(left, right, input_precision=INPUT_PRECISION)
@@ -137,10 +120,7 @@ def _bag_primitive_kernel(
     # Additive modes are atomic so independent BAG primitives can be launched
     # concurrently even when they update the same output block.
     if GAMMA_D != 0:
-        if CANONICAL_CONTIGUOUS:
-            d_offsets = offsets_m[:, None] * stride_dm + offsets_n[None, :]
-        else:
-            d_offsets = offsets_m[:, None] * stride_dm + offsets_n[None, :] * stride_dn
+        d_offsets = offsets_m[:, None] * stride_dm + offsets_n[None, :] * stride_dn
         if GAMMA_D == 1:
             tl.atomic_add(d_ptr + d_offsets, accumulator, mask=output_mask)
         elif GAMMA_D == -1:
@@ -151,10 +131,7 @@ def _bag_primitive_kernel(
             tl.store(d_ptr + d_offsets, -accumulator, mask=output_mask)
 
     if GAMMA_E != 0:
-        if CANONICAL_CONTIGUOUS:
-            e_offsets = offsets_m[:, None] * stride_em + offsets_n[None, :]
-        else:
-            e_offsets = offsets_m[:, None] * stride_em + offsets_n[None, :] * stride_en
+        e_offsets = offsets_m[:, None] * stride_em + offsets_n[None, :] * stride_en
         if GAMMA_E == 1:
             tl.atomic_add(e_ptr + e_offsets, accumulator, mask=output_mask)
         elif GAMMA_E == -1:
@@ -184,6 +161,8 @@ def _select_launch_config(
     block_k = 16 if k < 32 else 32
     has_input_combination = delta != 0 or epsilon != 0
     if m >= 4 * n:
+        if has_input_combination and n >= 512:
+            return _LaunchConfig(128, 128, 16, 8, 8, 3)
         # Eight warps keep per-thread accumulators bounded while a 64-wide
         # output tile improves reuse along the short matrix dimension.
         num_stages = 2 if has_input_combination else 3
@@ -191,6 +170,8 @@ def _select_launch_config(
         block_n = 64 if has_input_combination else 32
         return _LaunchConfig(128, block_n, block_k, 8, num_warps, num_stages)
     if n >= 4 * m:
+        if has_input_combination and m >= 512:
+            return _LaunchConfig(128, 128, 16, 8, 8, 3)
         num_stages = 2 if has_input_combination else 3
         num_warps = 8 if has_input_combination else 4
         block_m = 64 if has_input_combination else 32
@@ -411,14 +392,6 @@ def bag_primitive(
         triton.cdiv(kernel_m, config.block_m) * triton.cdiv(kernel_n, config.block_n),
     )
     input_precision = "tf32" if allow_tf32 else "ieee"
-    canonical_contiguous = (
-        stride_xk == 1
-        and (kernel_delta == 0 or stride_yk == 1)
-        and stride_vn == 1
-        and (kernel_epsilon == 0 or stride_wn == 1)
-        and (gamma_d == 0 or stride_dn == 1)
-        and (gamma_e == 0 or stride_en == 1)
-    )
 
     _bag_primitive_kernel[grid](
         kernel_x,
@@ -447,7 +420,6 @@ def bag_primitive(
         GAMMA_D=gamma_d,
         GAMMA_E=gamma_e,
         INPUT_PRECISION=input_precision,
-        CANONICAL_CONTIGUOUS=canonical_contiguous,
         BLOCK_M=config.block_m,
         BLOCK_N=config.block_n,
         BLOCK_K=config.block_k,
