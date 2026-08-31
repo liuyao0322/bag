@@ -171,13 +171,13 @@ def _select_launch_config(
     if max(m, n) <= 256:
         return _LaunchConfig(32, 32, block_k, 8, 4, 3)
     if min(m, n) >= 2048:
-        # With both input combinations enabled, the pipelined X/Y/V/W loads
-        # make BLOCK_K=32 exceed the 99 KiB shared-memory limit on RTX 3090
-        # (about 160 KiB at num_stages=3).  Halving K keeps the 128x128 output
-        # tile while fitting both consumer and datacenter NVIDIA GPUs.
+        # A rectangular output tile keeps BLOCK_K=32 for four-input fusion
+        # while reducing both accumulator registers and pipelined shared memory.
         if has_input_combination:
-            block_k = 16
+            return _LaunchConfig(128, 64, 32, 8, 8, 2)
         return _LaunchConfig(128, 128, block_k, 8, 8, 3)
+    if has_input_combination:
+        return _LaunchConfig(128, 64, block_k, 8, 8, 2)
     return _LaunchConfig(64, 64, block_k, 8, 4, 3)
 
 

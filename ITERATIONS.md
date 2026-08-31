@@ -6,6 +6,7 @@
 |---|---|---:|---:|---|
 | baseline | Current grouped tiled `tl.dot` kernel | 2.185636 ms geomean; 0.365529x vs unfused | yes | baseline |
 | iter-1 | Reinterpret column-major as transposed row-major GEMM | 1.358151 ms geomean; 0.588348x vs unfused | yes | keep; new best |
+| iter-2 | Rectangular `128x64x32`, 8-warps, 2-stage main tiles | 1.422233 ms geomean; 0.560589x vs unfused | yes | reject; regression |
 
 ## Baseline
 
@@ -36,3 +37,19 @@
 - Analysis: The large, broad improvement confirms physical layout was the
   dominant first-order issue. The kernel still trails cuBLAS, so the next
   direction is tile/warp/pipeline tuning on the now-canonical row-major GEMM.
+
+## Iteration 2
+
+- Direction: Replace the standard `64x64x32` tile and the large
+  `128x128x16` four-input tile with `128x64x32`, 8 warps, and 2 pipeline
+  stages to restore K=32 while reducing per-thread accumulators.
+- Hypothesis: Higher A reuse and fewer K-loop iterations would outweigh the
+  extra output programs, while two stages would fit the four input streams in
+  shared memory.
+- Result: fused geomean regressed from 1.358151 to 1.422233 ms (4.7% slower),
+  and speedup geomean fell to 0.560589x. Square-1024 improved from 0.3308 to
+  0.2857 ms and large-K from 0.8561 to 0.8172 ms, but square-2048 regressed to
+  1.5974 ms and square-4096 to 11.7540 ms. `CORRECT=True`.
+- Analysis: The rectangular K=32 tile is useful for 1024-scale and large-K
+  problems, but loses too much N reuse and/or pipeline depth on large square
+  matrices. Keep it as a size-specific candidate rather than a global policy.
