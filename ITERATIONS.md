@@ -1357,3 +1357,28 @@
 - Outcome: **reject and close ordered 6+1**.  Restore the exact iteration-47
   product-major path rather than retaining a layout-specific regression.
 - Trajectory: `trajectory/iter-51-20260831-225016`.
+
+### Iteration 52 — integer last-completer tickets
+
+- Change: restored the exact product-major/last-completer implementation and
+  reinterpreted the otherwise-unused FP32 counter plane as aligned `int32`.
+  Prepare writes integer zero; each small-TF32 product CTA performs the same
+  GPU-scope acq_rel atomic add of integer one; the unique `old==6` CTA decodes.
+  Allocation, counter count, memory ordering, product traffic, and BAG algebra
+  are unchanged.
+- Correctness: all 20 formal cases report `CORRECT=True`, including both
+  layouts and repeated timed reuse of the aliased workspace plane.
+- Targeted result: all four affected TF32 cases are exactly tied with the clean
+  baseline at the benchmark resolution: **0.0225 ms** for N=512 and
+  **0.0922 ms** for N=1024 in both layouts.
+- Full-suite BAG geometric mean was **0.809415 ms**, nominally below the clean
+  replay, but IEEE and large-shape specializations do not contain the changed
+  atomic and varied materially in this run.  That aggregate movement is not
+  attributed to the candidate.
+- Analysis: integer and FP32 tickets have indistinguishable end-to-end latency
+  at the approximately 1.024-us CUDA-event resolution.  Inspect SASS and one
+  adjacent focused A/B only to determine whether an unresolved sub-bin signal
+  exists; absent a repeatable direct-bucket win, keep the FP32 implementation
+  for source simplicity.
+- Outcome: **formal tie / provisional reject**.
+- Trajectory: `trajectory/iter-52-20260831-225557`.
