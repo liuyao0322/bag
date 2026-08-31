@@ -1109,3 +1109,43 @@
   improved the best result; perform the required stall reassessment, restore
   the exact product-major kernel, and change direction to interleaved prepare.
 - Trajectory: `trajectory/iter-42-20260831-221133`.
+
+### Stall reassessment after iterations 40--42
+
+- Profiling status: Nsight Compute hardware counters remain unavailable under
+  the previously observed `ERR_NVGPUCTRPERM`, so the reassessment uses CUDA
+  event distributions, the recorded zero-spill resource data for iteration 39,
+  and the complete iteration log rather than retrying the blocked profiler.
+- Runtime evidence: tile-major and microchunks G=4/8/16 all regress the target
+  TF32 buckets; the larger chunks approach but never beat product-major.
+- Literature check: SubCuber and FalconGEMM both make dataflow placement,
+  selective pre-sum fusion, and resource-aware fallback first-class choices;
+  neither implies that disturbing a cache-efficient product run should help.
+- Decision: close the CTA-order axis and move to a distinct dataflow direction:
+  fuse the independent prepare work into the two raw-quadrant products while
+  preserving product-major ordering inside each phase and one GEMM accumulator
+  per CTA.
+
+### Iteration 43 — edge-owner raw2 interleaved preparation
+
+- Change: restored product-major ordering.  For N=512/1024 TF32, split the
+  grouped launch into M4/M5 followed by M1/M2/M3/M6/M7.  In the first launch,
+  M4 CTAs with `program_n==0` materialize the four canonical-left transformed
+  planes inside their K loop, while M5 CTAs with `program_m==0` materialize the
+  four canonical-right planes.  M4 writes each spatial counter to two; the
+  second launch performs five acq_rel arrivals and the existing last-completer
+  decode.  IEEE and larger buckets retain the original path.
+- Hypothesis: the two-launch schedule has the same 3/6 ideal wave counts as the
+  original small kernels, removes the standalone prepare grid, reuses one raw
+  fragment on each side, and never holds more than one GEMM accumulator.
+- Result: the formal benchmark **failed correctness** at its first enabled
+  case, N=512 column-major TF32.  Relative L2 error was **1.907166e+00** and
+  maximum absolute error was **2.306713e+01**.  All ten preceding IEEE cases,
+  which retain the original path, passed with their normal errors and latency.
+- Analysis: the order-one error is a deterministic column-major transformed
+  operand/store mapping defect, not a tolerance issue or marginal numerical
+  drift.  No performance conclusion can be drawn from this iteration.
+- Outcome: **implementation failure; diagnose and correct the column-major
+  canonical-left/right slot mapping before timing the direction**.
+- Trajectory: benchmark aborted before the trajectory snapshot step; console
+  output is preserved in `_bench_output.txt` for this commit.

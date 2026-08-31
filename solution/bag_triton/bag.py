@@ -624,9 +624,11 @@ def _grouped_bag_gemm_kernel(
     left3_ptr,
     left4_ptr,
     left56_ptr,
+    left22_ptr,
     right3_ptr,
     right4_ptr,
     right56_ptr,
+    right22_ptr,
     products_ptr,
     counter_ptr,
     c11_ptr,
@@ -654,27 +656,25 @@ def _grouped_bag_gemm_kernel(
     BLOCK_N: tl.constexpr,
     BLOCK_K: tl.constexpr,
     GROUP_M: tl.constexpr,
-    ORDER_CHUNK: tl.constexpr,
+    PRODUCT_PHASE: tl.constexpr,
+    INTERLEAVE_PREP: tl.constexpr,
     TRANSPOSE_PROBLEM: tl.constexpr,
     FUSE_LAST_DECODE: tl.constexpr,
 ):
     """Compute seven BAG products, loading unchanged quadrants in place."""
 
-    if ORDER_CHUNK:
-        # Launch a small spatial chunk for every product before moving to the
-        # next chunk.  This keeps product-input reuse within each chunk while
-        # shortening the distance between the seven results consumed by the
-        # last-completer decoder.  The selected small-matrix grids are exactly
-        # divisible by ORDER_CHUNK, so every one-dimensional task is useful.
-        task_id = tl.program_id(axis=0)
-        tasks_per_chunk = 7 * ORDER_CHUNK
-        chunk_id = task_id // tasks_per_chunk
-        task_in_chunk = task_id % tasks_per_chunk
-        product_id = task_in_chunk // ORDER_CHUNK
-        program_id = chunk_id * ORDER_CHUNK + task_in_chunk % ORDER_CHUNK
+    program_id = tl.program_id(axis=0)
+    local_product_id = tl.program_id(axis=1)
+    if PRODUCT_PHASE == 1:
+        # First launch: the two products whose operands are raw quadrants.
+        product_id = local_product_id + 3
+    elif PRODUCT_PHASE == 2:
+        # Second launch: M1/M2/M3/M6/M7 retain their global product slots.
+        product_id = local_product_id
+        if local_product_id >= 3:
+            product_id += 2
     else:
-        program_id = tl.program_id(axis=0)
-        product_id = tl.program_id(axis=1)
+        product_id = local_product_id
     num_programs_m = tl.cdiv(half, BLOCK_M)
     num_programs_n = tl.cdiv(half, BLOCK_N)
     programs_per_group = GROUP_M * num_programs_n
@@ -748,16 +748,103 @@ def _grouped_bag_gemm_kernel(
             current_k[:, None] * current_stride_right_k
             + offsets_n[None, :] * current_stride_right_n
         )
+        left_mask = (offsets_m[:, None] < half) & (current_k[None, :] < half)
+        right_mask = (current_k[:, None] < half) & (offsets_n[None, :] < half)
         left = tl.load(
             left_base + left_offsets,
-            mask=(offsets_m[:, None] < half) & (current_k[None, :] < half),
+            mask=left_mask,
             other=0.0,
         )
         right = tl.load(
             right_base + right_offsets,
-            mask=(current_k[:, None] < half) & (offsets_n[None, :] < half),
+            mask=right_mask,
             other=0.0,
         )
+        if INTERLEAVE_PREP:
+            # M4 owns the canonical-left transformed operands.  Restricting
+            # writes to program_n==0 gives every (m,k) fragment one owner.
+            if local_product_id == 0:
+                if program_n == 0:
+                    if TRANSPOSE_PROBLEM:
+                        left12 = tl.load(left56_ptr + left_offsets, mask=left_mask, other=0.0)
+                        left21 = tl.load(left4_ptr + left_offsets, mask=left_mask, other=0.0)
+                    else:
+                        left12 = tl.load(left4_ptr + left_offsets, mask=left_mask, other=0.0)
+                        left21 = tl.load(left56_ptr + left_offsets, mask=left_mask, other=0.0)
+                    left22 = tl.load(left22_ptr + left_offsets, mask=left_mask, other=0.0)
+                    left_three = left12 - left21 + left22
+                    tl.store(
+                        left_ptr + 0 * stride_left_batch + left_offsets,
+                        left12 + left22,
+                        mask=left_mask,
+                    )
+                    tl.store(
+                        left_ptr + 1 * stride_left_batch + left_offsets,
+                        left22 - left21,
+                        mask=left_mask,
+                    )
+                    tl.store(
+                        left_ptr + 2 * stride_left_batch + left_offsets,
+                        left_three,
+                        mask=left_mask,
+                    )
+                    if TRANSPOSE_PROBLEM:
+                        tl.store(
+                            left_ptr + 6 * stride_left_batch + left_offsets,
+                            left_three - left,
+                            mask=left_mask,
+                        )
+                    else:
+                        tl.store(
+                            left_ptr + 5 * stride_left_batch + left_offsets,
+                            left_three - left,
+                            mask=left_mask,
+                        )
+
+            # M5 owns the canonical-right transformed operands.  Restricting
+            # writes to program_m==0 gives every (k,n) fragment one owner.
+            if local_product_id == 1:
+                if program_m == 0:
+                    right11 = tl.load(right3_ptr + right_offsets, mask=right_mask, other=0.0)
+                    if TRANSPOSE_PROBLEM:
+                        right12 = right
+                        right21 = tl.load(
+                            right56_ptr + right_offsets, mask=right_mask, other=0.0
+                        )
+                    else:
+                        right12 = tl.load(
+                            right56_ptr + right_offsets, mask=right_mask, other=0.0
+                        )
+                        right21 = right
+                    right22 = tl.load(right22_ptr + right_offsets, mask=right_mask, other=0.0)
+                    right_three = right12 - right21 + right22
+                    tl.store(
+                        right_ptr + 0 * stride_right_batch + right_offsets,
+                        right12 + right22,
+                        mask=right_mask,
+                    )
+                    tl.store(
+                        right_ptr + 1 * stride_right_batch + right_offsets,
+                        right22 - right21,
+                        mask=right_mask,
+                    )
+                    tl.store(
+                        right_ptr + 2 * stride_right_batch + right_offsets,
+                        right_three,
+                        mask=right_mask,
+                    )
+                    if TRANSPOSE_PROBLEM:
+                        tl.store(
+                            right_ptr + 5 * stride_right_batch + right_offsets,
+                            right_three - right11,
+                            mask=right_mask,
+                        )
+                    else:
+                        tl.store(
+                            right_ptr + 6 * stride_right_batch + right_offsets,
+                            right_three - right11,
+                            mask=right_mask,
+                        )
         accumulator += tl.dot(left, right, input_precision=INPUT_PRECISION)
     product_offsets = (
         product_id * stride_products_batch
@@ -769,7 +856,13 @@ def _grouped_bag_gemm_kernel(
         accumulator,
         mask=(offsets_m[:, None] < half) & (offsets_n[None, :] < half),
     )
-    if FUSE_LAST_DECODE:
+    if INTERLEAVE_PREP:
+        # One M4 CTA per spatial tile initializes the arrival count.  The next
+        # launch cannot begin before every raw product and transformed operand
+        # store in this launch is visible on the same CUDA stream.
+        if local_product_id == 0:
+            tl.store(counter_ptr + program_id, 2.0)
+    elif FUSE_LAST_DECODE:
         # Publish this product tile.  The seventh arrival then consumes all
         # seven tiles while they are still hot and writes the four final BAG
         # blocks, eliminating the separate decode launch.  The CTA barrier
@@ -1200,6 +1293,7 @@ def bag_matmul(
         # decode into the last product CTA.  Other sizes/precisions retain the
         # independent bandwidth kernel to avoid register-pressure regressions.
         fuse_last_decode = half in (256, 512) and allow_tf32
+        interleave_raw2 = fuse_last_decode
         num_product_tiles = 32 if half == 256 else 64 if half == 512 else 0
         if half <= 256:
             grouped_prepare_block = grouped_decode_block = 256
@@ -1210,23 +1304,24 @@ def bag_matmul(
         else:
             grouped_prepare_block = grouped_decode_block = 2048
             grouped_prepare_warps = grouped_decode_warps = 8
-        _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, grouped_prepare_block),)](
-            a,
-            b,
-            grouped_left,
-            grouped_right,
-            grouped_left[4],
-            half,
-            num_product_tiles,
-            a.stride(0), a.stride(1),
-            b.stride(0), b.stride(1),
-            grouped_left.stride(0), grouped_left.stride(1), grouped_left.stride(2),
-            grouped_right.stride(0), grouped_right.stride(1), grouped_right.stride(2),
-            RESET_COUNTERS=fuse_last_decode,
-            COLUMN_MAJOR=column_major,
-            BLOCK=grouped_prepare_block,
-            num_warps=grouped_prepare_warps,
-        )
+        if not interleave_raw2:
+            _prepare_grouped_inputs_kernel[(triton.cdiv(element_count, grouped_prepare_block),)](
+                a,
+                b,
+                grouped_left,
+                grouped_right,
+                grouped_left[4],
+                half,
+                num_product_tiles,
+                a.stride(0), a.stride(1),
+                b.stride(0), b.stride(1),
+                grouped_left.stride(0), grouped_left.stride(1), grouped_left.stride(2),
+                grouped_right.stride(0), grouped_right.stride(1), grouped_right.stride(2),
+                RESET_COUNTERS=fuse_last_decode,
+                COLUMN_MAJOR=column_major,
+                BLOCK=grouped_prepare_block,
+                num_warps=grouped_prepare_warps,
+            )
 
     if use_grouped:
         if half <= 64:
@@ -1254,6 +1349,7 @@ def bag_matmul(
             kernel_right = grouped_left
             kernel_left3, kernel_left4, kernel_left56 = b11, b21, b12
             kernel_right3, kernel_right4, kernel_right56 = a11, a12, a21
+            kernel_left22, kernel_right22 = b22, a22
             stride_left_m, stride_left_k = grouped_right.stride(2), grouped_right.stride(1)
             stride_right_k, stride_right_n = grouped_left.stride(2), grouped_left.stride(1)
             stride_direct_left_m, stride_direct_left_k = b.stride(1), b.stride(0)
@@ -1267,6 +1363,7 @@ def bag_matmul(
             kernel_right = grouped_right
             kernel_left3, kernel_left4, kernel_left56 = a11, a12, a21
             kernel_right3, kernel_right4, kernel_right56 = b11, b21, b12
+            kernel_left22, kernel_right22 = a22, b22
             stride_left_m, stride_left_k = grouped_left.stride(1), grouped_left.stride(2)
             stride_right_k, stride_right_n = grouped_right.stride(1), grouped_right.stride(2)
             stride_direct_left_m, stride_direct_left_k = a.stride(0), a.stride(1)
@@ -1276,21 +1373,68 @@ def bag_matmul(
             stride_output_m = out.stride(0)
             stride_output_n = out.stride(1)
         num_spatial_tiles = triton.cdiv(half, block_m) * triton.cdiv(half, block_n)
-        order_chunk = 8 if fuse_last_decode else 0
-        grouped_grid = (
-            (num_spatial_tiles * 7,)
-            if order_chunk
-            else (num_spatial_tiles, 7)
-        )
+        if interleave_raw2:
+            _grouped_bag_gemm_kernel[(num_spatial_tiles, 2)](
+                kernel_left,
+                kernel_right,
+                kernel_left3,
+                kernel_left4,
+                kernel_left56,
+                kernel_left22,
+                kernel_right3,
+                kernel_right4,
+                kernel_right56,
+                kernel_right22,
+                grouped_products,
+                grouped_left[4],
+                c_psi11,
+                c_psi12,
+                c_psi21,
+                c_psi22,
+                half,
+                kernel_left.stride(0),
+                stride_left_m,
+                stride_left_k,
+                kernel_right.stride(0),
+                stride_right_k,
+                stride_right_n,
+                stride_direct_left_m,
+                stride_direct_left_k,
+                stride_direct_right_k,
+                stride_direct_right_n,
+                grouped_products.stride(0),
+                stride_products_m,
+                stride_products_n,
+                stride_output_m,
+                stride_output_n,
+                INPUT_PRECISION="tf32" if allow_tf32 else "ieee",
+                BLOCK_M=block_m,
+                BLOCK_N=block_n,
+                BLOCK_K=block_k,
+                GROUP_M=8,
+                PRODUCT_PHASE=1,
+                INTERLEAVE_PREP=True,
+                TRANSPOSE_PROBLEM=column_major,
+                FUSE_LAST_DECODE=False,
+                num_warps=num_warps,
+                num_stages=num_stages,
+            )
+            grouped_grid = (num_spatial_tiles, 5)
+            product_phase = 2
+        else:
+            grouped_grid = (num_spatial_tiles, 7)
+            product_phase = 0
         _grouped_bag_gemm_kernel[grouped_grid](
             kernel_left,
             kernel_right,
             kernel_left3,
             kernel_left4,
             kernel_left56,
+            kernel_left22,
             kernel_right3,
             kernel_right4,
             kernel_right56,
+            kernel_right22,
             grouped_products,
             grouped_left[4],
             c_psi11,
@@ -1318,7 +1462,8 @@ def bag_matmul(
             BLOCK_N=block_n,
             BLOCK_K=block_k,
             GROUP_M=8,
-            ORDER_CHUNK=order_chunk,
+            PRODUCT_PHASE=product_phase,
+            INTERLEAVE_PREP=False,
             TRANSPOSE_PROBLEM=column_major,
             FUSE_LAST_DECODE=fuse_last_decode,
             num_warps=num_warps,
