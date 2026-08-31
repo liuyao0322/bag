@@ -36,6 +36,8 @@ class BagWorkspace(NamedTuple):
     transformed_a12: torch.Tensor
     transformed_b12: torch.Tensor
     streams: Optional[tuple[torch.cuda.Stream, ...]] = None
+    transformed_a12_m6: Optional[torch.Tensor] = None
+    transformed_b12_m7: Optional[torch.Tensor] = None
 
 
 @triton.jit
@@ -87,6 +89,91 @@ def _prepare_three_term_blocks_kernel(
 
     tl.store(sa_ptr + rows * stride_sa0 + columns * stride_sa1, transformed_a12, mask=mask)
     tl.store(sb_ptr + rows * stride_sb0 + columns * stride_sb1, transformed_b12, mask=mask)
+
+
+@triton.jit
+def _prepare_full_concurrency_kernel(
+    a_ptr,
+    b_ptr,
+    output_ptr,
+    sa_ptr,
+    sb_ptr,
+    ua_ptr,
+    ub_ptr,
+    half,
+    stride_a0,
+    stride_a1,
+    stride_b0,
+    stride_b1,
+    stride_output0,
+    stride_output1,
+    stride_sa0,
+    stride_sa1,
+    stride_sb0,
+    stride_sb1,
+    stride_ua0,
+    stride_ua1,
+    stride_ub0,
+    stride_ub1,
+    COLUMN_MAJOR: tl.constexpr,
+    BLOCK: tl.constexpr,
+):
+    """Materialize independent M3/M6/M7 inputs and zero all C-psi blocks."""
+
+    offsets = tl.program_id(axis=0) * BLOCK + tl.arange(0, BLOCK)
+    mask = offsets < half * half
+    if COLUMN_MAJOR:
+        columns = offsets // half
+        rows = offsets - columns * half
+    else:
+        rows = offsets // half
+        columns = offsets - rows * half
+
+    a11_offsets = rows * stride_a0 + columns * stride_a1
+    a12_offsets = rows * stride_a0 + (columns + half) * stride_a1
+    a21_offsets = (rows + half) * stride_a0 + columns * stride_a1
+    a22_offsets = (rows + half) * stride_a0 + (columns + half) * stride_a1
+    b11_offsets = rows * stride_b0 + columns * stride_b1
+    b12_offsets = rows * stride_b0 + (columns + half) * stride_b1
+    b21_offsets = (rows + half) * stride_b0 + columns * stride_b1
+    b22_offsets = (rows + half) * stride_b0 + (columns + half) * stride_b1
+
+    sa = (
+        tl.load(a_ptr + a12_offsets, mask=mask)
+        - tl.load(a_ptr + a21_offsets, mask=mask)
+        + tl.load(a_ptr + a22_offsets, mask=mask)
+    )
+    sb = (
+        tl.load(b_ptr + b12_offsets, mask=mask)
+        - tl.load(b_ptr + b21_offsets, mask=mask)
+        + tl.load(b_ptr + b22_offsets, mask=mask)
+    )
+    workspace_offsets_a = rows * stride_sa0 + columns * stride_sa1
+    workspace_offsets_b = rows * stride_sb0 + columns * stride_sb1
+    ua_offsets = rows * stride_ua0 + columns * stride_ua1
+    ub_offsets = rows * stride_ub0 + columns * stride_ub1
+    tl.store(sa_ptr + workspace_offsets_a, sa, mask=mask)
+    tl.store(sb_ptr + workspace_offsets_b, sb, mask=mask)
+    tl.store(
+        ua_ptr + ua_offsets,
+        sa - tl.load(a_ptr + a11_offsets, mask=mask),
+        mask=mask,
+    )
+    tl.store(
+        ub_ptr + ub_offsets,
+        sb - tl.load(b_ptr + b11_offsets, mask=mask),
+        mask=mask,
+    )
+
+    c11_offsets = rows * stride_output0 + columns * stride_output1
+    c12_offsets = rows * stride_output0 + (columns + half) * stride_output1
+    c21_offsets = (rows + half) * stride_output0 + columns * stride_output1
+    c22_offsets = (rows + half) * stride_output0 + (columns + half) * stride_output1
+    zero = tl.zeros((BLOCK,), dtype=tl.float32)
+    tl.store(output_ptr + c11_offsets, zero, mask=mask)
+    tl.store(output_ptr + c12_offsets, zero, mask=mask)
+    tl.store(output_ptr + c21_offsets, zero, mask=mask)
+    tl.store(output_ptr + c22_offsets, zero, mask=mask)
 
 
 @triton.jit
@@ -273,8 +360,9 @@ def allocate_bag_workspace(
     out: Optional[torch.Tensor] = None,
     *,
     multistream: bool = True,
+    full_concurrency: bool = False,
 ) -> BagWorkspace:
-    """Allocate the two quarter-matrix buffers needed by one BAG level.
+    """Allocate the precomputed quarter-matrix buffers needed by one BAG level.
 
     Column-major storage is retained when every supplied matrix is
     column-major; otherwise the workspace is row-major.  Allocation is a setup
@@ -296,12 +384,26 @@ def allocate_bag_workspace(
     strides = (1, half) if use_column_major else (half, 1)
     if not isinstance(multistream, bool):
         raise TypeError(f"multistream must be bool, got {type(multistream).__name__}")
+    if not isinstance(full_concurrency, bool):
+        raise TypeError(
+            f"full_concurrency must be bool, got {type(full_concurrency).__name__}"
+        )
     sa = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
     sb = torch.empty_strided((half, half), strides, dtype=torch.float32, device=a.device)
+    ua = None
+    ub = None
+    if full_concurrency:
+        ua = torch.empty_strided(
+            (half, half), strides, dtype=torch.float32, device=a.device
+        )
+        ub = torch.empty_strided(
+            (half, half), strides, dtype=torch.float32, device=a.device
+        )
     streams = None
-    if multistream:
-        streams = tuple(torch.cuda.Stream(device=a.device) for _ in range(4))
-    return BagWorkspace(sa, sb, streams)
+    if multistream or full_concurrency:
+        stream_count = 7 if full_concurrency else 4
+        streams = tuple(torch.cuda.Stream(device=a.device) for _ in range(stream_count))
+    return BagWorkspace(sa, sb, streams, ua, ub)
 
 
 def bag_matmul(
@@ -326,6 +428,8 @@ def bag_matmul(
             FP32, matching :func:`bag_primitive`.
         schedule: ``"serial"`` always submits on the caller's current stream;
             ``"multistream"`` uses two dependency batches for N below 4096;
+            ``"seven-stream"`` launches all seven products concurrently using
+            independent precomputed inputs and atomic output accumulation;
             ``"auto"`` selects it for N=2048, the measured RTX 3090 bucket
             where subproblems underfill the GPU but event overhead is amortized.
 
@@ -349,9 +453,10 @@ def bag_matmul(
         raise ValueError(f"BAG requires a positive even matrix size, got {size}")
     if not isinstance(allow_tf32, bool):
         raise TypeError(f"allow_tf32 must be bool, got {type(allow_tf32).__name__}")
-    if schedule not in ("auto", "serial", "multistream"):
+    if schedule not in ("auto", "serial", "multistream", "seven-stream"):
         raise ValueError(
-            f"schedule must be 'auto', 'serial', or 'multistream', got {schedule!r}"
+            "schedule must be 'auto', 'serial', 'multistream', or "
+            f"'seven-stream', got {schedule!r}"
         )
 
     device = a.device
@@ -364,7 +469,13 @@ def bag_matmul(
         _check_square_matrix("out", out, size, device, output=True)
 
     if workspace is None:
-        workspace = allocate_bag_workspace(a, b, out, multistream=schedule != "serial")
+        workspace = allocate_bag_workspace(
+            a,
+            b,
+            out,
+            multistream=schedule != "serial",
+            full_concurrency=schedule == "seven-stream",
+        )
     elif not isinstance(workspace, BagWorkspace):
         try:
             workspace = BagWorkspace(*workspace)
@@ -385,33 +496,73 @@ def bag_matmul(
     auto_multistream = schedule == "auto" and size == 2048
     forced_multistream = schedule == "multistream" and size < 4096
     use_multistream = (auto_multistream or forced_multistream) and worker_streams is not None
+    use_seven_stream = schedule == "seven-stream"
     if schedule == "multistream" and size < 4096 and worker_streams is None:
         raise ValueError(
             "schedule='multistream' requires workspace from "
             "allocate_bag_workspace(..., multistream=True)"
         )
+    ua = workspace.transformed_a12_m6
+    ub = workspace.transformed_b12_m7
+    if use_seven_stream:
+        if worker_streams is None or len(worker_streams) < 7:
+            raise ValueError(
+                "schedule='seven-stream' requires seven preallocated streams; use "
+                "allocate_bag_workspace(..., full_concurrency=True)"
+            )
+        if ua is None or ub is None:
+            raise ValueError(
+                "schedule='seven-stream' requires the full-concurrency workspace"
+            )
+        _check_square_matrix("workspace.transformed_a12_m6", ua, half, device, output=True)
+        _check_square_matrix("workspace.transformed_b12_m7", ub, half, device, output=True)
 
     element_count = half * half
     block = 256
-    column_major = all(_is_column_major(matrix) for matrix in (a, b, out, sa, sb))
-    _prepare_three_term_blocks_kernel[(triton.cdiv(element_count, block),)](
-        a,
-        b,
-        sa,
-        sb,
-        half,
-        a.stride(0),
-        a.stride(1),
-        b.stride(0),
-        b.stride(1),
-        sa.stride(0),
-        sa.stride(1),
-        sb.stride(0),
-        sb.stride(1),
-        COLUMN_MAJOR=column_major,
-        BLOCK=block,
-        num_warps=4,
-    )
+    layout_matrices = (a, b, out, sa, sb)
+    if use_seven_stream:
+        layout_matrices += (ua, ub)
+    column_major = all(_is_column_major(matrix) for matrix in layout_matrices)
+    if use_seven_stream:
+        _prepare_full_concurrency_kernel[(triton.cdiv(element_count, block),)](
+            a,
+            b,
+            out,
+            sa,
+            sb,
+            ua,
+            ub,
+            half,
+            a.stride(0), a.stride(1),
+            b.stride(0), b.stride(1),
+            out.stride(0), out.stride(1),
+            sa.stride(0), sa.stride(1),
+            sb.stride(0), sb.stride(1),
+            ua.stride(0), ua.stride(1),
+            ub.stride(0), ub.stride(1),
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+    else:
+        _prepare_three_term_blocks_kernel[(triton.cdiv(element_count, block),)](
+            a,
+            b,
+            sa,
+            sb,
+            half,
+            a.stride(0),
+            a.stride(1),
+            b.stride(0),
+            b.stride(1),
+            sa.stride(0),
+            sa.stride(1),
+            sb.stride(0),
+            sb.stride(1),
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
 
     a11 = a[:half, :half]
     a12 = a[:half, half:]
@@ -425,6 +576,50 @@ def bag_matmul(
     c_psi12 = out[:half, half:]
     c_psi21 = out[half:, :half]
     c_psi22 = out[half:, half:]
+
+    if use_seven_stream:
+        caller_stream = torch.cuda.current_stream(device=device)
+        streams = worker_streams[:7]
+        for stream in streams:
+            stream.wait_stream(caller_stream)
+        launches = (
+            (a12, a22, b12, b22, c_psi22, None, 1, 1, 1, 0),
+            (a22, a21, b22, b21, c_psi21, None, -1, -1, 1, 0),
+            (sa, None, sb, None, c_psi12, None, 0, 0, 1, 0),
+            (a11, None, b11, None, c_psi11, None, 0, 0, 1, 0),
+            (a12, None, b21, None, c_psi11, c_psi12, 0, 0, 1, 1),
+            (ua, None, b12, None, c_psi12, c_psi22, 0, 0, -1, -1),
+            (a21, None, ub, None, c_psi12, c_psi21, 0, 0, 1, 1),
+        )
+        for stream, launch in zip(streams, launches):
+            x, y, v, w, d, e, delta, epsilon, gamma_d, gamma_e = launch
+            with torch.cuda.stream(stream):
+                bag_primitive(
+                    x,
+                    y,
+                    v,
+                    w,
+                    d,
+                    e,
+                    delta=delta,
+                    epsilon=epsilon,
+                    gamma_d=gamma_d,
+                    gamma_e=gamma_e,
+                    allow_tf32=allow_tf32,
+                    _atomic_accumulate=True,
+                )
+        for stream in streams:
+            caller_stream.wait_stream(stream)
+        _inverse_basis_transform_kernel[(triton.cdiv(element_count, block),)](
+            out,
+            half,
+            out.stride(0),
+            out.stride(1),
+            COLUMN_MAJOR=column_major,
+            BLOCK=block,
+            num_warps=4,
+        )
+        return out
 
     if use_multistream:
         # Batch 1 has four independent output blocks.  Every worker waits for

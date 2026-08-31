@@ -36,3 +36,16 @@ Source: user prompt, 2026-08-31 (BAG launch scheduling follow-up).
 - Preserve caller-stream semantics, synchronize batches with CUDA events, and
   keep overlapping output updates race-free; do not count stream creation or
   graph construction in steady-state timings.
+
+Source: user prompt, 2026-08-31 (continue toward the 8/7 bound).
+
+- Continue optimizing the end-to-end BAG implementation because the measured
+  speedup has not reached the arithmetic-only theoretical bound of 8/7.
+- Evaluate a genuine seven-stream schedule with all seven primitive products
+  eligible to run concurrently; pre-create streams and all workspace outside
+  the timed region.
+- Keep transform, output initialization, atomic accumulation, merge/inverse
+  transform, and required synchronization inside end-to-end timing.
+- If full concurrency is limited by GEMM resource contention, evaluate hybrid
+  and grouped/batched leaf-GEMM execution without changing BAG algebra or
+  hiding unfavorable buckets.

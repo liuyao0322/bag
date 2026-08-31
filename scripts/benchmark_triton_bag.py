@@ -85,7 +85,11 @@ def _run_one(
     bag_output = _matrix(size, layout, random=False)
     gemm_output = _matrix(size, layout, random=False)
     workspace = allocate_bag_workspace(
-        a, b, bag_output, multistream=schedule != "serial"
+        a,
+        b,
+        bag_output,
+        multistream=schedule != "serial",
+        full_concurrency=schedule == "seven-stream",
     )
 
     def run_bag() -> None:
@@ -190,7 +194,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     parser.add_argument(
         "--schedule",
-        choices=("auto", "serial", "multistream"),
+        choices=("auto", "serial", "multistream", "seven-stream"),
         default="auto",
     )
     args = parser.parse_args()

@@ -432,6 +432,37 @@
   enforced by constructing all four streams in the preallocated workspace;
   the benchmark callable receives that workspace and never creates streams.
 
+### Iteration 31 — fully concurrent seven-stream atomic schedule
+
+- Change: added two independent quarter-matrix buffers for
+  `UA=SA-A11`/`UB=SB-B11`, generated `SA/SB/UA/UB` and zeroed all four C-psi
+  blocks in one Triton preparation kernel, then launched M1--M7 on seven
+  pre-created CUDA streams with atomic signed accumulation.
+- Hypothesis: removing the M3-before-M6/M7 dependency and making every leaf
+  product eligible for simultaneous execution could expose unused RTX 3090 SM
+  capacity and move end-to-end BAG toward the arithmetic-only 8/7 bound.
+- Measurement boundary: all stream and workspace allocation was outside the
+  timed callable; preparation, output zeroing, seven primitive launches,
+  atomics, stream fork/join, inverse transform, and required dependencies were
+  included.
+- Correctness: `CORRECT=True` across all 20 formal cases. A separate quick
+  suite passed 18 numerical cases plus repeated execution on a non-default
+  caller stream.
+- BAG geometric-mean latency: **2.284818 ms**.
+- Geometric-mean speedup vs cuBLAS GEMM: **0.325027x**.
+- Change vs iteration-30 best (1.538423 ms): **48.51% slower**.
+- Representative N=8192 latency: IEEE column/row
+  `61.0601/61.4656 ms`; TF32 column/row `47.4532/40.3139 ms`.
+- Analysis: seven half-size GEMMs contend for the same already-saturated SM,
+  tensor-core, cache, and memory resources. Full atomic output adds ten signed
+  atomic tile updates, including four contenders on C-psi12; the extra UA/UB
+  materialization and stream fork/join overhead compound the loss. Atomic
+  correctness removes output races but does not create execution capacity.
+- Outcome: **reject as the auto schedule**, while retaining the explicit
+  schedule temporarily for diagnosability. The next direction is to improve
+  leaf-GEMM efficiency through a hybrid or grouped/batched implementation.
+- Trajectory: `trajectory/iter-31-20260831-153322`.
+
 ### Baseline 512
 
 - Scope: square-512 across column-major/row-major and IEEE/TF32, always with
