@@ -15,6 +15,7 @@ cp solution/strassen_cuda/*.cuh "$OUT/source/strassen_cuda/"
 cp benchmark_results/strassen_fp32_a100_20261017/source/primitive_headers/*.cuh "$OUT/source/primitive_headers/"
 cp scripts/benchmark_bag_cuda.cu scripts/benchmark_strassen_fp32.cu scripts/bench_bag_cuda.sh "$OUT/source/"
 (cd "$OUT" && sha256sum source/bag_cuda/* source/strassen_cuda/* source/primitive_headers/* source/*.*) > "$OUT/source.sha256"
+if ! type module >/dev/null 2>&1; then source /etc/profile.d/modules.sh; fi
 module load cuda/12.2
 export NVIDIA_TF32_OVERRIDE=0
 {

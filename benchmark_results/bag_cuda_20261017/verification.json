@@ -1,0 +1,143 @@
+{
+  "implementation_verified": true,
+  "scope": "A100, pure FP32 C<-AB+C",
+  "source_matches_archive": true,
+  "primitive_body_unchanged": true,
+  "recursion_depths_verified": [
+    1,
+    2,
+    3
+  ],
+  "independent_input_offsets": [
+    1009,
+    2027
+  ],
+  "ordinary_fp64_records": 608,
+  "sanitizers": {
+    "memcheck": {
+      "exit_code": 0
+    },
+    "racecheck": {
+      "exit_code": 0
+    }
+  },
+  "isolated_primitive_profile": {
+    "exit_code": 0,
+    "Registers Per Thread": 119.0,
+    "Block Size": 128.0,
+    "Grid Size": 144.0,
+    "Static Shared Memory Per Block": 16384.0,
+    "Theoretical Occupancy": 25.0,
+    "Block Limit Registers": 4.0,
+    "l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.sum": 0.0,
+    "l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_st.sum": 0.0,
+    "l1tex__t_sectors_pipe_lsu_mem_global_op_red.sum": 73728.0
+  },
+  "selected_complete_calls": [
+    {
+      "run": "holdout_seed1009",
+      "seed_offset": 1009,
+      "parent_n": 1280,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.274926917418,
+      "min_ms": 0.274279985272,
+      "max_ms": 0.275159108452,
+      "rounds": 7,
+      "speedup": 0.9369870960482904,
+      "same_run_cublas_ms": 0.257602973977,
+      "same_run_strassen_ms": 0.253180351161
+    },
+    {
+      "run": "holdout_seed1009",
+      "seed_offset": 1009,
+      "parent_n": 1536,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.450310545039,
+      "min_ms": 0.44860830734,
+      "max_ms": 0.451791837322,
+      "rounds": 7,
+      "speedup": 0.9589376940719908,
+      "same_run_cublas_ms": 0.431819755676,
+      "same_run_strassen_ms": 0.426006926208
+    },
+    {
+      "run": "holdout_seed1009",
+      "seed_offset": 1009,
+      "parent_n": 1792,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.678216994618,
+      "min_ms": 0.675658632287,
+      "max_ms": 0.679845023535,
+      "rounds": 7,
+      "speedup": 1.0163630988711079,
+      "same_run_cublas_ms": 0.689314726357,
+      "same_run_strassen_ms": 0.648006984166
+    },
+    {
+      "run": "holdout_seed1009",
+      "seed_offset": 1009,
+      "parent_n": 2048,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.992140354904,
+      "min_ms": 0.988223187335,
+      "max_ms": 0.993984184392,
+      "rounds": 7,
+      "speedup": 0.992503843132437,
+      "same_run_cublas_ms": 0.984703115169,
+      "same_run_strassen_ms": 0.954364812263
+    },
+    {
+      "run": "holdout_seed2027",
+      "seed_offset": 2027,
+      "parent_n": 1280,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.27526777717,
+      "min_ms": 0.274931289125,
+      "max_ms": 0.276269760621,
+      "rounds": 7,
+      "speedup": 0.9390926057224427,
+      "same_run_cublas_ms": 0.258501934134,
+      "same_run_strassen_ms": 0.254838717075
+    },
+    {
+      "run": "holdout_seed2027",
+      "seed_offset": 2027,
+      "parent_n": 1536,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.453347112899,
+      "min_ms": 0.451851131319,
+      "max_ms": 0.454668517506,
+      "rounds": 7,
+      "speedup": 0.9617199347007505,
+      "same_run_cublas_ms": 0.435992955814,
+      "same_run_strassen_ms": 0.428812677149
+    },
+    {
+      "run": "holdout_seed2027",
+      "seed_offset": 2027,
+      "parent_n": 1792,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 0.684261645005,
+      "min_ms": 0.681640350067,
+      "max_ms": 0.686026732846,
+      "rounds": 7,
+      "speedup": 1.0161825171889023,
+      "same_run_cublas_ms": 0.695334720837,
+      "same_run_strassen_ms": 0.653726351463
+    },
+    {
+      "run": "holdout_seed2027",
+      "seed_offset": 2027,
+      "parent_n": 2048,
+      "case": "bag_column_minimal_d1_batched",
+      "median_ms": 1.00024718257,
+      "min_ms": 0.996032616716,
+      "max_ms": 1.00684025312,
+      "rounds": 7,
+      "speedup": 0.9854121235667876,
+      "same_run_cublas_ms": 0.985655700268,
+      "same_run_strassen_ms": 0.970228706625
+    }
+  ],
+  "n1536_faster_than_cublas": false
+}

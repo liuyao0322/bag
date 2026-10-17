@@ -1,0 +1,16 @@
+{
+  "selected_at_utc": "2026-10-17T10:33:36.939396+00:00",
+  "source_run": "iter18_initial",
+  "case": "bag_column_minimal_d1_batched",
+  "basis": "minimal",
+  "schedule": "batched",
+  "backend": "column",
+  "depth": 1,
+  "selection_seed_offset": 0,
+  "validation_seed_offsets": [
+    1009,
+    2027
+  ],
+  "binary_sha256": "491d7970ca18f9ce3fd3275d856e85fe0b355f5292eba65451dbd0e0aa2d4e08",
+  "reason": "Minimal basis beats full basis at all four search sizes; batched minimizes overall complete-call latency across the four sizes, with near ties to seven streams at1536/2048. Freeze before independent replay; no claim of faster-than-cuBLAS at1536."
+}

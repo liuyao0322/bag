@@ -7,6 +7,7 @@ OUT="${1:?output directory}"; shift
 [[ -n "${SLURM_JOB_ID:-}" && -n "${CUDA_VISIBLE_DEVICES:-}" ]]
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
+if ! type module >/dev/null 2>&1; then source /etc/profile.d/modules.sh; fi
 module load cuda/12.2
 export NVIDIA_TF32_OVERRIDE=0
 (cd "$ORIGIN" && sha256sum --check source.sha256) > "$OUT/source-verification.txt"

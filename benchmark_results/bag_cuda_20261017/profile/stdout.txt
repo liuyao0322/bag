@@ -1,0 +1,2 @@
+N=1536 FP64 PASS cases=2
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/profile/results

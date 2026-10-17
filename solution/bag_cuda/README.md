@@ -93,11 +93,11 @@ PEDANTIC math and `NVIDIA_TF32_OVERRIDE=0`.
 On the cluster, build on an allocated compute node:
 
 ```bash
-srun --jobid=<allocation> bash -l scripts/bench_bag_cuda.sh iter-N \
+srun --jobid=<allocation> bash scripts/bench_bag_cuda.sh iter-N \
   benchmark_results/my_bag/build --sizes 1280,1536,1792,2048 \
   --depths 1 --rounds 5 --target-ms 200
 
-srun --jobid=<allocation> bash -l scripts/replay_bag_cuda.sh \
+srun --jobid=<allocation> bash scripts/replay_bag_cuda.sh \
   benchmark_results/my_bag/build benchmark_results/my_bag/recursive_checks \
   --sizes 128,256,512 --depths 1,2,3 --seed-offset 1009 --validate-only
 ```
@@ -107,3 +107,15 @@ Numerical checks compare against independent FP64 matrix products, including
 nonzero initial C and one/three accumulated calls: exhaustive for N<=128 and
 deterministic samples including corners otherwise. Limits remain relative
 L2 <=3e-5 and scaled maximum error <=1e-4.
+
+## Verified results
+
+The [A100 report](../../benchmark_results/bag_cuda_20261017/REPORT.md) and
+[machine-readable verification](../../benchmark_results/bag_cuda_20261017/verification.json)
+retain complete-call timings, all layouts/schedules and large-size regressions.
+Two independent input sets passed 608 ordinary FP64 records, depth1/2/3 and
+memcheck/racecheck. The frozen small-size choice is minimal basis with batched
+scheduling. N=1536 measures 0.450--0.453 ms against same-run cuBLAS 0.432--0.436 ms,
+so this BAG implementation has not matched the earlier Strassen crossover.
+N=1792 is about 1.6% faster than same-run cuBLAS. Timing includes all BAG
+transforms and output decoding; neither result generalizes to all sizes.

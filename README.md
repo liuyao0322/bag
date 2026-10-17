@@ -26,6 +26,10 @@ reports; the small-size configuration is not a universal choice.
 CUDA BAG implements the seven products and basis transformations described
 in BAG.md. It supports recursive levels, minimal/full basis storage and
 serial, seven-stream or batched schedules, preserving FP32 `C <- A*B+C`.
+The [A100 report](benchmark_results/bag_cuda_20261017/REPORT.md) includes
+independent inputs, recursive checks and all slower configurations. The
+current BAG implementation at N=1536 is about 4% slower than same-run cuBLAS;
+the earlier Strassen result is a separate algorithm/performance result.
 
 ## BAG on Triton
 

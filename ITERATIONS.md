@@ -2021,3 +2021,22 @@ FP64 checks: 64 records, all pass=True. Execution status: {'phase': 'benchmark',
 - N=2048 cublas_full: 0.986530882ms, 1.000000x, 5 rounds.
 - N=2048 strassen_column_four_batched: 0.953693232ms, 1.034432x, 5 rounds.
 Minimal basis is faster than full basis; retain all negative cases. Freeze one configuration before independent validation; recursive numerical checks and sanitizers remain required.
+
+
+### CUDA BAG frozen implementation validation and delivery
+- Frozen before independent replay: bag_column_minimal_d1_batched, binary/source hash recorded in bag_cuda_20261017/selection.json. The tuned Strassen primitive headers match the accepted iteration16 byte-for-byte.
+- Complete-call independent offsets1009/2027: seven shuffled rounds x300ms at N1280/1536/1792/2048; include all BAG transforms, scratch clears, seven products, inverse decode and stream dependencies.
+- offset1009, N=1280: BAG0.274926917ms, same-run cuBLAS0.257602974ms, 0.936987x.
+- offset1009, N=1536: BAG0.450310545ms, same-run cuBLAS0.431819756ms, 0.958938x.
+- offset1009, N=1792: BAG0.678216995ms, same-run cuBLAS0.689314726ms, 1.016363x.
+- offset1009, N=2048: BAG0.992140355ms, same-run cuBLAS0.984703115ms, 0.992504x.
+- offset2027, N=1280: BAG0.275267777ms, same-run cuBLAS0.258501934ms, 0.939093x.
+- offset2027, N=1536: BAG0.453347113ms, same-run cuBLAS0.435992956ms, 0.961720x.
+- offset2027, N=1792: BAG0.684261645ms, same-run cuBLAS0.695334721ms, 1.016183x.
+- offset2027, N=2048: BAG1.000247183ms, same-run cuBLAS0.985655700ms, 0.985412x.
+- 608 ordinary FP64 records all pass. Depth1/2/3, both basis layouts, all three schedules, two independent seeds; exhaustive N<=128 and original deterministic sample contract otherwise. Nonzero initial C and1/3 repeated calls preserve relL2<=3e-5,maxScaled<=1e-4.
+- Memcheck N24/128/2056 and racecheck N24/128, both layouts/all schedules, depth1/2 where legal: zero errors/hazards. NCU isolated serial M1 leaf768:119 registers/thread,128 threads,16KB shared,4 CTA register limit,25% theoretical occupancy, zero shared load/store bank conflicts; profiler duration is not the performance verdict.
+- Depth2 complete-call timings at512/1536 and both Column/Huge large-size results at4096/8192 retained, including slow cases. No ordinary GEMM fallback. API/docs and full evidence are in solution/bag_cuda/README.md and benchmark_results/bag_cuda_20261017/REPORT.md.
+- N1536 BAG is approximately4% slower than same-run cuBLAS; N1792 is approximately1.6% faster. The Strassen acceptance remains separate and unchanged. This implements/validates the requested algorithm; no universal speedup claim.
+- First build launch failed because non-login module setup was missing. The first measured run has program status0 and complete rounds/checks but its login-shell srun returned1. Explicit module initialization in normal-shell runners produced exit0 for the entire independent validation suite; frozen arithmetic was unchanged.
+- All required implementation and verification work is complete. Released A100 allocation108156; unrelated pending A800 and existing H100 allocations are untouched.
