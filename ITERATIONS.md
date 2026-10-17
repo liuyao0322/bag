@@ -1822,3 +1822,35 @@ N=2048: cuBLAS 0.989189147949 ms; seven atomic 1.06849302921 ms; four batched at
 Correctness records: 48; FP64 comparison details in archived CSV. Four batching improves N1536 by about 1.1% in this run, but remains slower than the same-run cuBLAS. No crossover acceptance claimed. Sequential paired schedules regress. N1792 does not establish a batching gain. Retain seven and four-batched candidates pending independent validation; continue compute-body optimization.
 
 Logging deviation: initial append attempted nonexistent status.json and failed before writing; repaired immediately before commit.
+
+
+## Iteration 14 — striped 8x4 register tiles without K reduction
+
+- Hypothesis: striped row ownership removes the r8 shared-read bank issue; more register reuse and larger CTA tiles can improve complete-call FFMA efficiency.
+- Change: extend SIMT mapping/coalesced shared epilogue to striped RM8; exact 64x64, 128x64 and 64x128 tiles, BK16, deferred input sums, masked fused fallback. Seven genuine products and caller joins unchanged.
+- Same allocation 108133, five shuffled rounds per size, target 200 ms; archive `benchmark_results/strassen_primitive_20261017/iter14_striped_tiles/`.
+- N=1280 cublas_full: 0.258059101 ms, 1.000000x.
+- N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.272553529 ms, 0.946820x.
+- N=1280 pipe64_k16_r4_seven_atomic: 0.304199834 ms, 0.848321x.
+- N=1280 striped_tile128x64_k16_r8x4_seven_atomic: 0.347400605 ms, 0.742829x.
+- N=1280 striped_tile64_k16_r8x4_seven_atomic: 0.312166405 ms, 0.826672x.
+- N=1280 striped_tile64x128_k16_r8x4_seven_atomic: 0.344680352 ms, 0.748691x.
+- N=1536 cublas_full: 0.431012562 ms, 1.000000x.
+- N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.465752709 ms, 0.925411x.
+- N=1536 pipe64_k16_r4_seven_atomic: 0.505539958 ms, 0.852579x.
+- N=1536 striped_tile128x64_k16_r8x4_seven_atomic: 0.497643101 ms, 0.866108x.
+- N=1536 striped_tile64_k16_r8x4_seven_atomic: 0.493299577 ms, 0.873734x.
+- N=1536 striped_tile64x128_k16_r8x4_seven_atomic: 0.490290712 ms, 0.879096x.
+- N=1792 cublas_full: 0.687615988 ms, 1.000000x.
+- N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.721358695 ms, 0.953223x.
+- N=1792 pipe64_k16_r4_seven_atomic: 0.776168881 ms, 0.885910x.
+- N=1792 striped_tile128x64_k16_r8x4_seven_atomic: 0.801817159 ms, 0.857572x.
+- N=1792 striped_tile64_k16_r8x4_seven_atomic: 0.752851459 ms, 0.913349x.
+- N=1792 striped_tile64x128_k16_r8x4_seven_atomic: 0.797890478 ms, 0.861792x.
+- N=2048 cublas_full: 0.989246349 ms, 1.000000x.
+- N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 1.062090635 ms, 0.931414x.
+- N=2048 pipe64_k16_r4_seven_atomic: 1.138864390 ms, 0.868625x.
+- N=2048 striped_tile128x64_k16_r8x4_seven_atomic: 1.147321416 ms, 0.862223x.
+- N=2048 striped_tile64_k16_r8x4_seven_atomic: 1.107313792 ms, 0.893375x.
+- N=2048 striped_tile64x128_k16_r8x4_seven_atomic: 1.142480200 ms, 0.865876x.
+- Status: {'phase': 'benchmark', 'exit_code': 0}; FP64 checks 48, all pass. Select by complete-call timing; no claim that isolated bank-conflict reduction satisfies crossover.

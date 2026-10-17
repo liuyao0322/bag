@@ -35,7 +35,7 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0,bool Striped=false>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
@@ -55,7 +55,8 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
     auto& sa=storage.tiles.sa;
     auto& sb=storage.tiles.sb;
     int tid=threadIdx.x, warp=tid/32,lane=tid%32;
-    int rr=(warp%ROW_WARPS)*8*RM+(lane%8)*RM;
+    static_assert(!Striped || RM==8);
+    int rr=(warp%ROW_WARPS)*8*RM+(lane%8)*(Striped?4:RM);
     int cc=(warp/ROW_WARPS)*4*RN+(lane/8)*RN;
     int base_r=blockIdx.x*BM, base_c=blockIdx.y*BN;
     float acc[RN][RM]={};
@@ -120,7 +121,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         for(int kk=0;kk<BK;++kk) {
             float ar[RM],br[RN];
             #pragma unroll
-            for(int i=0;i<RM;++i) ar[i]=sa[stage][kk][rr+i];
+            for(int i=0;i<RM;++i) ar[i]=sa[stage][kk][rr+(Striped?(i%4+(i/4)*32):i)];
             if constexpr(SwizzleB) {
                 float4 bv=*reinterpret_cast<const float4*>(&sb[stage][kk][cc^((kk/4)*(128/BK))]);
                 br[0]=bv.x;br[1]=bv.y;br[2]=bv.z;br[3]=bv.w;
@@ -138,14 +139,17 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         __syncthreads();
     }
     if constexpr(Coalesced) {
-        static_assert(RM==4);
+        static_assert(RM==4 || (RM==8 && Striped));
         // The compute loop's final barrier makes the packing buffers reusable.
         // Vector stores keep register-tile writes efficient; scalar reads then
         // assign each warp 32 adjacent rows for fully coalesced atomic updates.
         #pragma unroll
-        for(int j=0;j<RN;++j)
-            *reinterpret_cast<float4*>(&storage.output[(cc+j)*BM+rr])=
-                make_float4(acc[j][0],acc[j][1],acc[j][2],acc[j][3]);
+        for(int j=0;j<RN;++j) {
+            #pragma unroll
+            for(int i=0;i<RM;i+=4)
+                *reinterpret_cast<float4*>(&storage.output[(cc+j)*BM+rr+(Striped?(i/4)*32:i)])=
+                    make_float4(acc[j][i],acc[j][i+1],acc[j][i+2],acc[j][i+3]);
+        }
         __syncthreads();
         #pragma unroll
         for(int q=0;q<(BM*BN+NT-1)/NT;++q) {
@@ -168,7 +172,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         for(int j=0;j<RN;++j) {
             #pragma unroll
             for(int i=0;i<RM;++i) {
-                int row=base_r+rr+i,col=base_c+cc+j;
+                int row=base_r+rr+(Striped?(i%4+(i/4)*32):i),col=base_c+cc+j;
                 if(Exact || (row<m && col<n)) {
                     size_t offset=row+size_t(col)*ld;
                     if constexpr(GD!=0) {
@@ -227,5 +231,16 @@ void launch_exact(const float* x,const float* y,const float* v,const float* w,fl
         // an ordinary GEMM for any of the seven Strassen products.
         launch_coalesced<Swizzle,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);
     }
+}
+
+// Eight rows per thread, striped into two disjoint bank groups. Larger CTA
+// tiles reuse each shared operand across more FMAs without K-partial reduction.
+template<int BM,int BN,int D,int E,int GD,int GE,bool Atomic>
+void launch_striped_tile(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                         int s,int ld,cudaStream_t stream) {
+    if(s%BM==0 && s%BN==0) {
+        simt_primitive<BM,BN,16,8,4,true,Atomic,D,E,GD,GE,false,true,true,true,true,0,true>
+            <<<dim3(s/BM,s/BN),(BM/8)*(BN/4),0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+    } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
 }
 } // namespace strassen_cuda

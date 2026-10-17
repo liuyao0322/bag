@@ -13,7 +13,7 @@ enum class Backend { Legacy, Large, Medium, Huge, Sync64, Pipe64,
     Swizzle64, Swizzle64x32, Swizzle32x64, Coalesced64, SwizzleCoalesced64,
     BalancedK8R8, BalancedK16R8, BalancedK8R4, BalancedK32R4, Exact64, ExactSwizzle64,
     Deferred64, DeferredSwizzle64, Sliced1, Sliced2, Sliced4, Striped1, Striped2, Striped4,
-    CgExact64, CgDeferred64, ReadonlyDeferred64 };
+    CgExact64, CgDeferred64, ReadonlyDeferred64, StripedTile64, StripedTile128x64, StripedTile64x128 };
 struct NamedBackend {const char* name;Backend backend;bool normal;bool paired=false;};
 inline const NamedBackend backends[]={
     {"legacy",Backend::Legacy,false},{"large",Backend::Large,true},
@@ -43,7 +43,10 @@ inline const NamedBackend backends[]={
     {"striped_sliced4_64x32_k8_r8x4",Backend::Striped4,true},
     {"cg_exact_swizzle_coalesced64_k16_r4",Backend::CgExact64,true},
     {"cg_deferred_exact_swizzle_coalesced64_k16_r4",Backend::CgDeferred64,true},
-    {"ldg_deferred_exact_swizzle_coalesced64_k16_r4",Backend::ReadonlyDeferred64,true}};
+    {"ldg_deferred_exact_swizzle_coalesced64_k16_r4",Backend::ReadonlyDeferred64,true},
+    {"striped_tile64_k16_r8x4",Backend::StripedTile64,true},
+    {"striped_tile128x64_k16_r8x4",Backend::StripedTile128x64,true},
+    {"striped_tile64x128_k16_r8x4",Backend::StripedTile64x128,true}};
 
 inline bool valid_shape(Backend backend,int s) {
     if(s<=0||s%4)return false;
@@ -106,6 +109,9 @@ void primitive(Backend backend,const float* x,const float* y,const float* v,cons
     case Backend::CgExact64: launch_exact<true,D,E,GD,GE,Atomic,false,1>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::CgDeferred64: launch_exact<true,D,E,GD,GE,Atomic,true,1>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::ReadonlyDeferred64: launch_exact<true,D,E,GD,GE,Atomic,true,2>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::StripedTile64: launch_striped_tile<64,64,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::StripedTile128x64: launch_striped_tile<128,64,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::StripedTile64x128: launch_striped_tile<64,128,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     }
 }
 
