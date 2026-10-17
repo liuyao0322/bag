@@ -95,7 +95,7 @@ struct Workspace {
     ~Workspace(){for(int i=0;i<7;++i){cudaStreamDestroy(streams[i]);cudaEventDestroy(done[i]);}cudaEventDestroy(start);cudaEventDestroy(stage);}
     Workspace(const Workspace&)=delete;Workspace& operator=(const Workspace&)=delete;
 };
-enum class Schedule {SerialAtomic,SerialNormal,SevenAtomic,DependencyNormal,PairedAtomic,PairedNormal};
+enum class Schedule {SerialAtomic,SerialNormal,SevenAtomic,DependencyNormal,PairedAtomic,PairedNormal,FourBatchedAtomic};
 
 template<int D,int E,int GD,int GE,bool Atomic>
 void pair(Backend backend,Operand a,Operand b,int s,int ld,cudaStream_t stream) {
@@ -120,6 +120,21 @@ void paired_level(Backend backend,const float* a,const float* b,float* c,int n,c
     product<Atomic>(6,backend,a,b,c,n,stream);
 }
 
+// Paper section 3.3: four variants, each submitted on its own stream. Pairs
+// share compile-time coefficients, with grid.z selecting the product pointers.
+// M3's sole positive output is remapped to D to share the M4 specialization.
+inline void batched_variant(int variant,Backend backend,const float* a,const float* b,
+                            float* c,int n,cudaStream_t stream) {
+    const int s=n/2;
+    switch(variant) {
+    case 0:pair<1,0,1,-1,true>(backend,operands(0,a,b,c,n),operands(1,a,b,c,n),s,n,stream);break;
+    case 1:{auto p=operands(2,a,b,c,n);p.d=p.e;
+        pair<-1,1,1,0,true>(backend,p,operands(3,a,b,c,n),s,n,stream);break;}
+    case 2:pair<0,-1,1,1,true>(backend,operands(4,a,b,c,n),operands(5,a,b,c,n),s,n,stream);break;
+    default:product<true>(6,backend,a,b,c,n,stream);break;
+    }
+}
+
 // All entry/exit dependencies are enqueued on the caller stream. No C reset:
 // this is C <- A B + C, including a nonzero initial C and repeated invocations.
 inline void one_level(Backend backend,Schedule schedule,const float* a,const float* b,float* c,
@@ -142,7 +157,16 @@ inline void one_level(Backend backend,Schedule schedule,const float* a,const flo
         return;
     }
     checked(cudaEventRecord(workspace.start,caller));
-    if(schedule==Schedule::SevenAtomic) {
+    if(schedule==Schedule::FourBatchedAtomic) {
+        if(backend!=Backend::Huge&&backend!=Backend::Pipe64x32)
+            throw std::runtime_error("four-variant batching requires a paired backend");
+        for(int i=0;i<4;++i) {
+            checked(cudaStreamWaitEvent(workspace.streams[i],workspace.start));
+            batched_variant(i,backend,a,b,c,n,workspace.streams[i]);
+            checked(cudaEventRecord(workspace.done[i],workspace.streams[i]));
+            checked(cudaStreamWaitEvent(caller,workspace.done[i]));
+        }
+    } else if(schedule==Schedule::SevenAtomic) {
         for(int i=0;i<7;++i){
             checked(cudaStreamWaitEvent(workspace.streams[i],workspace.start));
             product<true>(i,backend,a,b,c,n,workspace.streams[i]);

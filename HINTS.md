@@ -1,5 +1,19 @@
 # Optimization Directives
 
+Source: user approval, 2026-10-17 (next-phase plan, "同意").
+
+- Implement the paper's four-variant, four-stream atomic batching schedule;
+  compare complete calls with existing seven-stream and ordered-pair schedules.
+- Extend the A100 one-level size curve, measure complete-call timelines, and
+  freeze candidates before independent final replay. Keep all slow cases.
+- Then implement workspace-based outer Strassen with fused one-level inner
+  products (hybrid two-level); include transformations, scratch initialization,
+  all products, output merge and required synchronization in timed calls.
+- Retain pure FP32 C <- AB+C and existing tolerances. Add independent input
+  seeds and repeated-call checks. Validate fixed candidates on A800.
+- Treat a reproducible 3% improvement over the stable one-level implementation
+  as a decision threshold for further hybrid tuning, not a promised speedup.
+
 Source: user goal, 2026-10-17 (primitive_large analysis and one-level Strassen).
 
 - Analyze loop, blocking and output-update policies at N=2048 (leaf=1024).

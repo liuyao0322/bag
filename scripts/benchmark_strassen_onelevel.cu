@@ -87,7 +87,8 @@ int main(int argc,char** argv)try {
                 struct Plan {const char* name;Schedule schedule;bool normal;bool paired=false;};
                 for(auto plan:{Plan{"serial_atomic",Schedule::SerialAtomic,false},Plan{"serial_normal",Schedule::SerialNormal,true},
                                Plan{"seven_atomic",Schedule::SevenAtomic,false},Plan{"dependency_normal",Schedule::DependencyNormal,true},
-                               Plan{"paired_atomic",Schedule::PairedAtomic,false,true},Plan{"paired_normal",Schedule::PairedNormal,true,true}}) {
+                               Plan{"paired_atomic",Schedule::PairedAtomic,false,true},Plan{"paired_normal",Schedule::PairedNormal,true,true},
+                               Plan{"four_batched_atomic",Schedule::FourBatchedAtomic,false,true}}) {
                     if(plan.normal&&!config.normal)continue;
                     if(plan.paired&&!config.paired)continue;
                     add(std::string(config.name)+"_"+plan.name,n,false,0,0,1,0,
