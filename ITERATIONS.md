@@ -1674,3 +1674,31 @@
 - **N=2048 swizzle_coalesced64_k16_r4_seven_atomic:** 1.100855620 ms, ratio=0.902721x.
 - **Correctness:** 40 FP64 checks, all pass=True.
 - **Outcome:** exact swizzled coalesced is fastest; N=1536 ~0.469808 ms vs same-run cuBLAS ~0.432762 ms (0.921146x). The target remains unmet. Next inspect premature consumption of prefetched global operands and profile the actual concurrent range.
+
+## Strassen iteration 9 — defer prefetched input sums until packing (2026-10-17)
+
+- **Direction:** prefetch raw operands separately; form the Strassen input sums during packing after current-tile FMAs. Preserve masked fallback, ordinary/atomic controls and identical mathematical products. Test padded/swizzled layouts with complete-call controls.
+- **Benchmark:** allocation 108133, 5 rounds x200ms, full N=1280/1536/1792/2048, archive `benchmark_results/strassen_primitive_20261017/iter9_deferred`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cublas_full:** 0.257721325 ms, ratio=1.000000x.
+- **N=1280 deferred_exact_coalesced64_k16_r4_seven_atomic:** 0.290317691 ms, ratio=0.887722x.
+- **N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.274911250 ms, ratio=0.937471x.
+- **N=1280 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.276728374 ms, ratio=0.931315x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.304610157 ms, ratio=0.846069x.
+- **N=1536 cublas_full:** 0.431229121 ms, ratio=1.000000x.
+- **N=1536 deferred_exact_coalesced64_k16_r4_seven_atomic:** 0.492117346 ms, ratio=0.876273x.
+- **N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.464733703 ms, ratio=0.927906x.
+- **N=1536 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.468413417 ms, ratio=0.920617x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.509481031 ms, ratio=0.846409x.
+- **N=1792 cublas_full:** 0.694521484 ms, ratio=1.000000x.
+- **N=1792 deferred_exact_coalesced64_k16_r4_seven_atomic:** 0.757709933 ms, ratio=0.916606x.
+- **N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.715636688 ms, ratio=0.970495x.
+- **N=1792 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.722164328 ms, ratio=0.961722x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.774729162 ms, ratio=0.896470x.
+- **N=2048 cublas_full:** 1.003466381 ms, ratio=1.000000x.
+- **N=2048 deferred_exact_coalesced64_k16_r4_seven_atomic:** 1.119916494 ms, ratio=0.896019x.
+- **N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.064534238 ms, ratio=0.942634x.
+- **N=2048 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.070832783 ms, ratio=0.937090x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.136024384 ms, ratio=0.883314x.
+- **Correctness:** 40 FP64 checks, all pass=True.
+- **Outcome:** deferred+exact+swizzled+coalesced is slightly faster, but N=1536 remains ~0.464734 ms vs cuBLAS ~0.431229 ms (0.927906x). No crossover claim. Next collect concurrent range counters rather than applying isolated occupancy to the seven-stream execution.
