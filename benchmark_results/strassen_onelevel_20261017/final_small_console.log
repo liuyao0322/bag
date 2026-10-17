@@ -1,0 +1,75 @@
+N=2048 correctness PASS cases=12
+2048 round=0 huge_serial_atomic ms=1.67671
+2048 round=0 pipe64x32_k16_r4_seven_atomic ms=1.18881
+2048 round=0 legacy_serial_atomic ms=2.24373
+2048 round=0 cublas_full ms=0.978783
+2048 round=0 pipe64x32_k16_r4_paired_atomic ms=1.33637
+2048 round=0 huge_seven_atomic ms=1.17323
+2048 round=0 pipe64x32_k16_r4_paired_normal ms=1.37107
+2048 round=0 legacy_seven_atomic ms=1.25539
+2048 round=0 pipe64x32_k16_r4_serial_normal ms=1.44106
+2048 round=0 huge_paired_atomic ms=1.65576
+2048 round=0 pipe64x32_k16_r4_dependency_normal ms=1.32143
+2048 round=0 pipe64x32_k16_r4_serial_atomic ms=1.43445
+2048 round=1 legacy_seven_atomic ms=1.24793
+2048 round=1 huge_paired_atomic ms=1.656
+2048 round=1 pipe64x32_k16_r4_paired_normal ms=1.36971
+2048 round=1 pipe64x32_k16_r4_dependency_normal ms=1.323
+2048 round=1 pipe64x32_k16_r4_paired_atomic ms=1.35417
+2048 round=1 huge_serial_atomic ms=1.6727
+2048 round=1 huge_seven_atomic ms=1.17043
+2048 round=1 legacy_serial_atomic ms=2.22625
+2048 round=1 pipe64x32_k16_r4_serial_atomic ms=1.42369
+2048 round=1 cublas_full ms=0.977763
+2048 round=1 pipe64x32_k16_r4_seven_atomic ms=1.19417
+2048 round=1 pipe64x32_k16_r4_serial_normal ms=1.46472
+2048 round=2 pipe64x32_k16_r4_paired_atomic ms=1.34291
+2048 round=2 huge_seven_atomic ms=1.17528
+2048 round=2 pipe64x32_k16_r4_seven_atomic ms=1.18645
+2048 round=2 huge_paired_atomic ms=1.68611
+2048 round=2 cublas_full ms=0.978687
+2048 round=2 huge_serial_atomic ms=1.66474
+2048 round=2 pipe64x32_k16_r4_serial_atomic ms=1.42653
+2048 round=2 legacy_serial_atomic ms=2.21684
+2048 round=2 legacy_seven_atomic ms=1.24801
+2048 round=2 pipe64x32_k16_r4_paired_normal ms=1.37444
+2048 round=2 pipe64x32_k16_r4_serial_normal ms=1.44539
+2048 round=2 pipe64x32_k16_r4_dependency_normal ms=1.3249
+2048 round=3 huge_serial_atomic ms=1.67785
+2048 round=3 legacy_seven_atomic ms=1.24819
+2048 round=3 huge_paired_atomic ms=1.65577
+2048 round=3 legacy_serial_atomic ms=2.20429
+2048 round=3 pipe64x32_k16_r4_serial_normal ms=1.43696
+2048 round=3 pipe64x32_k16_r4_paired_normal ms=1.38158
+2048 round=3 pipe64x32_k16_r4_serial_atomic ms=1.42835
+2048 round=3 pipe64x32_k16_r4_seven_atomic ms=1.21853
+2048 round=3 pipe64x32_k16_r4_paired_atomic ms=1.35738
+2048 round=3 huge_seven_atomic ms=1.1735
+2048 round=3 cublas_full ms=0.977849
+2048 round=3 pipe64x32_k16_r4_dependency_normal ms=1.32765
+2048 round=4 legacy_serial_atomic ms=2.22419
+2048 round=4 pipe64x32_k16_r4_paired_atomic ms=1.34693
+2048 round=4 huge_seven_atomic ms=1.17123
+2048 round=4 pipe64x32_k16_r4_serial_normal ms=1.4387
+2048 round=4 pipe64x32_k16_r4_seven_atomic ms=1.20619
+2048 round=4 pipe64x32_k16_r4_serial_atomic ms=1.44042
+2048 round=4 pipe64x32_k16_r4_paired_normal ms=1.38348
+2048 round=4 cublas_full ms=0.985561
+2048 round=4 huge_serial_atomic ms=1.6638
+2048 round=4 huge_paired_atomic ms=1.65583
+2048 round=4 legacy_seven_atomic ms=1.24759
+2048 round=4 pipe64x32_k16_r4_dependency_normal ms=1.32521
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_onelevel_20261017/final_small/results
+CORRECT=True checks=24 max_relative_l2=1.0532661e-06
+N=2048 mode=endtoend cuBLAS=0.978687 ms
+  huge_seven_atomic                                1.173235 ms speedup=0.8342 cv=0.147%
+  pipe64x32_k16_r4_seven_atomic                    1.194171 ms speedup=0.8196 cv=0.999%
+  legacy_seven_atomic                              1.248014 ms speedup=0.7842 cv=0.239%
+  pipe64x32_k16_r4_dependency_normal               1.324898 ms speedup=0.7387 cv=0.159%
+  pipe64x32_k16_r4_paired_atomic                   1.346931 ms speedup=0.7266 cv=0.563%
+  pipe64x32_k16_r4_paired_normal                   1.374436 ms speedup=0.7121 cv=0.403%
+  pipe64x32_k16_r4_serial_atomic                   1.428346 ms speedup=0.6852 cv=0.420%
+  pipe64x32_k16_r4_serial_normal                   1.441055 ms speedup=0.6791 cv=0.698%
+  huge_paired_atomic                               1.655833 ms speedup=0.5911 cv=0.728%
+  huge_serial_atomic                               1.672695 ms speedup=0.5851 cv=0.352%
+  legacy_serial_atomic                             2.224186 ms speedup=0.4400 cv=0.579%

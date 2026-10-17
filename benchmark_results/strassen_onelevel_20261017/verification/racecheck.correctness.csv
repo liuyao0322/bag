@@ -1,0 +1,3 @@
+parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
+120,pipe64x32_k16_r4_paired_normal,1,14400,2.67446030006e-07,1.87684781849e-06,3.48590400173e-07,1
+120,pipe64x32_k16_r4_paired_normal,3,14400,2.80447922059e-07,5.63054345548e-06,4.27123533144e-07,1

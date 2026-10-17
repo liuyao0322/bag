@@ -47,33 +47,8 @@ run tensor_cublas ncu --metrics sm__inst_executed_pipe_tensor.sum --kernel-name 
     "$BIN" --mode endtoend --backends huge --only cublas_full --sizes 2048 --validate-only --output "$OUT/tensor_cublas"
 run cuobjdump cuobjdump --dump-sass "$BIN"
 mv "$OUT/cuobjdump.stdout" "$OUT/sass.txt"
-"$PY" -s - "$OUT" <<'PY'
-import csv, io, json, re, sys
-from pathlib import Path
-out = Path(sys.argv[1])
-sass = (out/'sass.txt').read_text()
-summary = {'ffma_instructions': len(re.findall(r'\bFFMA\b',sass)),
-           'tensor_instructions': len(re.findall(r'\b(?:HMMA|IMMA|DMMA|MMA|WGMMA|HGMMA)\b',sass))}
-assert summary['ffma_instructions'] > 0 and summary['tensor_instructions'] == 0
-for name in ('profile_small','tensor_cublas'):
-    content=(out/f'{name}.csv').read_text()
-    rows=list(csv.DictReader(io.StringIO(content[content.index('"ID"'):])) )
-    metrics={r.get('Metric Name'):r.get('Metric Value') for r in rows if r.get('Metric Name')}
-    if name=='profile_small':
-        wanted=('Registers Per Thread','Theoretical Occupancy','Achieved Occupancy','Waves Per SM')
-        summary['small_profile']={k:metrics[k] for k in wanted}
-    else:
-        value=metrics['sm__inst_executed_pipe_tensor.sum']
-        assert float(value.replace(',','')) == 0
-        summary['cublas_tensor_instructions']=value
-for name in ('memcheck_mask','memcheck_huge','racecheck'):
-    content=(out/f'{name}.log').read_text()
-    assert 'ERROR SUMMARY: 0 errors' in content or 'RACECHECK SUMMARY: 0 hazards' in content
-    checks=list(csv.DictReader(open(out/f'{name}.correctness.csv')))
-    assert checks and all(r['pass']=='1' for r in checks)
-    summary[f'{name}_fp64_checks']=len(checks)
-(out/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
-print(json.dumps(summary,indent=2))
-PY
+cp scripts/audit_strassen_onelevel.py "$OUT/audit_source.py"
+run audit "$PY" -s scripts/audit_strassen_onelevel.py "$OUT"
+cat "$OUT/audit.stdout"
 }
 main "$@"; exit "$?"
