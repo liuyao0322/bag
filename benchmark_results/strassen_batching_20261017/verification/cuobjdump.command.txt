@@ -1,0 +1,1 @@
+cuobjdump --dump-sass benchmark_results/strassen_batching_20261017/iter4_hybrid_smoke/benchmark_strassen_onelevel > benchmark_results/strassen_batching_20261017/verification/sass.txt

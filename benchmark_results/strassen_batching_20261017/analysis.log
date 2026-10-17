@@ -1,0 +1,17 @@
+{
+  "runs": 7,
+  "timing_rows": 1368,
+  "fp64_checks": 624,
+  "verification": {
+    "memcheck_batched_fp64_checks": 4,
+    "memcheck_hybrid_fp64_checks": 4,
+    "memcheck_huge_hybrid_fp64_checks": 2,
+    "racecheck_hybrid_fp64_checks": 2,
+    "ffma_instructions": 37536,
+    "tensor_instructions": 0,
+    "cublas_tensor_instructions": [
+      0.0
+    ],
+    "timeline_profiles": 5
+  }
+}

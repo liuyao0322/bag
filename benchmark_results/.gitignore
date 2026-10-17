@@ -6,3 +6,7 @@ strassen_fp32_*/sass.txt
 strassen_fp32_*/verification/sass.txt
 strassen_onelevel_*/**/benchmark_strassen_onelevel
 strassen_onelevel_*/**/sass.txt
+strassen_batching_*/**/benchmark_strassen_onelevel
+strassen_batching_*/**/sass.txt
+strassen_batching_*/**/*.nsys-rep
+strassen_batching_*/**/*.sqlite

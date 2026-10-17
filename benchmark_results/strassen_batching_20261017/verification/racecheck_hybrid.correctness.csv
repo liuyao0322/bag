@@ -1,0 +1,3 @@
+parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
+128,pipe64x32_k16_r4_hybrid2_four_batched_atomic,1,16384,3.99563695966e-07,2.67405994236e-06,5.36418838631e-07,1
+128,pipe64x32_k16_r4_hybrid2_four_batched_atomic,3,16384,4.13428748656e-07,8.2605984062e-06,6.80203822596e-07,1

@@ -5,6 +5,10 @@ parent N=2048 (leaf 1024), retains N=8192/20480 as regressions, and measures an
 actual seven-product Strassen operation. Results and figures are under
 `benchmark_results/strassen_onelevel_20261017/REPORT.md`.
 
+The subsequent paper four-variant batching, hybrid two-level implementation,
+independent-seed curves and A800 queue workflow are documented in
+[STRASSEN_BATCHING.md](STRASSEN_BATCHING.md).
+
 ## Build and measure
 
 Use an existing A100 allocation, CUDA 12.2 and a GPU environment established by
