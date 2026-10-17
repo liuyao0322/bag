@@ -1901,3 +1901,42 @@ Frozen column_tile64_k16_r4x8 before independent seed offset1009 replay; five ro
 - N=2048 column_tile64_k16_r4x8_seven_atomic: 0.963643074036 ms, 1.026323x.
 - N=2048 cublas_full: 0.98900892821 ms, 1.000000x.
 Independent replay: 32 FP64 records all pass. Source/hash/status/counters at profile_column/ and holdout_column_seed1009/. N1536 requires consistent speedup over same-run cuBLAS; no isolated-counter or search-only crossover claim.
+
+
+## Iteration 16 — column-tile resource pressure and four-class batching
+
+- Evidence: iteration15 column tile uses107/119 regs/thread,128 threads,16KB shared,25% theoretical occupancy. Test BK8 to reduce live prefetch state, immediate input sums, and min5 CTA launch bound; retain the original column tile as same-run control. Add RN8 paired/four-class batching with exact and masked fused paths.
+- Allocation108133; full seven products N1280/1536/1792/2048; five shuffled rounds x200ms; archive iter16_column_resources.
+- N=1280 column_immediate64_k16_r4x8_seven_atomic: 0.279978675 ms, 0.919780x.
+- N=1280 column_min5_64_k16_r4x8_seven_atomic: 0.302312531 ms, 0.851830x.
+- N=1280 column_tile64_k16_r4x8_four_batched_atomic: 0.252623391 ms, 1.019379x.
+- N=1280 column_tile64_k16_r4x8_seven_atomic: 0.258778697 ms, 0.995132x.
+- N=1280 column_tile64_k8_r4x8_seven_atomic: 0.263738493 ms, 0.976418x.
+- N=1280 cublas_full: 0.257518916 ms, 1.000000x.
+- N=1280 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic: 0.267242690 ms, 0.963614x.
+- N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.270183613 ms, 0.953126x.
+- N=1536 column_immediate64_k16_r4x8_seven_atomic: 0.464389880 ms, 0.928771x.
+- N=1536 column_min5_64_k16_r4x8_seven_atomic: 0.473294780 ms, 0.911297x.
+- N=1536 column_tile64_k16_r4x8_four_batched_atomic: 0.427133145 ms, 1.009783x.
+- N=1536 column_tile64_k16_r4x8_seven_atomic: 0.430192588 ms, 1.002602x.
+- N=1536 column_tile64_k8_r4x8_seven_atomic: 0.444507858 ms, 0.970313x.
+- N=1536 cublas_full: 0.431311885 ms, 1.000000x.
+- N=1536 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic: 0.460447366 ms, 0.936724x.
+- N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.464569058 ms, 0.928413x.
+- N=1792 column_immediate64_k16_r4x8_seven_atomic: 0.705692156 ms, 0.980957x.
+- N=1792 column_min5_64_k16_r4x8_seven_atomic: 0.707498656 ms, 0.978453x.
+- N=1792 column_tile64_k16_r4x8_four_batched_atomic: 0.648288430 ms, 1.067818x.
+- N=1792 column_tile64_k16_r4x8_seven_atomic: 0.653546993 ms, 1.059226x.
+- N=1792 column_tile64_k8_r4x8_seven_atomic: 0.680687151 ms, 1.016993x.
+- N=1792 cublas_full: 0.692253892 ms, 1.000000x.
+- N=1792 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic: 0.713762264 ms, 0.969866x.
+- N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.714132822 ms, 0.969363x.
+- N=2048 column_immediate64_k16_r4x8_seven_atomic: 1.037954696 ms, 0.952214x.
+- N=2048 column_min5_64_k16_r4x8_seven_atomic: 1.037143117 ms, 0.952959x.
+- N=2048 column_tile64_k16_r4x8_four_batched_atomic: 0.960808053 ms, 1.028671x.
+- N=2048 column_tile64_k16_r4x8_seven_atomic: 0.964290708 ms, 1.024956x.
+- N=2048 column_tile64_k8_r4x8_seven_atomic: 1.001751709 ms, 0.986627x.
+- N=2048 cublas_full: 0.988355263 ms, 1.000000x.
+- N=2048 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic: 1.068193942 ms, 0.925258x.
+- N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 1.062782673 ms, 0.929969x.
+- Correctness: 64 FP64 records, all pass. Status {'phase': 'benchmark', 'exit_code': 0}. Judge actual complete-call results, not occupancy alone; independent input validation required before declaring N1536 crossover.

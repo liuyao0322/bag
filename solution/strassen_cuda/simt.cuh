@@ -35,8 +35,8 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0,bool Striped=false,bool RegPipeline=false>
-__global__ __launch_bounds__((BM/RM)*(BN/RN))
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0,bool Striped=false,bool RegPipeline=false,int MinCTAs=1>
+__global__ __launch_bounds__((BM/RM)*(BN/RN),MinCTAs)
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
     if constexpr(Pair) {
@@ -266,11 +266,11 @@ void launch_striped_tile(const float* x,const float* y,const float* v,const floa
     } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
 }
 // Register-stage experiment keeps global/shared packing and all updates fused.
-template<int RN,bool RegPipeline,int D,int E,int GD,int GE,bool Atomic>
+template<int RN,bool RegPipeline,int D,int E,int GD,int GE,bool Atomic,int BK=16,bool Deferred=true,int MinCTAs=1>
 void launch_register_stage(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
                            int s,int ld,cudaStream_t stream) {
     if(s%64==0) {
-        simt_primitive<64,64,16,4,RN,true,Atomic,D,E,GD,GE,false,true,true,true,true,0,false,RegPipeline>
+        simt_primitive<64,64,BK,4,RN,true,Atomic,D,E,GD,GE,false,true,true,true,Deferred,0,false,RegPipeline,MinCTAs>
             <<<dim3(s/64,s/64),16*(64/RN),0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
     } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
 }
