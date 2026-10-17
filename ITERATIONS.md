@@ -1735,3 +1735,40 @@
 - **N=2048 sliced4_64x32_k8_r8x4_seven_atomic:** 1.360979560 ms, ratio=0.721378x.
 - **Correctness:** 48 FP64 checks, all pass=True.
 - **Outcome:** sliced variants regress; iteration-9 path remains fastest. Preserve negative results and inspect the 8-row thread mapping for shared bank conflicts before further slicing changes. Target N1536 is unmet.
+
+## Strassen iteration 11 — bank-safe striped row fragments (2026-10-17)
+
+- **Evidence/direction:** iteration-10 Sliced4 M7 at leaf768 reports 3594240 shared-load bank conflicts, 73728 shared-store bank conflicts, 107 registers and 25% theoretical occupancy. Replace each contiguous eight-row thread fragment with two four-row stripes 32 rows apart, preserving vector alignment and mapping load/store/reduction coordinates consistently. Keep 1/2/4 partitions and the unstriped control.
+- **Benchmark:** allocation 108133, 5 rounds x200ms, full N=1280/1536/1792/2048; archive `benchmark_results/strassen_primitive_20261017/iter11_striped`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cublas_full:** 0.258197218 ms, ratio=1.000000x.
+- **N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.273392756 ms, ratio=0.944419x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.304993610 ms, ratio=0.846566x.
+- **N=1280 sliced4_64x32_k8_r8x4_seven_atomic:** 0.344750733 ms, ratio=0.748939x.
+- **N=1280 striped_sliced1_64x32_k8_r8x4_seven_atomic:** 0.293229325 ms, ratio=0.880530x.
+- **N=1280 striped_sliced2_64x32_k8_r8x4_seven_atomic:** 0.282060007 ms, ratio=0.915398x.
+- **N=1280 striped_sliced4_64x32_k8_r8x4_seven_atomic:** 0.293418852 ms, ratio=0.879961x.
+- **N=1536 cublas_full:** 0.432577620 ms, ratio=1.000000x.
+- **N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.463951846 ms, ratio=0.932376x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.507531151 ms, ratio=0.852317x.
+- **N=1536 sliced4_64x32_k8_r8x4_seven_atomic:** 0.592655940 ms, ratio=0.729897x.
+- **N=1536 striped_sliced1_64x32_k8_r8x4_seven_atomic:** 0.493640130 ms, ratio=0.876302x.
+- **N=1536 striped_sliced2_64x32_k8_r8x4_seven_atomic:** 0.484904323 ms, ratio=0.892089x.
+- **N=1536 striped_sliced4_64x32_k8_r8x4_seven_atomic:** 0.513419820 ms, ratio=0.842542x.
+- **N=1792 cublas_full:** 0.696790285 ms, ratio=1.000000x.
+- **N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.715790111 ms, ratio=0.973456x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.773135007 ms, ratio=0.901253x.
+- **N=1792 sliced4_64x32_k8_r8x4_seven_atomic:** 0.938466439 ms, ratio=0.742478x.
+- **N=1792 striped_sliced1_64x32_k8_r8x4_seven_atomic:** 0.761993068 ms, ratio=0.914431x.
+- **N=1792 striped_sliced2_64x32_k8_r8x4_seven_atomic:** 0.775382796 ms, ratio=0.898640x.
+- **N=1792 striped_sliced4_64x32_k8_r8x4_seven_atomic:** 0.815903206 ms, ratio=0.854011x.
+- **N=2048 cublas_full:** 0.989758706 ms, ratio=1.000000x.
+- **N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.065189953 ms, ratio=0.929185x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.136706651 ms, ratio=0.870725x.
+- **N=2048 sliced4_64x32_k8_r8x4_seven_atomic:** 1.378161748 ms, ratio=0.718173x.
+- **N=2048 striped_sliced1_64x32_k8_r8x4_seven_atomic:** 1.126597526 ms, ratio=0.878538x.
+- **N=2048 striped_sliced2_64x32_k8_r8x4_seven_atomic:** 1.147500102 ms, ratio=0.862535x.
+- **N=2048 striped_sliced4_64x32_k8_r8x4_seven_atomic:** 1.204647722 ms, ratio=0.821617x.
+- **Correctness:** 56 FP64 checks, all pass=True.
+- **Outcome:** striping substantially improves the sliced implementation, but every sliced candidate remains slower than iteration-9 at all four target sizes. N=1536 best retained case ~0.463952 ms vs cuBLAS ~0.432578 ms. The crossover target remains unmet; do not replace the selected iteration-9 candidate with a slower slicing configuration.
+- **Protocol note:** the wait wrapper also tailed the completed console in the same orchestration call before this log was appended. No implementation edit or next experiment intervened; future closures should use the wait result directly, then log and commit.
