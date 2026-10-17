@@ -1522,3 +1522,12 @@
 - **N=20480:** cuBLAS 958.117188 ms; Huge seven/paired/four-batched 881.360514/881.421305/881.474528 ms (about 1.087x). Generic paths remain about 1340 ms and cannot replace Huge at large sizes.
 - **Decision:** retain Huge seven-stream as the stable large baseline, keep four-batched as an experimental option, extend the one-level curve, and test the paper's workspace-based hybrid two-level structure. No universal batching win or crossover claim.
 - **Artifacts:** `benchmark_results/strassen_batching_20261017/iter3_signal/`, immutable source manifest, build/environment/telemetry logs, raw timing and correctness CSVs.
+
+## Strassen FP32 hybrid — iter 4 (2026-10-17)
+
+- **Direction:** workspace-based outer Strassen and fused one-level inner calls, with three reusable compact half-size scratch matrices. Transform inputs and reset the inner output in a preparation kernel; compute seven inner Strassen products; merge each outer product into the original nonzero C on the caller stream. Every initialization, transform, product, merge and stream dependency remains inside a complete call. No ordinary GEMM fallback.
+- **Benchmark additions:** optional schedule filter, independent input seed offset (matching device initialization and FP64 reference), and cudaProfilerStart/Stop capture of selected complete calls. Default baseline seed values and tolerances unchanged.
+- **Command:** `srun --jobid=108128 --overlap bash scripts/bench_strassen_onelevel.sh iter-4 benchmark_results/strassen_batching_20261017/iter4_hybrid_smoke --mode endtoend --sizes 120,128,256,512 --backends huge,pipe64x32_k16_r4 --schedules seven_atomic,four_batched_atomic --hybrid --validate-only`.
+- **Correctness:** PASS, 48 checks across all legal one-level/hybrid configurations after 1 and 3 calls; max relative L2 8.4914467e-7. Full output checks at N=120/128 include masked partial tiles; Huge hybrid becomes legal at N=512 (quarter leaf 128). Build and benchmark exit 0. No performance claim from this smoke run.
+- **Decision:** implementation passes initial correctness. Reuse this immutable build for the full A100 curve, hybrid large-size signal, independently seeded replay, full-call Nsight Systems capture and sanitizer checks; then freeze candidates for A800.
+- **Artifacts:** `benchmark_results/strassen_batching_20261017/iter4_hybrid_smoke/`.

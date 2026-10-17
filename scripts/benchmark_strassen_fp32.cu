@@ -119,7 +119,8 @@ std::vector<float> read_samples(const float* p, const std::vector<size_t>& indic
     CUDA_CHECK(cudaStreamSynchronize(stream)); CUDA_CHECK(cudaFree(device_indices)); return result;
 }
 struct Error { double relative_l2 = 0, max_abs = 0, max_scaled = 0; int count = 0; bool pass = true; };
-Error validate(const Case& c, int parent, int requested_samples, int repeats, cudaStream_t stream) {
+Error validate(const Case& c, int parent, int requested_samples, int repeats, cudaStream_t stream,
+               uint32_t seed_a=11,uint32_t seed_b=23,uint32_t seed_c=37) {
     int s = c.s, ld = c.ld;
     // Exhaustive for small matrices, deterministic samples (including corners) otherwise.
     std::vector<size_t> positions;
@@ -156,23 +157,23 @@ Error validate(const Case& c, int parent, int requested_samples, int repeats, cu
         int row = positions[q] % ld, col = positions[q] / ld;
         double dot = 0;
         for (int k = 0; k < s; ++k) {
-            float x = value(row + size_t(k)*ld, 11);
-            float v = value(k + size_t(col)*ld, 23);
+            float x = value(row + size_t(k)*ld, seed_a);
+            float v = value(k + size_t(col)*ld, seed_b);
             if (c.primitive) {
-                x += c.delta * value(row + size_t(k)*ld + offset, 11);
-                v += c.epsilon * value(k + size_t(col)*ld + offset, 23);
+                x += c.delta * value(row + size_t(k)*ld + offset, seed_a);
+                v += c.epsilon * value(k + size_t(col)*ld + offset, seed_b);
             }
             dot += double(x) * double(v);
         }
         dots.push_back(dot);
-        refs.push_back(double(value(positions[q],37)) + repeats*c.gamma_d*dot);
+        refs.push_back(double(value(positions[q],seed_c)) + repeats*c.gamma_d*dot);
     }
     if (c.primitive) {
         for (size_t q = 0; q < positions.size(); ++q) {
-            refs.push_back(double(value(positions[q]+offset,37)) + repeats*c.gamma_e*dots[q]);
+            refs.push_back(double(value(positions[q]+offset,seed_c)) + repeats*c.gamma_e*dots[q]);
         }
     }
-    while (refs.size() < indices.size()) refs.push_back(value(indices[refs.size()],37));
+    while (refs.size() < indices.size()) refs.push_back(value(indices[refs.size()],seed_c));
     Error e; double err2 = 0, ref2 = 0, max_ref = 0;
     for (size_t q = 0; q < got.size(); ++q) {
         double d = std::abs(double(got[q])-refs[q]);

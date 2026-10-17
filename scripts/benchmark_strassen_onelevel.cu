@@ -3,12 +3,18 @@
 #include "benchmark_strassen_fp32.cu"
 #undef main
 #include "engine.cuh"
+#include "hybrid.cuh"
+#include <cuda_profiler_api.h>
+#include <memory>
 
 using strassen_cuda::Backend;
 using strassen_cuda::Schedule;
 struct ExperimentOptions {
     Options base;
-    std::string mode="ablation",backend_filter,case_filter;
+    std::string mode="ablation",backend_filter,case_filter,schedule_filter;
+    uint32_t seed_offset=0;
+    int profile_calls=0;
+    bool hybrid=false;
 };
 ExperimentOptions experiment_options(int argc,char** argv) {
     ExperimentOptions o;o.base.sizes={2048,8192,20480};o.base.rounds=3;o.base.target_ms=100;
@@ -18,6 +24,10 @@ ExperimentOptions experiment_options(int argc,char** argv) {
         if(arg=="--mode")o.mode=next();
         else if(arg=="--backends")o.backend_filter=","+next()+",";
         else if(arg=="--only")o.case_filter=next();
+        else if(arg=="--schedules")o.schedule_filter=","+next()+",";
+        else if(arg=="--seed-offset")o.seed_offset=std::stoul(next());
+        else if(arg=="--profile-calls")o.profile_calls=std::stoi(next());
+        else if(arg=="--hybrid")o.hybrid=true;
         else if(arg=="--sizes"){o.base.sizes.clear();std::istringstream s(next());std::string t;while(std::getline(s,t,','))o.base.sizes.push_back(std::stoi(t));}
         else if(arg=="--rounds")o.base.rounds=std::stoi(next());
         else if(arg=="--target-ms")o.base.target_ms=std::stod(next());
@@ -28,7 +38,7 @@ ExperimentOptions experiment_options(int argc,char** argv) {
     }
     if(o.mode!="ablation"&&o.mode!="endtoend")throw std::runtime_error("invalid mode");
     for(int n:o.base.sizes)if(n<32||n%8)throw std::runtime_error("N must be divisible by 8");
-    if(o.base.rounds<1||o.base.samples<16||o.base.target_ms<=0)throw std::runtime_error("invalid options");
+    if(o.base.rounds<1||o.base.samples<16||o.base.target_ms<=0||o.profile_calls<0)throw std::runtime_error("invalid options");
     return o;
 }
 int main(int argc,char** argv)try {
@@ -44,7 +54,10 @@ int main(int argc,char** argv)try {
     meta<<"{\"gpu\":\""<<prop.name<<"\",\"mode\":\""<<options.mode<<"\",\"alpha\":1,\"beta\":1,"
         <<"\"math_mode\":\"CUBLAS_PEDANTIC_MATH\",\"rounds\":"<<o.rounds<<",\"target_ms\":"<<o.target_ms
         <<",\"samples\":"<<o.samples<<",\"cuda_runtime\":"<<runtime<<",\"cublas_version\":"<<blas_version
-        <<",\"backend_filter\":\""<<options.backend_filter<<"\",\"case_filter\":\""<<options.case_filter<<"\",\"sizes\":[";
+        <<",\"backend_filter\":\""<<options.backend_filter<<"\",\"case_filter\":\""<<options.case_filter
+        <<"\",\"schedule_filter\":\""<<options.schedule_filter<<"\",\"seed_offset\":"<<options.seed_offset
+        <<",\"profile_calls\":"<<options.profile_calls<<",\"hybrid\":"<<options.hybrid
+        <<",\"sizes\":[";
     for(size_t i=0;i<o.sizes.size();++i)meta<<(i?",":"")<<o.sizes[i];meta<<"]}\n";meta.close();
     std::ofstream raw(o.output+".rounds.csv"),checks(o.output+".correctness.csv");
     raw<<"parent_n,case,mode,round,repeats,batch_ms,latency_ms,equivalent_tflops\n";
@@ -53,7 +66,9 @@ int main(int argc,char** argv)try {
     Events events;const float one=1;
     for(int n:o.sizes) {
         int s=n/2;size_t count=size_t(n)*n;Buffer a(count),b(count),c(count);
-        auto init=[&](float* p,int seed){initialize<<<std::min<size_t>((count+255)/256,4096),256,0,stream>>>(p,count,seed);};
+        std::unique_ptr<strassen_cuda::HybridWorkspace> scratch;
+        if(options.hybrid&&n%16==0)scratch=std::make_unique<strassen_cuda::HybridWorkspace>(n);
+        auto init=[&](float* p,int seed){initialize<<<std::min<size_t>((count+255)/256,4096),256,0,stream>>>(p,count,uint32_t(seed)+options.seed_offset);};
         init(a.p,11);init(b.p,23);init(c.p,37);CUDA_CHECK(cudaStreamSynchronize(stream));
         std::vector<Case> cases;
         auto add=[&](std::string name,int size,bool primitive,int delta,int epsilon,int gd,int ge,std::function<void()> launch){
@@ -91,8 +106,15 @@ int main(int argc,char** argv)try {
                                Plan{"four_batched_atomic",Schedule::FourBatchedAtomic,false,true}}) {
                     if(plan.normal&&!config.normal)continue;
                     if(plan.paired&&!config.paired)continue;
+                    if(!options.schedule_filter.empty()&&options.schedule_filter.find(","+std::string(plan.name)+",")==std::string::npos)continue;
                     add(std::string(config.name)+"_"+plan.name,n,false,0,0,1,0,
                         [=,&workspace](){strassen_cuda::one_level(backend,plan.schedule,ap,bp,cp,n,stream,workspace);});
+                    if(scratch&&strassen_cuda::valid_shape(backend,n/4)&&
+                       (plan.schedule==Schedule::SevenAtomic||plan.schedule==Schedule::FourBatchedAtomic)) {
+                        auto* scratch_ptr=scratch.get();
+                        add(std::string(config.name)+"_hybrid2_"+plan.name,n,false,0,0,1,0,
+                            [=,&workspace](){strassen_cuda::hybrid_two_level(backend,plan.schedule,ap,bp,cp,n,stream,workspace,*scratch_ptr);});
+                    }
                 }
             }
         }
@@ -101,13 +123,22 @@ int main(int argc,char** argv)try {
         for(const auto& x:cases) {
             for(int repeats:{1,3}) {
                 init(cp,37);for(int t=0;t<repeats;++t)x.launch();CUDA_CHECK(cudaStreamSynchronize(stream));
-                auto e=validate(x,n,o.samples,repeats,stream);
+                auto e=validate(x,n,o.samples,repeats,stream,11+options.seed_offset,23+options.seed_offset,37+options.seed_offset);
                 checks<<n<<','<<x.name<<','<<repeats<<','<<e.count<<','<<e.relative_l2<<','<<e.max_abs<<','<<e.max_scaled<<','<<e.pass<<'\n';checks.flush();
                 if(!e.pass)throw std::runtime_error("FP64 validation failed: "+std::to_string(n)+" "+x.name);
             }
         }
         std::cout<<"N="<<n<<" correctness PASS cases="<<cases.size()<<std::endl;
         if(o.validate_only)continue;
+        if(options.profile_calls) {
+            if(cases.size()!=1)throw std::runtime_error("profiling requires --only selecting one case");
+            const auto& x=cases.front();init(cp,37);elapsed(events,stream,x,5);
+            CUDA_CHECK(cudaProfilerStart());
+            for(int call=0;call<options.profile_calls;++call)x.launch();
+            CUDA_CHECK(cudaStreamSynchronize(stream));CUDA_CHECK(cudaProfilerStop());
+            std::cout<<"PROFILE COMPLETE calls="<<options.profile_calls<<std::endl;
+            continue;
+        }
         for(const auto& x:cases){init(cp,37);float p=elapsed(events,stream,x,3)/3;
             elapsed(events,stream,x,std::max(3,std::min(10000,int(std::ceil(20/std::max(double(p),.0001))))));}
         std::vector<int> order(cases.size());std::iota(order.begin(),order.end(),0);std::mt19937 rng(20261017+n);
