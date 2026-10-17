@@ -1609,3 +1609,39 @@
 - **N=2048 swizzle_coalesced64_k16_r4_seven_atomic:** 1.102997303 ms, cuBLAS=0.994465718 ms, ratio=0.901603x; reduction vs original r4=3.199%.
 - **Correctness:** 40 FP64 records, all pass=True.
 - **Outcome:** still below cuBLAS at N=1536. Profile post-change sectors/resources and pursue compute-body efficiency. Concurrent-output race safety retains atomics; shared-memory lifetime uses the final compute barrier plus a dedicated epilogue barrier.
+
+## Strassen iteration 7 — register tile and K-depth balance (2026-10-17)
+
+- **Direction:** test 8x4 register tiles with BK8/16, and coalesced/swizzled 4x4 with BK8/32 against BK16. Address the measured small-grid/eligible-warp limits and memory-latency hiding without changing the seven products or atomic contract.
+- **Command:** allocation 108133, `bench_strassen_onelevel.sh iter-7`, full N=1280/1536/1792/2048, 5 rounds x 200 ms. Archive `benchmark_results/strassen_primitive_20261017/iter7_balance`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cublas_full:** 0.257581055 ms, ratio=1.000000x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.304011332 ms, ratio=0.847275x.
+- **N=1280 swizzle64_k16_r8x4_seven_atomic:** 0.379516046 ms, ratio=0.678709x.
+- **N=1280 swizzle64_k8_r8x4_seven_atomic:** 0.370389567 ms, ratio=0.695433x.
+- **N=1280 swizzle_coalesced64_k16_r4_seven_atomic:** 0.287094203 ms, ratio=0.897200x.
+- **N=1280 swizzle_coalesced64_k32_r4_seven_atomic:** 0.292739692 ms, ratio=0.879898x.
+- **N=1280 swizzle_coalesced64_k8_r4_seven_atomic:** 0.301730750 ms, ratio=0.853679x.
+- **N=1536 cublas_full:** 0.431685251 ms, ratio=1.000000x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.507540302 ms, ratio=0.850544x.
+- **N=1536 swizzle64_k16_r8x4_seven_atomic:** 0.612925462 ms, ratio=0.704303x.
+- **N=1536 swizzle64_k8_r8x4_seven_atomic:** 0.620946378 ms, ratio=0.695205x.
+- **N=1536 swizzle_coalesced64_k16_r4_seven_atomic:** 0.482208536 ms, ratio=0.895225x.
+- **N=1536 swizzle_coalesced64_k32_r4_seven_atomic:** 0.491371247 ms, ratio=0.878532x.
+- **N=1536 swizzle_coalesced64_k8_r4_seven_atomic:** 0.510559936 ms, ratio=0.845513x.
+- **N=1792 cublas_full:** 0.688274761 ms, ratio=1.000000x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.776179591 ms, ratio=0.886747x.
+- **N=1792 swizzle64_k16_r8x4_seven_atomic:** 0.905157471 ms, ratio=0.760392x.
+- **N=1792 swizzle64_k8_r8x4_seven_atomic:** 0.918037450 ms, ratio=0.749724x.
+- **N=1792 swizzle_coalesced64_k16_r4_seven_atomic:** 0.741984436 ms, ratio=0.927613x.
+- **N=1792 swizzle_coalesced64_k32_r4_seven_atomic:** 0.755559557 ms, ratio=0.910947x.
+- **N=1792 swizzle_coalesced64_k8_r4_seven_atomic:** 0.793061283 ms, ratio=0.867871x.
+- **N=2048 cublas_full:** 0.988578197 ms, ratio=1.000000x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.135929703 ms, ratio=0.870281x.
+- **N=2048 swizzle64_k16_r8x4_seven_atomic:** 1.299878816 ms, ratio=0.760516x.
+- **N=2048 swizzle64_k8_r8x4_seven_atomic:** 1.339798731 ms, ratio=0.737856x.
+- **N=2048 swizzle_coalesced64_k16_r4_seven_atomic:** 1.101675279 ms, ratio=0.897341x.
+- **N=2048 swizzle_coalesced64_k32_r4_seven_atomic:** 1.113333740 ms, ratio=0.887944x.
+- **N=2048 swizzle_coalesced64_k8_r4_seven_atomic:** 1.166290198 ms, ratio=0.847626x.
+- **Correctness:** 56 FP64 checks; all pass=True.
+- **Outcome:** BK16/r4 from iteration 6 remains fastest; larger 8x4 register tiles regress sharply. N=1536 remains below cuBLAS. Retain all negative controls, re-assess using post-change counters and instruction scheduling before the next implementation change.

@@ -174,4 +174,12 @@ void launch_coalesced(const float* x,const float* y,const float* v,const float* 
     simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true>
         <<<dim3((s+63)/64,(s+63)/64),256,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
 }
+
+template<int BK,int RM,bool Coalesced,int D,int E,int GD,int GE,bool Atomic>
+void launch_balanced(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                     int s,int ld,cudaStream_t stream) {
+    constexpr int NT=(64/RM)*16;
+    simt_primitive<64,64,BK,RM,4,true,Atomic,D,E,GD,GE,false,true,Coalesced>
+        <<<dim3((s+63)/64,(s+63)/64),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
 } // namespace strassen_cuda
