@@ -1975,3 +1975,11 @@ Both independent N1536 replays have candidate max < cuBLAS min across seven roun
 Selected batching memcheck N120/128/1536/2056:0 errors; racecheck N120/128:0 hazards. Small N120/128 numeric validation is exhaustive; larger N uses original deterministic sample contract. Four-class selected profiles at leaf768/1024 complete:128 threads/CTA,111 regs Var2/Var3 paired and119 Var0/Var1,16KB shared, register limit4 CTAs/SM,25% theoretical occupancy, zero measured shared load/store bank conflicts. Concurrent range replay N1536 selected:21.43% active-warp occupancy, short-scoreboard3.98%, MIO2.30%, versus previous4x4 ~43% occupancy,13%/8% stalls. These ratios describe active warp cycles, not additive wall-time savings. Primary verdict uses ordinary CUDA events.
 
 Large-size regression is retained: selected small tile loses at8192/20480 while Huge retains gains; do not replace old large-tile/hybrid candidates or claim a universal crossover. Current solution headers match selected iteration16 byte-for-byte. A800 frozen-candidate job108136 is queued (Priority), distinct from older hybrid job108131; no A800 performance claim yet. Full evidence and conservative observed-range plot are in REPORT.md, acceptance.json and selected_crossover.svg/png. A100 N1536 relative-performance acceptance is achieved; original V100 absolute numbers remain outside the agreed scope.
+
+
+## Iteration 17 — CUDA BAG algorithm integration, initial environment failure
+
+- User request: implement BAG.md alternative-basis multiplication on the tuned FP32 CUDA primitive. Added minimal/full basis workspaces, all seven products, serial/seven-stream/batched schedules, caller-stream decoding, and recursive child workspaces. The validated primitive body is unchanged.
+- Benchmark command: allocation108156/g02, scripts/bench_bag_cuda.sh iter-17, N1280/1536/1792/2048, depth1, five rounds x200ms; archive bag_cuda_20261017/iter17_initial.
+- Result: no build or device execution. The SSH non-login environment lacked the module shell function; runner exited127 at module load cuda/12.2. Source snapshots were captured before failure. No correctness or speedup claim.
+- Next action: initialize the compute-node login shell environment, then rebuild and measure this unchanged implementation.
