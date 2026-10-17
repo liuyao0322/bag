@@ -1,0 +1,10 @@
+memcheck_mask PASS
+memcheck_huge PASS
+racecheck PASS
+profile_small PASS
+tensor_cublas PASS
+cuobjdump PASS
+Traceback (most recent call last):
+  File "<stdin>", line 7, in <module>
+AssertionError
+srun: error: g02: task 0: Exited with exit code 1

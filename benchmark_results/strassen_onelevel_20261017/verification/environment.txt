@@ -1,0 +1,11 @@
+2026-10-17T09:16:48+08:00
+g02
+SLURM_JOB_ID=108127 CUDA_VISIBLE_DEVICES=0 NVIDIA_TF32_OVERRIDE=0
+NVIDIA (R) Compute Sanitizer
+Copyright (c) 2020-2023 NVIDIA Corporation
+Version 2023.2.2.0 (build 33191640) (public-release)
+NVIDIA (R) Nsight Compute Command Line Profiler
+Copyright (c) 2018-2023 NVIDIA Corporation
+Version 2023.2.2.0 (build 33188574) (public-release)
+index, uuid, name, driver_version, clocks.current.sm [MHz], clocks.current.memory [MHz]
+0, GPU-4dc59edd-729d-ae17-5121-0450d619dac5, NVIDIA A100 80GB PCIe, 535.216.01, 1410 MHz, 1512 MHz

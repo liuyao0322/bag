@@ -1,0 +1,3 @@
+parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
+2048,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,1,128,1.05326613999e-06,1.14813446999e-05,9.59737836001e-07,1
+2048,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,3,128,1.04470703491e-06,3.49238980561e-05,1.04562984518e-06,1

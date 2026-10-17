@@ -1,0 +1,986 @@
+/share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/simt.cuh(30): warning #550-D: parameter "E" was set but never used
+                      float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
+                                      ^
+          detected during:
+            instantiation of "void strassen_cuda::simt_primitive<BM,BN,BK,RM,RN,Pipeline,Atomic,Delta,Epsilon,GD,GE,Pair,SwizzleB,Coalesced>(const float *, const float *, const float *, const float *, float *, float *, int, int, int, int, PrimBatchedPairArgs) [with BM=64, BN=32, BK=16, RM=4, RN=4, Pipeline=true, Atomic=true, Delta=-1, Epsilon=1, GD=1, GE=0, Pair=true, SwizzleB=false, Coalesced=false]" at line 121 of /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/engine.cuh
+            instantiation of "void strassen_cuda::pair<D,E,GD,GE,Atomic>(strassen_cuda::Backend, strassen_cuda::Operand, strassen_cuda::Operand, int, int, cudaStream_t) [with D=-1, E=1, GD=1, GE=0, Atomic=true]" at line 143 of /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/engine.cuh
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/simt.cuh(30): warning #550-D: parameter "E" was set but never used
+                      float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
+                                      ^
+          detected during:
+            instantiation of "void strassen_cuda::simt_primitive<BM,BN,BK,RM,RN,Pipeline,Atomic,Delta,Epsilon,GD,GE,Pair,SwizzleB,Coalesced>(const float *, const float *, const float *, const float *, float *, float *, int, int, int, int, PrimBatchedPairArgs) [with BM=64, BN=32, BK=16, RM=4, RN=4, Pipeline=true, Atomic=false, Delta=-1, Epsilon=1, GD=1, GE=0, Pair=true, SwizzleB=false, Coalesced=false]" at line 121 of /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/engine.cuh
+            instantiation of "void strassen_cuda::pair<D,E,GD,GE,Atomic>(strassen_cuda::Backend, strassen_cuda::Operand, strassen_cuda::Operand, int, int, cudaStream_t) [with D=-1, E=1, GD=1, GE=0, Atomic=false]" at line 129 of /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/engine.cuh
+            instantiation of "void strassen_cuda::paired_level<Atomic>(strassen_cuda::Backend, const float *, const float *, float *, int, cudaStream_t) [with Atomic=false]" at line 160 of /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/source/strassen_cuda/engine.cuh
+
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 57 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 47 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 116 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 135 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 140 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 57 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 62 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 116 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 135 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi1ELi0ELi1ELin1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 136 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 116 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 130 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 62 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 116 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 78 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi0ELin1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 50 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 129 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 50 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELin1ELi1ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 50 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 129 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 65 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 50 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 135 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi1ELi1ELi1ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 57 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 66 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 53 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 73 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 49 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 136 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 58 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 66 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 61 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 79 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 49 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELi0ELi0ELi1ELi0ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 136 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14hybrid_prepareILi1ELi1EEEvPKfS2_S2_S2_PfS3_S3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14hybrid_prepareILi1ELi1EEEvPKfS2_S2_S2_PfS3_S3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 20 registers, 416 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda12hybrid_mergeILi1ELi1EEEvPKfPfS3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda12hybrid_mergeILi1ELi1EEEvPKfPfS3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 16 registers, 384 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14hybrid_prepareILi0ELin1EEEvPKfS2_S2_S2_PfS3_S3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14hybrid_prepareILi0ELin1EEEvPKfS2_S2_S2_PfS3_S3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 18 registers, 416 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda12hybrid_mergeILi1ELi0EEEvPKfPfS3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda12hybrid_mergeILi1ELi0EEEvPKfPfS3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 16 registers, 384 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda12hybrid_mergeILi0ELi1EEEvPKfPfS3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda12hybrid_mergeILi0ELi1EEEvPKfPfS3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 16 registers, 384 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14hybrid_prepareILin1ELi1EEEvPKfS2_S2_S2_PfS3_S3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14hybrid_prepareILin1ELi1EEEvPKfS2_S2_S2_PfS3_S3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 20 registers, 416 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda12hybrid_mergeILi1ELin1EEEvPKfPfS3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda12hybrid_mergeILi1ELin1EEEvPKfPfS3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 16 registers, 384 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14hybrid_prepareILi1ELi0EEEvPKfS2_S2_S2_PfS3_S3_ii' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14hybrid_prepareILi1ELi0EEEvPKfS2_S2_S2_PfS3_S3_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 18 registers, 416 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 50 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb0ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 129 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi0ELin1ELi1ELi1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELin1ELi1ELi1ELi0ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb0ELi1ELi0ELi1ELin1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 51 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb1EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi32ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 64 registers, 12288 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb1ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 50 registers, 16384 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi128ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 115 registers, 32896 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi128ELi64ELi16ELi8ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 76 registers, 24704 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi16ELi8ELi8ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 134 registers, 16512 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb1ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 8256 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi64ELi8ELi8ELi8ELb0ELb1ELin1ELi1ELi0ELi1ELb0ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 4128 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi0ELin1ELi1ELi1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELin1ELi1ELi1ELi0ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 56 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs' for 'sm_80'
+ptxas info    : Function properties for _ZN13strassen_cuda14simt_primitiveILi64ELi32ELi16ELi4ELi4ELb1ELb1ELi1ELi0ELi1ELin1ELb1ELb0ELb0EEEvPKfS2_S2_S2_PfS3_iiii19PrimBatchedPairArgs
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 55 registers, 12416 bytes smem, 512 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi1ELi0ELi1ELin1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi1ELi0ELi1ELin1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi1ELi0ELi1ELin1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi1ELi0ELi1ELin1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi0ELin1ELi1ELi1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi0ELin1ELi1ELi1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi0ELin1ELi1ELi1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi0ELin1ELi1ELi1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 122 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILin1ELi1ELi1ELi0ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILin1ELi1ELi1ELi0ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 118 registers, 4096 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILin1ELi1ELi1ELi0ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILin1ELi1ELi1ELi0ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi1ELi1ELi1ELi1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi1ELi1ELi1ELi1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 118 registers, 4096 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi1ELi1ELi1ELi1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi1ELi1ELi1ELi1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi0ELi0ELi1ELi0ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi0ELi0ELi1ELi0ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 118 registers, 4096 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILi0ELi0ELi1ELi0ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILi0ELi0ELi1ELi0ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILin1ELi1ELi0ELi1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILin1ELi1ELi0ELi1ELb0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 118 registers, 4096 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z23primitive_large_controlILin1ELi1ELi0ELi1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z23primitive_large_controlILin1ELi1ELi0ELi1ELb1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z19primitive_huge_pairILi0ELin1ELi1ELi1EEv19PrimBatchedPairArgsiiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z19primitive_huge_pairILi0ELin1ELi1ELi1EEv19PrimBatchedPairArgsiiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 484 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z19primitive_huge_pairILin1ELi1ELi1ELi0EEv19PrimBatchedPairArgsiiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z19primitive_huge_pairILin1ELi1ELi1ELi0EEv19PrimBatchedPairArgsiiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 484 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z19primitive_huge_pairILi1ELi0ELi1ELin1EEv19PrimBatchedPairArgsiiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z19primitive_huge_pairILi1ELi0ELi1ELin1EEv19PrimBatchedPairArgsiiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 484 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 70 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 39 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 80 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 77 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 110 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 102 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 71 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 83 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 93 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 122 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 80 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 122 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 80 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 83 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 93 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 102 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z6gatherPKfPKmPfi' for 'sm_80'
+ptxas info    : Function properties for _Z6gatherPKfPKmPfi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 10 registers, 380 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z10initializePfmj' for 'sm_80'
+ptxas info    : Function properties for _Z10initializePfmj
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 10 registers, 372 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 71 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z29primitive_medium_batched_pairILin1ELin1ELi1ELi1EEv19PrimBatchedPairArgsiiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z29primitive_medium_batched_pairILin1ELin1ELi1ELi1EEv19PrimBatchedPairArgsiiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 62 registers, 4096 bytes smem, 484 bytes cmem[0]

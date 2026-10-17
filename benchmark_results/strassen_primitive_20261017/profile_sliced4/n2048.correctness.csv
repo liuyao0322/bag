@@ -1,0 +1,3 @@
+parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
+2048,sliced4_64x32_k8_r8x4_seven_atomic,1,128,5.52981034208e-07,7.73649662733e-06,6.46701995754e-07,1
+2048,sliced4_64x32_k8_r8x4_seven_atomic,3,128,5.41013564211e-07,2.25156545639e-05,6.74124072804e-07,1

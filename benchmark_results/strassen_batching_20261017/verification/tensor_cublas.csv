@@ -1,0 +1,4 @@
+==PROF== Connected to process 260410 (/share/home/liuyao/workspace/bag/benchmark_results/strassen_batching_20261017/iter4_hybrid_smoke/benchmark_strassen_onelevel)
+==PROF== Disconnected from process 260410
+"ID","Process ID","Process Name","Host Name","Kernel Name","Context","Stream","Block Size","Grid Size","Device","CC","Section Name","Metric Name","Metric Unit","Metric Value"
+"0","260410","benchmark_strassen_onelevel","127.0.0.1","ampere_sgemm_128x64_nn","1","13","(128, 1, 1)","(16, 32, 1)","0","8.0","Command line profiler metrics","sm__inst_executed_pipe_tensor.sum","inst","0"

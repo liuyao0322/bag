@@ -1,0 +1,51 @@
+{
+  "recommended": [
+    {
+      "parent_n": 2048,
+      "case": "pipe64x32_k16_r4_seven_atomic",
+      "median_ms": "1.1941707042",
+      "cublas_ms": "0.978686703837",
+      "speedup": "0.8195534360329519",
+      "cv": "0.009994036455606448",
+      "min_ms": "1.18644823949",
+      "max_ms": "1.21853184962"
+    },
+    {
+      "parent_n": 8192,
+      "case": "huge_seven_atomic",
+      "median_ms": "56.7234573364",
+      "cublas_ms": "57.9292144775",
+      "speedup": "1.0212567639160148",
+      "cv": "0.0025028535382265425",
+      "min_ms": "56.4928016663",
+      "max_ms": "56.8189430237"
+    },
+    {
+      "parent_n": 20480,
+      "case": "huge_seven_atomic",
+      "median_ms": "886.204101562",
+      "cublas_ms": "960.525634766",
+      "speedup": "1.0838650295942016",
+      "cv": "0.0021907291988634645",
+      "min_ms": "881.545898438",
+      "max_ms": "886.828694661"
+    }
+  ],
+  "profiles": [
+    {
+      "case": "original_large",
+      "Registers Per Thread": "113",
+      "Theoretical Occupancy": "25",
+      "Achieved Occupancy": "6.60",
+      "Waves Per SM": "0.30"
+    },
+    {
+      "case": "pipe64x32_k16_r4",
+      "Registers Per Thread": "56",
+      "Theoretical Occupancy": "56.25",
+      "Achieved Occupancy": "23.47",
+      "Waves Per SM": "0.53"
+    }
+  ]
+}
+REPORT PASS final_checks=48 max_relative_l2=3.16920876e-06 current_source_match=True

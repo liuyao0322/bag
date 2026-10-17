@@ -1,0 +1,175 @@
+BUILD PASS
+N=1280 correctness PASS cases=7
+1280 round=0 swizzle64x32_k16_r4_seven_atomic ms=0.300718
+1280 round=0 swizzle64_k16_r4_seven_atomic ms=0.299491
+1280 round=0 huge_seven_atomic ms=0.341409
+1280 round=0 swizzle32x64_k16_r4_seven_atomic ms=0.304674
+1280 round=0 pipe64x32_k16_r4_seven_atomic ms=0.303845
+1280 round=0 cublas_full ms=0.26067
+1280 round=0 pipe64_k16_r4_seven_atomic ms=0.305499
+1280 round=1 cublas_full ms=0.257705
+1280 round=1 swizzle64x32_k16_r4_seven_atomic ms=0.300543
+1280 round=1 swizzle64_k16_r4_seven_atomic ms=0.299319
+1280 round=1 pipe64_k16_r4_seven_atomic ms=0.30527
+1280 round=1 swizzle32x64_k16_r4_seven_atomic ms=0.305524
+1280 round=1 pipe64x32_k16_r4_seven_atomic ms=0.304355
+1280 round=1 huge_seven_atomic ms=0.342481
+1280 round=2 swizzle32x64_k16_r4_seven_atomic ms=0.303491
+1280 round=2 swizzle64x32_k16_r4_seven_atomic ms=0.302738
+1280 round=2 pipe64_k16_r4_seven_atomic ms=0.30723
+1280 round=2 pipe64x32_k16_r4_seven_atomic ms=0.305079
+1280 round=2 huge_seven_atomic ms=0.342847
+1280 round=2 swizzle64_k16_r4_seven_atomic ms=0.297602
+1280 round=2 cublas_full ms=0.257762
+1280 round=3 pipe64_k16_r4_seven_atomic ms=0.305206
+1280 round=3 swizzle64x32_k16_r4_seven_atomic ms=0.304336
+1280 round=3 pipe64x32_k16_r4_seven_atomic ms=0.305145
+1280 round=3 swizzle64_k16_r4_seven_atomic ms=0.300429
+1280 round=3 huge_seven_atomic ms=0.340514
+1280 round=3 swizzle32x64_k16_r4_seven_atomic ms=0.306918
+1280 round=3 cublas_full ms=0.259921
+1280 round=4 swizzle64_k16_r4_seven_atomic ms=0.297774
+1280 round=4 pipe64_k16_r4_seven_atomic ms=0.305132
+1280 round=4 swizzle64x32_k16_r4_seven_atomic ms=0.303537
+1280 round=4 huge_seven_atomic ms=0.342517
+1280 round=4 swizzle32x64_k16_r4_seven_atomic ms=0.304779
+1280 round=4 pipe64x32_k16_r4_seven_atomic ms=0.303958
+1280 round=4 cublas_full ms=0.261556
+N=1536 correctness PASS cases=7
+1536 round=0 swizzle64_k16_r4_seven_atomic ms=0.50067
+1536 round=0 pipe64x32_k16_r4_seven_atomic ms=0.522143
+1536 round=0 huge_seven_atomic ms=0.571721
+1536 round=0 cublas_full ms=0.43192
+1536 round=0 swizzle32x64_k16_r4_seven_atomic ms=0.518529
+1536 round=0 swizzle64x32_k16_r4_seven_atomic ms=0.514434
+1536 round=0 pipe64_k16_r4_seven_atomic ms=0.516676
+1536 round=1 huge_seven_atomic ms=0.569408
+1536 round=1 pipe64x32_k16_r4_seven_atomic ms=0.519148
+1536 round=1 swizzle32x64_k16_r4_seven_atomic ms=0.519409
+1536 round=1 swizzle64x32_k16_r4_seven_atomic ms=0.513858
+1536 round=1 swizzle64_k16_r4_seven_atomic ms=0.502844
+1536 round=1 pipe64_k16_r4_seven_atomic ms=0.512263
+1536 round=1 cublas_full ms=0.43232
+1536 round=2 huge_seven_atomic ms=0.568715
+1536 round=2 swizzle64x32_k16_r4_seven_atomic ms=0.51525
+1536 round=2 swizzle64_k16_r4_seven_atomic ms=0.498918
+1536 round=2 pipe64_k16_r4_seven_atomic ms=0.509305
+1536 round=2 pipe64x32_k16_r4_seven_atomic ms=0.519942
+1536 round=2 cublas_full ms=0.435571
+1536 round=2 swizzle32x64_k16_r4_seven_atomic ms=0.519088
+1536 round=3 swizzle64x32_k16_r4_seven_atomic ms=0.515424
+1536 round=3 huge_seven_atomic ms=0.570867
+1536 round=3 pipe64_k16_r4_seven_atomic ms=0.509858
+1536 round=3 swizzle64_k16_r4_seven_atomic ms=0.499919
+1536 round=3 swizzle32x64_k16_r4_seven_atomic ms=0.521751
+1536 round=3 pipe64x32_k16_r4_seven_atomic ms=0.517567
+1536 round=3 cublas_full ms=0.436458
+1536 round=4 swizzle64_k16_r4_seven_atomic ms=0.496804
+1536 round=4 swizzle32x64_k16_r4_seven_atomic ms=0.52374
+1536 round=4 cublas_full ms=0.435585
+1536 round=4 pipe64_k16_r4_seven_atomic ms=0.512352
+1536 round=4 huge_seven_atomic ms=0.570655
+1536 round=4 pipe64x32_k16_r4_seven_atomic ms=0.517779
+1536 round=4 swizzle64x32_k16_r4_seven_atomic ms=0.514967
+N=1792 correctness PASS cases=7
+1792 round=0 swizzle64x32_k16_r4_seven_atomic ms=0.809873
+1792 round=0 pipe64x32_k16_r4_seven_atomic ms=0.815735
+1792 round=0 swizzle64_k16_r4_seven_atomic ms=0.764501
+1792 round=0 cublas_full ms=0.688601
+1792 round=0 pipe64_k16_r4_seven_atomic ms=0.781134
+1792 round=0 huge_seven_atomic ms=0.846655
+1792 round=0 swizzle32x64_k16_r4_seven_atomic ms=0.815618
+1792 round=1 swizzle32x64_k16_r4_seven_atomic ms=0.823938
+1792 round=1 cublas_full ms=0.695181
+1792 round=1 pipe64x32_k16_r4_seven_atomic ms=0.812934
+1792 round=1 huge_seven_atomic ms=0.849039
+1792 round=1 swizzle64_k16_r4_seven_atomic ms=0.760594
+1792 round=1 pipe64_k16_r4_seven_atomic ms=0.785194
+1792 round=1 swizzle64x32_k16_r4_seven_atomic ms=0.801404
+1792 round=2 huge_seven_atomic ms=0.850554
+1792 round=2 pipe64x32_k16_r4_seven_atomic ms=0.812874
+1792 round=2 swizzle64_k16_r4_seven_atomic ms=0.762048
+1792 round=2 cublas_full ms=0.694382
+1792 round=2 swizzle32x64_k16_r4_seven_atomic ms=0.820846
+1792 round=2 swizzle64x32_k16_r4_seven_atomic ms=0.801829
+1792 round=2 pipe64_k16_r4_seven_atomic ms=0.784264
+1792 round=3 pipe64_k16_r4_seven_atomic ms=0.783158
+1792 round=3 pipe64x32_k16_r4_seven_atomic ms=0.818067
+1792 round=3 swizzle64x32_k16_r4_seven_atomic ms=0.804066
+1792 round=3 huge_seven_atomic ms=0.849733
+1792 round=3 swizzle32x64_k16_r4_seven_atomic ms=0.813446
+1792 round=3 swizzle64_k16_r4_seven_atomic ms=0.763864
+1792 round=3 cublas_full ms=0.698145
+1792 round=4 swizzle64x32_k16_r4_seven_atomic ms=0.807601
+1792 round=4 cublas_full ms=0.692931
+1792 round=4 pipe64_k16_r4_seven_atomic ms=0.780126
+1792 round=4 huge_seven_atomic ms=0.849216
+1792 round=4 swizzle64_k16_r4_seven_atomic ms=0.764223
+1792 round=4 pipe64x32_k16_r4_seven_atomic ms=0.812251
+1792 round=4 swizzle32x64_k16_r4_seven_atomic ms=0.819376
+N=2048 correctness PASS cases=7
+2048 round=0 cublas_full ms=1.00197
+2048 round=0 pipe64x32_k16_r4_seven_atomic ms=1.1888
+2048 round=0 swizzle64_k16_r4_seven_atomic ms=1.12321
+2048 round=0 huge_seven_atomic ms=1.19076
+2048 round=0 swizzle32x64_k16_r4_seven_atomic ms=1.21314
+2048 round=0 swizzle64x32_k16_r4_seven_atomic ms=1.19182
+2048 round=0 pipe64_k16_r4_seven_atomic ms=1.14841
+2048 round=1 huge_seven_atomic ms=1.18201
+2048 round=1 pipe64x32_k16_r4_seven_atomic ms=1.19522
+2048 round=1 swizzle64x32_k16_r4_seven_atomic ms=1.18068
+2048 round=1 pipe64_k16_r4_seven_atomic ms=1.14988
+2048 round=1 cublas_full ms=0.992037
+2048 round=1 swizzle64_k16_r4_seven_atomic ms=1.11652
+2048 round=1 swizzle32x64_k16_r4_seven_atomic ms=1.21988
+2048 round=2 pipe64_k16_r4_seven_atomic ms=1.14836
+2048 round=2 pipe64x32_k16_r4_seven_atomic ms=1.19628
+2048 round=2 swizzle32x64_k16_r4_seven_atomic ms=1.21286
+2048 round=2 cublas_full ms=1.00148
+2048 round=2 swizzle64x32_k16_r4_seven_atomic ms=1.17884
+2048 round=2 swizzle64_k16_r4_seven_atomic ms=1.12851
+2048 round=2 huge_seven_atomic ms=1.18457
+2048 round=3 huge_seven_atomic ms=1.16655
+2048 round=3 swizzle32x64_k16_r4_seven_atomic ms=1.21127
+2048 round=3 swizzle64_k16_r4_seven_atomic ms=1.12738
+2048 round=3 swizzle64x32_k16_r4_seven_atomic ms=1.18799
+2048 round=3 cublas_full ms=0.993681
+2048 round=3 pipe64_k16_r4_seven_atomic ms=1.14808
+2048 round=3 pipe64x32_k16_r4_seven_atomic ms=1.20259
+2048 round=4 pipe64x32_k16_r4_seven_atomic ms=1.1946
+2048 round=4 pipe64_k16_r4_seven_atomic ms=1.14031
+2048 round=4 huge_seven_atomic ms=1.19176
+2048 round=4 swizzle32x64_k16_r4_seven_atomic ms=1.21831
+2048 round=4 cublas_full ms=0.992148
+2048 round=4 swizzle64_k16_r4_seven_atomic ms=1.12463
+2048 round=4 swizzle64x32_k16_r4_seven_atomic ms=1.17755
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter5_swizzle/results
+CORRECT=True checks=56 max_relative_l2=1.0655946e-06
+N=1280 mode=endtoend cuBLAS=0.259921 ms
+  swizzle64_k16_r4_seven_atomic                    0.299319 ms speedup=0.8684 cv=0.361%
+  swizzle64x32_k16_r4_seven_atomic                 0.302738 ms speedup=0.8586 cv=0.500%
+  pipe64x32_k16_r4_seven_atomic                    0.304355 ms speedup=0.8540 cv=0.179%
+  swizzle32x64_k16_r4_seven_atomic                 0.304779 ms speedup=0.8528 cv=0.370%
+  pipe64_k16_r4_seven_atomic                       0.305270 ms speedup=0.8514 cv=0.259%
+  huge_seven_atomic                                0.342481 ms speedup=0.7589 cv=0.254%
+N=1536 mode=endtoend cuBLAS=0.435571 ms
+  swizzle64_k16_r4_seven_atomic                    0.499919 ms speedup=0.8713 cv=0.398%
+  pipe64_k16_r4_seven_atomic                       0.512263 ms speedup=0.8503 cv=0.508%
+  swizzle64x32_k16_r4_seven_atomic                 0.514967 ms speedup=0.8458 cv=0.111%
+  pipe64x32_k16_r4_seven_atomic                    0.519148 ms speedup=0.8390 cv=0.320%
+  swizzle32x64_k16_r4_seven_atomic                 0.519409 ms speedup=0.8386 cv=0.376%
+  huge_seven_atomic                                0.570655 ms speedup=0.7633 cv=0.188%
+N=1792 mode=endtoend cuBLAS=0.694382 ms
+  swizzle64_k16_r4_seven_atomic                    0.763864 ms speedup=0.9090 cv=0.196%
+  pipe64_k16_r4_seven_atomic                       0.783158 ms speedup=0.8866 cv=0.242%
+  swizzle64x32_k16_r4_seven_atomic                 0.804066 ms speedup=0.8636 cv=0.410%
+  pipe64x32_k16_r4_seven_atomic                    0.812934 ms speedup=0.8542 cv=0.271%
+  swizzle32x64_k16_r4_seven_atomic                 0.819376 ms speedup=0.8475 cv=0.456%
+  huge_seven_atomic                                0.849216 ms speedup=0.8177 cv=0.154%
+N=2048 mode=endtoend cuBLAS=0.993681 ms
+  swizzle64_k16_r4_seven_atomic                    1.124632 ms speedup=0.8836 cv=0.375%
+  pipe64_k16_r4_seven_atomic                       1.148364 ms speedup=0.8653 cv=0.297%
+  swizzle64x32_k16_r4_seven_atomic                 1.180678 ms speedup=0.8416 cv=0.470%
+  huge_seven_atomic                                1.184570 ms speedup=0.8389 cv=0.766%
+  pipe64x32_k16_r4_seven_atomic                    1.195223 ms speedup=0.8314 cv=0.368%
+  swizzle32x64_k16_r4_seven_atomic                 1.213145 ms speedup=0.8191 cv=0.277%

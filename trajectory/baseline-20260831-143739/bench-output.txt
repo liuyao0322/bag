@@ -1,0 +1,11 @@
+GPU: NVIDIA GeForce RTX 3090
+Implementation: /share/home/liuyao/workspace/bag/solution
+Primitive: (X-Y)@(V-W), atomically accumulated into D and E
+Unfused: 2 x subtract + GEMM + 2 x output add; all buffers preallocated
+ieee column-major square-512  ( 512, 512, 512)  fused=  0.0901 ms  unfused=  0.0492 ms  speedup= 0.545x  effective=  2.99 TFLOP/s
+ieee row-major    square-512  ( 512, 512, 512)  fused=  0.0819 ms  unfused=  0.0492 ms  speedup= 0.600x  effective=  3.29 TFLOP/s
+tf32 column-major square-512  ( 512, 512, 512)  fused=  0.0696 ms  unfused=  0.0348 ms  speedup= 0.500x  effective=  3.87 TFLOP/s
+tf32 row-major    square-512  ( 512, 512, 512)  fused=  0.0696 ms  unfused=  0.0348 ms  speedup= 0.500x  effective=  3.87 TFLOP/s
+FUSED_GEOMEAN_MS=0.077348
+SPEEDUP_GEOMEAN=0.534826
+CORRECT=True

@@ -1,0 +1,14 @@
+{
+  "gpu": "NVIDIA A100 80GB PCIe",
+  "compute_capability": "8.0",
+  "global_memory_bytes": 84987740160,
+  "cuda_runtime": 12020,
+  "cuda_driver": 12020,
+  "cublas_version": 120205,
+  "math_mode": "CUBLAS_PEDANTIC_MATH",
+  "gemm_api": "cublasSgemm",
+  "alpha": 1, "beta": 1, "layout": "column-major",
+  "rounds": 5, "target_ms": 200, "requested_samples": 128,
+  "correctness_relative_l2_limit": 0.00003, "correctness_max_scaled_limit": 0.0001,
+  "sizes": [512,768,1024,1280,1536,1792,2048,3072,4096,6144,7680,8192,10240,12288,16384,20480]
+}

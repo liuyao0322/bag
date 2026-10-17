@@ -1,0 +1,18 @@
+{
+  "benchmark_completed": true,
+  "timing_rows": 880,
+  "numerical_checks": 352,
+  "initial_wrapper_exit_code": 2,
+  "initial_wrapper_error": "unexpected EOF while looking for matching quote, after benchmark printed COMPLETE",
+  "cause": "The wrapper file was edited while bash was executing its final pipeline. Its buffered file offset no longer matched the revised file.",
+  "resolution": "Wrapper body is parsed as a function before work starts. A replay across all four kernel buckets completed with wrapper exit code 0. Compiled CUDA benchmark source is identical.",
+  "entry_replay_exit_code": 0,
+  "entry_replay_timing_rows": 44,
+  "entry_replay_checks": 88,
+  "benchmark_source_sha256": "726851f3f2c3bcda4a63921c23869d3663fa56c14929178662ad1c80869428c0",
+  "memcheck_exit_code": 0,
+  "ncu_exit_code": 0,
+  "ncu_sample_kernel": "ampere_sgemm_128x64_nn",
+  "ncu_tensor_instructions": 0,
+  "source_manifest_note": "Original file digests retained; path names normalized to be relative to the result directory for portable verification."
+}

@@ -1,0 +1,6 @@
+profile,calls,kernels,streams,kernel_envelope_ms_per_call,gpu_busy_union_ms_per_call,internal_gpu_idle_ms_per_call,summed_kernel_ms_per_call,prepare_busy_ms_per_call,products_busy_ms_per_call,merge_busy_ms_per_call
+timeline_cublas_full,20,20,1,0.97823455,0.97721525,0.0010193,0.97721525,0.0,0.97721525,0.0
+timeline_huge_four_batched_atomic,20,80,4,1.15996775,1.1494253,0.01054245,2.5158916000000002,0.0,1.1494253,0.0
+timeline_huge_seven_atomic,20,140,7,1.16166125,1.15348505,0.0081762,3.8038265,0.0,1.15348505,0.0
+timeline_hybrid_large,3,189,8,791.9018393333333,791.8246766666666,0.07716266666666667,880.427889,12.385587666666666,770.318959,9.12013
+timeline_pipe64x32_k16_r4_four_batched_atomic,20,80,4,1.1100356999999998,1.10321005,0.00682565,1.9141078999999999,0.0,1.10321005,0.0

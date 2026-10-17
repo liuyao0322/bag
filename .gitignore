@@ -2,6 +2,9 @@
 build/
 *.o
 *.exe
+__pycache__/
+*.py[cod]
+_bench_output.txt
 
 # NCU reports (large binary files)
 *.ncu-rep
@@ -21,4 +24,3 @@ profiling/
 logs/
 third_party/
 kernel/
-

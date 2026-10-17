@@ -1,0 +1,3 @@
+N=1536 correctness PASS cases=1
+PROFILE COMPLETE calls=1
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/profile_baseline/n1536

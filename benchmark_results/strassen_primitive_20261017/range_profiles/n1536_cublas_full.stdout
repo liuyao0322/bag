@@ -1,0 +1,4 @@
+==WARNING== Please consult the documentation for current range-based replay mode limitations and requirements.
+N=1536 correctness PASS cases=1
+PROFILE COMPLETE calls=10
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/range_profiles/n1536_cublas_full

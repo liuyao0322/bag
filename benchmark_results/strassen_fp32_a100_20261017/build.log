@@ -1,0 +1,277 @@
+ptxas info    : 0 bytes gmem
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 70 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 113 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 39 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 80 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi0ELi0ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 77 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 110 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 102 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 71 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 83 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi0ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 93 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 122 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 80 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 122 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 80 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 114 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 83 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 93 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_hugeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_hugeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 128 registers, 16384 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15primitive_largeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_largeILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 120 registers, 4096 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15primitive_smallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z15primitive_smallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 48 registers, 2048 bytes smem, 436 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z14primitive_wideILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_wideILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 102 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z14primitive_tallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z14primitive_tallILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 96 registers, 10240 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z6gatherPKfPKmPfi' for 'sm_80'
+ptxas info    : Function properties for _Z6gatherPKfPKmPfi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 10 registers, 380 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z10initializePfmj' for 'sm_80'
+ptxas info    : Function properties for _Z10initializePfmj
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 10 registers, 372 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELin1ELin1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi0ELi1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi0ELin1ELi1ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELi1ELi1ELi0EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILin1ELi1ELi0ELi1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 72 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z16primitive_mediumILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z16primitive_mediumILi1ELi0ELi1ELin1EEvPKfS1_S1_S1_PfS2_iiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 71 registers, 2176 bytes smem, 436 bytes cmem[0], 8 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z29primitive_medium_batched_pairILin1ELin1ELi1ELi1EEv19PrimBatchedPairArgsiiiiiiiii' for 'sm_80'
+ptxas info    : Function properties for _Z29primitive_medium_batched_pairILin1ELin1ELi1ELi1EEv19PrimBatchedPairArgsiiiiiiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 62 registers, 4096 bytes smem, 484 bytes cmem[0]

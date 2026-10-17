@@ -1,0 +1,3 @@
+case,paper_v100_reported_crossover,a100_first_clear_dense_point,criterion,candidate_policy,numerical_target_reached,same_hardware_reproduction
+huge_seven_atomic,1536,4352,both seeds: candidate max < same-run cuBLAS min; measured points only,fixed Huge seven-stream; not a search over all blocking strategies,False,False
+huge_hybrid2_seven_atomic,7680,6656,both seeds: candidate max < same-run cuBLAS min; measured points only,fixed Huge seven-stream; not a search over all blocking strategies,True,False

@@ -1,0 +1,5 @@
+parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
+128,pipe64x32_k16_r4_hybrid2_four_batched_atomic,1,16384,4.01984532298e-07,3.02912667394e-06,5.73880690787e-07,1
+128,pipe64x32_k16_r4_hybrid2_four_batched_atomic,3,16384,4.21028099603e-07,9.02777537704e-06,6.88151960763e-07,1
+256,pipe64x32_k16_r4_hybrid2_four_batched_atomic,1,128,5.94727087459e-07,2.91271135211e-06,6.42555710068e-07,1
+256,pipe64x32_k16_r4_hybrid2_four_batched_atomic,3,128,6.11209387642e-07,8.96351411939e-06,8.28502127665e-07,1

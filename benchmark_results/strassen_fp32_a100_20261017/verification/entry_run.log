@@ -1,0 +1,49 @@
+N=512 FP64 validation PASS (11 cases, 1/3 accumulated calls)
+N=512 round=0 cublas_leaf_compact ms=0.0123111
+N=512 round=0 primitive_m1 ms=0.0176192
+N=512 round=0 primitive_m6 ms=0.0135343
+N=512 round=0 primitive_gemm ms=0.0115013
+N=512 round=0 primitive_m7 ms=0.0130642
+N=512 round=0 primitive_m5 ms=0.0135357
+N=512 round=0 cublas_leaf_parent_ld ms=0.0123746
+N=512 round=0 primitive_m3 ms=0.0127765
+N=512 round=0 cublas_full ms=0.0283013
+N=512 round=0 primitive_m2 ms=0.0176466
+N=512 round=0 primitive_m4 ms=0.0128136
+N=1024 FP64 validation PASS (11 cases, 1/3 accumulated calls)
+N=1024 round=0 primitive_m7 ms=0.0439856
+N=1024 round=0 primitive_m4 ms=0.0422367
+N=1024 round=0 cublas_leaf_parent_ld ms=0.027884
+N=1024 round=0 primitive_m1 ms=0.0473891
+N=1024 round=0 primitive_m3 ms=0.0423048
+N=1024 round=0 cublas_leaf_compact ms=0.0282711
+N=1024 round=0 primitive_m6 ms=0.0474142
+N=1024 round=0 primitive_gemm ms=0.0387015
+N=1024 round=0 cublas_full ms=0.128844
+N=1024 round=0 primitive_m2 ms=0.0470263
+N=1024 round=0 primitive_m5 ms=0.0473962
+N=2048 FP64 validation PASS (11 cases, 1/3 accumulated calls)
+N=2048 round=0 primitive_m5 ms=0.303025
+N=2048 round=0 primitive_m6 ms=0.303104
+N=2048 round=0 primitive_m1 ms=0.288371
+N=2048 round=0 cublas_leaf_compact ms=0.128883
+N=2048 round=0 primitive_m3 ms=0.307984
+N=2048 round=0 primitive_m2 ms=0.289129
+N=2048 round=0 primitive_m7 ms=0.32716
+N=2048 round=0 primitive_m4 ms=0.307814
+N=2048 round=0 cublas_full ms=0.977286
+N=2048 round=0 primitive_gemm ms=0.258485
+N=2048 round=0 cublas_leaf_parent_ld ms=0.128924
+N=10240 FP64 validation PASS (11 cases, 1/3 accumulated calls)
+N=10240 round=0 primitive_m3 ms=15.8112
+N=10240 round=0 primitive_m1 ms=15.5409
+N=10240 round=0 primitive_m6 ms=15.5901
+N=10240 round=0 cublas_leaf_parent_ld ms=14.3073
+N=10240 round=0 primitive_m4 ms=15.9263
+N=10240 round=0 primitive_m5 ms=15.6399
+N=10240 round=0 primitive_gemm ms=14.9122
+N=10240 round=0 cublas_leaf_compact ms=14.3025
+N=10240 round=0 primitive_m2 ms=15.4436
+N=10240 round=0 primitive_m7 ms=16.1983
+N=10240 round=0 cublas_full ms=117.162
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_fp32_a100_entry_check_20261017/results

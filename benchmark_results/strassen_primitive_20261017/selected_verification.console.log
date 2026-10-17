@@ -1,0 +1,10 @@
+memcheck PASS
+racecheck PASS
+N=1536 column_tile64_k16_r4x8 PROFILE PASS
+N=2048 column_tile64_k16_r4x8 PROFILE PASS
+N=1536 cublas_full RANGE PASS
+N=1536 column_tile64_k16_r4x8_seven_atomic RANGE PASS
+N=1536 column_tile64_k16_r4x8_four_batched_atomic RANGE PASS
+N=2048 cublas_full RANGE PASS
+N=2048 column_tile64_k16_r4x8_seven_atomic RANGE PASS
+N=2048 column_tile64_k16_r4x8_four_batched_atomic RANGE PASS

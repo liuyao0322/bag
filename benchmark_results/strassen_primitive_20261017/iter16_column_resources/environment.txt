@@ -1,0 +1,73 @@
+2026-10-17T11:19:56+08:00
+g03
+SLURM_JOB_ID=108133 CUDA_VISIBLE_DEVICES=0
+NVIDIA_TF32_OVERRIDE=0
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Tue_Aug_15_22:02:13_PDT_2023
+Cuda compilation tools, release 12.2, V12.2.140
+Build cuda_12.2.r12.2/compiler.33191640_0
+index, uuid, name, driver_version, memory.total [MiB], clocks.current.sm [MHz], clocks.current.memory [MHz], power.limit [W], compute_mode
+0, GPU-4db2fb47-d819-bfee-f2f8-e6c84299d435, NVIDIA A100 80GB PCIe, 535.216.01, 81920 MiB, 210 MHz, 1512 MHz, 300.00 W, Default
+5847cb9916c1788c6f7f9d76324acb7f281034d6
+ M .gitignore
+ M solution/strassen_cuda/engine.cuh
+ M solution/strassen_cuda/simt.cuh
+?? benchmark_results/strassen_primitive_20261017/REPORT.md
+?? benchmark_results/strassen_primitive_20261017/allocation.log
+?? benchmark_results/strassen_primitive_20261017/analysis.log
+?? benchmark_results/strassen_primitive_20261017/atomic_controls.csv
+?? benchmark_results/strassen_primitive_20261017/column_validation.console.log
+?? benchmark_results/strassen_primitive_20261017/complete_calls.csv
+?? benchmark_results/strassen_primitive_20261017/concurrent_range_counters.csv
+?? benchmark_results/strassen_primitive_20261017/concurrent_stalls.csv
+?? benchmark_results/strassen_primitive_20261017/cublas_launch.correctness.csv
+?? benchmark_results/strassen_primitive_20261017/cublas_launch.csv
+?? benchmark_results/strassen_primitive_20261017/cublas_launch.metadata.json
+?? benchmark_results/strassen_primitive_20261017/cublas_launch.rounds.csv
+?? benchmark_results/strassen_primitive_20261017/cublas_launch.stdout
+?? benchmark_results/strassen_primitive_20261017/holdout_column_seed1009/
+?? benchmark_results/strassen_primitive_20261017/holdout_seed1009.console.log
+?? benchmark_results/strassen_primitive_20261017/holdout_seed1009/
+?? benchmark_results/strassen_primitive_20261017/inventory.json
+?? benchmark_results/strassen_primitive_20261017/iter10.console.log
+?? benchmark_results/strassen_primitive_20261017/iter10_sliced/
+?? benchmark_results/strassen_primitive_20261017/iter11.console.log
+?? benchmark_results/strassen_primitive_20261017/iter11_striped/
+?? benchmark_results/strassen_primitive_20261017/iter12.console.log
+?? benchmark_results/strassen_primitive_20261017/iter12_cache/
+?? benchmark_results/strassen_primitive_20261017/iter13.console.log
+?? benchmark_results/strassen_primitive_20261017/iter13_batched/
+?? benchmark_results/strassen_primitive_20261017/iter14.console.log
+?? benchmark_results/strassen_primitive_20261017/iter14_striped_tiles/
+?? benchmark_results/strassen_primitive_20261017/iter15.console.log
+?? benchmark_results/strassen_primitive_20261017/iter15_register_stages/
+?? benchmark_results/strassen_primitive_20261017/iter16.console.log
+?? benchmark_results/strassen_primitive_20261017/iter16_column_resources/
+?? benchmark_results/strassen_primitive_20261017/iter5.console.log
+?? benchmark_results/strassen_primitive_20261017/iter5_swizzle/
+?? benchmark_results/strassen_primitive_20261017/iter6.console.log
+?? benchmark_results/strassen_primitive_20261017/iter6_coalesced/
+?? benchmark_results/strassen_primitive_20261017/iter7.console.log
+?? benchmark_results/strassen_primitive_20261017/iter7_balance/
+?? benchmark_results/strassen_primitive_20261017/iter8.console.log
+?? benchmark_results/strassen_primitive_20261017/iter8_exact/
+?? benchmark_results/strassen_primitive_20261017/iter9.console.log
+?? benchmark_results/strassen_primitive_20261017/iter9_deferred/
+?? benchmark_results/strassen_primitive_20261017/primitive_counters.csv
+?? benchmark_results/strassen_primitive_20261017/profile_baseline/
+?? benchmark_results/strassen_primitive_20261017/profile_baseline_detail/
+?? benchmark_results/strassen_primitive_20261017/profile_coalesced/
+?? benchmark_results/strassen_primitive_20261017/profile_column/
+?? benchmark_results/strassen_primitive_20261017/profile_exact/
+?? benchmark_results/strassen_primitive_20261017/profile_sliced4/
+?? benchmark_results/strassen_primitive_20261017/profile_swizzle/
+?? benchmark_results/strassen_primitive_20261017/range_profiles/
+?? benchmark_results/strassen_primitive_20261017/range_profiles_initial/
+?? benchmark_results/strassen_primitive_20261017/stall_profiles/
+?? benchmark_results/strassen_primitive_20261017/stall_profiles_initial/
+?? benchmark_results/strassen_primitive_20261017/stalls.console.log
+?? benchmark_results/strassen_primitive_20261017/stalls.retry.console.log
+?? benchmark_results/strassen_primitive_20261017/variant_costs.console.log
+?? benchmark_results/strassen_primitive_20261017/variant_costs/
+?? benchmark_results/strassen_primitive_20261017/verification/
