@@ -35,7 +35,7 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0,bool Striped=false>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0,bool Striped=false,bool RegPipeline=false>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
@@ -47,7 +47,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
     constexpr int NT=(BM/RM)*(BN/RN), ROW_WARPS=(BM/RM)/8;
     constexpr int NA=(BM*BK/4+NT-1)/NT, NB=(BN*BK/4+NT-1)/NT;
     constexpr int STAGES=Pipeline?2:1, BS=SwizzleB?BN:BN+1;
-    static_assert(!SwizzleB || (BK<=32 && BN>=32 && RN==4));
+    static_assert(!SwizzleB || (BK<=32 && BN>=32 && (RN==4 || RN==8)));
     static_assert(BM%RM==0 && BN%RN==0 && BM/RM>=8 && (BM/RM)%8==0 && (BN/RN)%4==0);
     struct Tiles {float sa[STAGES][BK][BM];float sb[STAGES][BK][BS];};
     union Storage {Tiles tiles;float output[Coalesced?BM*BN:1];};
@@ -57,7 +57,8 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
     int tid=threadIdx.x, warp=tid/32,lane=tid%32;
     static_assert(!Striped || RM==8);
     int rr=(warp%ROW_WARPS)*8*RM+(lane%8)*(Striped?4:RM);
-    int cc=(warp/ROW_WARPS)*4*RN+(lane/8)*RN;
+    constexpr bool ColStriped=SwizzleB && RN==8;
+    int cc=(warp/ROW_WARPS)*4*RN+(lane/8)*(ColStriped?4:RN);
     int base_r=blockIdx.x*BM, base_c=blockIdx.y*BN;
     float acc[RN][RM]={};
     float4 pa[NA],pb[NB],pay[NA],pbw[NB];
@@ -117,22 +118,43 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
     for(int outer=0,stage=0;outer<k;outer+=BK,stage=Pipeline?(stage^1):0) {
         if constexpr(Pipeline) {if(outer+BK<k)fetch(outer+BK);}
         else {fetch(outer);pack(0);__syncthreads();}
-        #pragma unroll
-        for(int kk=0;kk<BK;++kk) {
-            float ar[RM],br[RN];
+        auto read_fragment=[&](int kk,float* ar,float* br) {
             #pragma unroll
             for(int i=0;i<RM;++i) ar[i]=sa[stage][kk][rr+(Striped?(i%4+(i/4)*32):i)];
             if constexpr(SwizzleB) {
-                float4 bv=*reinterpret_cast<const float4*>(&sb[stage][kk][cc^((kk/4)*(128/BK))]);
-                br[0]=bv.x;br[1]=bv.y;br[2]=bv.z;br[3]=bv.w;
+                #pragma unroll
+                for(int j=0;j<RN;j+=4) {
+                    int col=cc+(ColStriped?(j/4)*16:j);
+                    float4 bv=*reinterpret_cast<const float4*>(&sb[stage][kk][col^((kk/4)*(128/BK))]);
+                    br[j]=bv.x;br[j+1]=bv.y;br[j+2]=bv.z;br[j+3]=bv.w;
+                }
             } else {
                 #pragma unroll
                 for(int j=0;j<RN;++j) br[j]=sb[stage][kk][cc+j];
             }
+        };
+        if constexpr(RegPipeline) {
+            float ar[2][RM],br[2][RN];
+            read_fragment(0,ar[0],br[0]);
             #pragma unroll
-            for(int j=0;j<RN;++j) {
+            for(int kk=0;kk<BK;++kk) {
+                if(kk+1<BK)read_fragment(kk+1,ar[(kk+1)&1],br[(kk+1)&1]);
                 #pragma unroll
-                for(int i=0;i<RM;++i) acc[j][i]=fmaf(ar[i],br[j],acc[j][i]);
+                for(int j=0;j<RN;++j) {
+                    #pragma unroll
+                    for(int i=0;i<RM;++i)acc[j][i]=fmaf(ar[kk&1][i],br[kk&1][j],acc[j][i]);
+                }
+            }
+        } else {
+            #pragma unroll
+            for(int kk=0;kk<BK;++kk) {
+                float ar[RM],br[RN];
+                read_fragment(kk,ar,br);
+                #pragma unroll
+                for(int j=0;j<RN;++j) {
+                    #pragma unroll
+                    for(int i=0;i<RM;++i)acc[j][i]=fmaf(ar[i],br[j],acc[j][i]);
+                }
             }
         }
         if constexpr(Pipeline) {if(outer+BK<k)pack(stage^1);}
@@ -147,7 +169,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         for(int j=0;j<RN;++j) {
             #pragma unroll
             for(int i=0;i<RM;i+=4)
-                *reinterpret_cast<float4*>(&storage.output[(cc+j)*BM+rr+(Striped?(i/4)*32:i)])=
+                *reinterpret_cast<float4*>(&storage.output[(cc+(ColStriped?(j%4+(j/4)*16):j))*BM+rr+(Striped?(i/4)*32:i)])=
                     make_float4(acc[j][i],acc[j][i+1],acc[j][i+2],acc[j][i+3]);
         }
         __syncthreads();
@@ -172,7 +194,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         for(int j=0;j<RN;++j) {
             #pragma unroll
             for(int i=0;i<RM;++i) {
-                int row=base_r+rr+(Striped?(i%4+(i/4)*32):i),col=base_c+cc+j;
+                int row=base_r+rr+(Striped?(i%4+(i/4)*32):i),col=base_c+cc+(ColStriped?(j%4+(j/4)*16):j);
                 if(Exact || (row<m && col<n)) {
                     size_t offset=row+size_t(col)*ld;
                     if constexpr(GD!=0) {
@@ -241,6 +263,15 @@ void launch_striped_tile(const float* x,const float* y,const float* v,const floa
     if(s%BM==0 && s%BN==0) {
         simt_primitive<BM,BN,16,8,4,true,Atomic,D,E,GD,GE,false,true,true,true,true,0,true>
             <<<dim3(s/BM,s/BN),(BM/8)*(BN/4),0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+    } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
+}
+// Register-stage experiment keeps global/shared packing and all updates fused.
+template<int RN,bool RegPipeline,int D,int E,int GD,int GE,bool Atomic>
+void launch_register_stage(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                           int s,int ld,cudaStream_t stream) {
+    if(s%64==0) {
+        simt_primitive<64,64,16,4,RN,true,Atomic,D,E,GD,GE,false,true,true,true,true,0,false,RegPipeline>
+            <<<dim3(s/64,s/64),16*(64/RN),0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
     } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
 }
 } // namespace strassen_cuda

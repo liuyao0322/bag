@@ -13,7 +13,7 @@ enum class Backend { Legacy, Large, Medium, Huge, Sync64, Pipe64,
     Swizzle64, Swizzle64x32, Swizzle32x64, Coalesced64, SwizzleCoalesced64,
     BalancedK8R8, BalancedK16R8, BalancedK8R4, BalancedK32R4, Exact64, ExactSwizzle64,
     Deferred64, DeferredSwizzle64, Sliced1, Sliced2, Sliced4, Striped1, Striped2, Striped4,
-    CgExact64, CgDeferred64, ReadonlyDeferred64, StripedTile64, StripedTile128x64, StripedTile64x128 };
+    CgExact64, CgDeferred64, ReadonlyDeferred64, StripedTile64, StripedTile128x64, StripedTile64x128, RegisterStage4, ColumnTile8, RegisterStage8 };
 struct NamedBackend {const char* name;Backend backend;bool normal;bool paired=false;};
 inline const NamedBackend backends[]={
     {"legacy",Backend::Legacy,false},{"large",Backend::Large,true},
@@ -46,7 +46,10 @@ inline const NamedBackend backends[]={
     {"ldg_deferred_exact_swizzle_coalesced64_k16_r4",Backend::ReadonlyDeferred64,true},
     {"striped_tile64_k16_r8x4",Backend::StripedTile64,true},
     {"striped_tile128x64_k16_r8x4",Backend::StripedTile128x64,true},
-    {"striped_tile64x128_k16_r8x4",Backend::StripedTile64x128,true}};
+    {"striped_tile64x128_k16_r8x4",Backend::StripedTile64x128,true},
+    {"register_stage64_k16_r4x4",Backend::RegisterStage4,true},
+    {"column_tile64_k16_r4x8",Backend::ColumnTile8,true},
+    {"register_stage64_k16_r4x8",Backend::RegisterStage8,true}};
 
 inline bool valid_shape(Backend backend,int s) {
     if(s<=0||s%4)return false;
@@ -112,6 +115,9 @@ void primitive(Backend backend,const float* x,const float* y,const float* v,cons
     case Backend::StripedTile64: launch_striped_tile<64,64,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::StripedTile128x64: launch_striped_tile<128,64,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::StripedTile64x128: launch_striped_tile<64,128,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::RegisterStage4: launch_register_stage<4,true,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::ColumnTile8: launch_register_stage<8,false,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::RegisterStage8: launch_register_stage<8,true,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     }
 }
 

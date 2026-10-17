@@ -1854,3 +1854,36 @@ Logging deviation: initial append attempted nonexistent status.json and failed b
 - N=2048 striped_tile64_k16_r8x4_seven_atomic: 1.107313792 ms, 0.893375x.
 - N=2048 striped_tile64x128_k16_r8x4_seven_atomic: 1.142480200 ms, 0.865876x.
 - Status: {'phase': 'benchmark', 'exit_code': 0}; FP64 checks 48, all pass. Select by complete-call timing; no claim that isolated bank-conflict reduction satisfies crossover.
+
+
+## Iteration 15 — shared-to-register pipeline and balanced column fragments
+
+- Reassessment after stalled directions: concurrent range replay at N1536 found short-scoreboard ~13.1% (cuBLAS 2.47%), MIO ~7.6% (cuBLAS 2.21%), barrier ~8.6%. N2048 shows the same direction. These are active-warp-cycle ratios, not additive wall-time savings. Initial unsupported SASS metric failure preserved in stall_profiles_initial; removing that instrumentation yielded six successful ranges in stall_profiles.
+- Re-read prior iterations: cache hints, CTA-local K slicing and larger 8x4 row tiles failed to improve retained candidate. Consulted primary source https://developer.nvidia.com/blog/cutlass-linear-algebra-cuda/ on warp tile reuse and multi-level software pipelining.
+- Change: explicit two-bank register fragment lookahead; new striped column ownership for 4x8 thread tiles, preserving float4 shared reads and coalesced atomic outputs. BK16, 64x64 CTA, exact dispatch plus masked fused fallback.
+- Benchmark: allocation108133, full seven products at four sizes, five shuffled rounds/case, target200ms; source/build/results archive iter15_register_stages.
+- N=1280 column_tile64_k16_r4x8_seven_atomic: 0.263261691 ms, 0.979703x.
+- N=1280 cublas_full: 0.257918194 ms, 1.000000x.
+- N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.277964868 ms, 0.927881x.
+- N=1280 pipe64_k16_r4_seven_atomic: 0.301021323 ms, 0.856810x.
+- N=1280 register_stage64_k16_r4x4_seven_atomic: 0.279830766 ms, 0.921693x.
+- N=1280 register_stage64_k16_r4x8_seven_atomic: 0.261834325 ms, 0.985043x.
+- N=1536 column_tile64_k16_r4x8_seven_atomic: 0.435658294 ms, 0.996608x.
+- N=1536 cublas_full: 0.434180659 ms, 1.000000x.
+- N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.458881142 ms, 0.946172x.
+- N=1536 pipe64_k16_r4_seven_atomic: 0.503452273 ms, 0.862407x.
+- N=1536 register_stage64_k16_r4x4_seven_atomic: 0.459459520 ms, 0.944981x.
+- N=1536 register_stage64_k16_r4x8_seven_atomic: 0.435568118 ms, 0.996815x.
+- N=1792 column_tile64_k16_r4x8_seven_atomic: 0.656140014 ms, 1.056629x.
+- N=1792 cublas_full: 0.693296558 ms, 1.000000x.
+- N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 0.712506953 ms, 0.973038x.
+- N=1792 pipe64_k16_r4_seven_atomic: 0.772112148 ms, 0.897922x.
+- N=1792 register_stage64_k16_r4x4_seven_atomic: 0.713377339 ms, 0.971851x.
+- N=1792 register_stage64_k16_r4x8_seven_atomic: 0.657401399 ms, 1.054602x.
+- N=2048 column_tile64_k16_r4x8_seven_atomic: 0.963912234 ms, 1.028727x.
+- N=2048 cublas_full: 0.991602882 ms, 1.000000x.
+- N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 1.066174609 ms, 0.930057x.
+- N=2048 pipe64_k16_r4_seven_atomic: 1.132763879 ms, 0.875384x.
+- N=2048 register_stage64_k16_r4x4_seven_atomic: 1.056963078 ms, 0.938162x.
+- N=2048 register_stage64_k16_r4x8_seven_atomic: 0.966646185 ms, 1.025818x.
+- Correctness: 48 FP64 records, all pass; status {'phase': 'benchmark', 'exit_code': 0}. Search results require frozen independent-input replay and memory/race validation before declaring a crossover.
