@@ -1,0 +1,11 @@
+2026-10-17T18:29:28+08:00
+g02
+SLURM_JOB_ID=108156 CUDA_VISIBLE_DEVICES=0 NVIDIA_TF32_OVERRIDE=0
+index, uuid, name, driver_version, memory.total [MiB], clocks.current.sm [MHz], clocks.current.memory [MHz], power.limit [W]
+0, GPU-4dc59edd-729d-ae17-5121-0450d619dac5, NVIDIA A100 80GB PCIe, 535.216.01, 81920 MiB, 210 MHz, 1512 MHz, 300.00 W
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Tue_Aug_15_22:02:13_PDT_2023
+Cuda compilation tools, release 12.2, V12.2.140
+Build cuda_12.2.r12.2/compiler.33191640_0
+ae0cb5597c6048e03f7e962996ede5aa65beb7b4

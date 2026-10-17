@@ -1983,3 +1983,41 @@ Large-size regression is retained: selected small tile loses at8192/20480 while 
 - Benchmark command: allocation108156/g02, scripts/bench_bag_cuda.sh iter-17, N1280/1536/1792/2048, depth1, five rounds x200ms; archive bag_cuda_20261017/iter17_initial.
 - Result: no build or device execution. The SSH non-login environment lacked the module shell function; runner exited127 at module load cuda/12.2. Source snapshots were captured before failure. No correctness or speedup claim.
 - Next action: initialize the compute-node login shell environment, then rebuild and measure this unchanged implementation.
+
+
+## Iteration 18 — complete CUDA BAG layout/schedule baseline
+Unchanged kernel after iter17 environment failure; compute runner invoked through a login shell. Allocation108156/g02, CUDA12.2, pure FP32 C<-AB+C, same-run cuBLAS and tuned Strassen. Minimal/full basis x serial/seven-stream/batched schedules, N1280/1536/1792/2048, five shuffled rounds x200ms.
+FP64 checks: 64 records, all pass=True. Execution status: {'phase': 'benchmark', 'exit_code': 0}. Benchmark printed COMPLETE and all rounds exist, but srun returned1; resolve runner exit handling before final acceptance.
+- N=1280 bag_column_full_d1_batched: 0.283422373ms, 0.910027x, 5 rounds.
+- N=1280 bag_column_full_d1_serial: 0.356493605ms, 0.723497x, 5 rounds.
+- N=1280 bag_column_full_d1_seven: 0.285308730ms, 0.904011x, 5 rounds.
+- N=1280 bag_column_minimal_d1_batched: 0.274911090ms, 0.938202x, 5 rounds.
+- N=1280 bag_column_minimal_d1_serial: 0.353462219ms, 0.729702x, 5 rounds.
+- N=1280 bag_column_minimal_d1_seven: 0.274893018ms, 0.938264x, 5 rounds.
+- N=1280 cublas_full: 0.257922146ms, 1.000000x, 5 rounds.
+- N=1280 strassen_column_four_batched: 0.253055519ms, 1.019231x, 5 rounds.
+- N=1536 bag_column_full_d1_batched: 0.458539750ms, 0.938185x, 5 rounds.
+- N=1536 bag_column_full_d1_serial: 0.698988805ms, 0.615453x, 5 rounds.
+- N=1536 bag_column_full_d1_seven: 0.461476387ms, 0.932215x, 5 rounds.
+- N=1536 bag_column_minimal_d1_batched: 0.447999988ms, 0.960257x, 5 rounds.
+- N=1536 bag_column_minimal_d1_serial: 0.697433525ms, 0.616826x, 5 rounds.
+- N=1536 bag_column_minimal_d1_seven: 0.447900350ms, 0.960470x, 5 rounds.
+- N=1536 cublas_full: 0.430195052ms, 1.000000x, 5 rounds.
+- N=1536 strassen_column_four_batched: 0.424531205ms, 1.013341x, 5 rounds.
+- N=1792 bag_column_full_d1_batched: 0.691465619ms, 0.990710x, 5 rounds.
+- N=1792 bag_column_full_d1_serial: 0.822417068ms, 0.832962x, 5 rounds.
+- N=1792 bag_column_full_d1_seven: 0.693904798ms, 0.987228x, 5 rounds.
+- N=1792 bag_column_minimal_d1_batched: 0.675389847ms, 1.014291x, 5 rounds.
+- N=1792 bag_column_minimal_d1_serial: 0.819153275ms, 0.836281x, 5 rounds.
+- N=1792 bag_column_minimal_d1_seven: 0.678867031ms, 1.009096x, 5 rounds.
+- N=1792 cublas_full: 0.685042033ms, 1.000000x, 5 rounds.
+- N=1792 strassen_column_four_batched: 0.644697401ms, 1.062579x, 5 rounds.
+- N=2048 bag_column_full_d1_batched: 1.011639926ms, 0.975180x, 5 rounds.
+- N=2048 bag_column_full_d1_serial: 1.308278671ms, 0.754068x, 5 rounds.
+- N=2048 bag_column_full_d1_seven: 1.011768919ms, 0.975056x, 5 rounds.
+- N=2048 bag_column_minimal_d1_batched: 0.989478007ms, 0.997022x, 5 rounds.
+- N=2048 bag_column_minimal_d1_serial: 1.290400586ms, 0.764515x, 5 rounds.
+- N=2048 bag_column_minimal_d1_seven: 0.989504007ms, 0.996995x, 5 rounds.
+- N=2048 cublas_full: 0.986530882ms, 1.000000x, 5 rounds.
+- N=2048 strassen_column_four_batched: 0.953693232ms, 1.034432x, 5 rounds.
+Minimal basis is faster than full basis; retain all negative cases. Freeze one configuration before independent validation; recursive numerical checks and sanitizers remain required.

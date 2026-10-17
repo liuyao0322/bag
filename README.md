@@ -18,6 +18,15 @@ seven-round A100 runs at N=1536 measured 1.0199x and 1.0156x over same-run
 cuBLAS. Size-specific results and large-size regressions are retained in the
 reports; the small-size configuration is not a universal choice.
 
+## Alternative-basis multiplication on CUDA
+
+- [CUDA BAG algorithm, recursive API and reproduction](solution/bag_cuda/README.md)
+- [Implementation using the tuned primitive](solution/bag_cuda/bag.cuh)
+
+CUDA BAG implements the seven products and basis transformations described
+in BAG.md. It supports recursive levels, minimal/full basis storage and
+serial, seven-stream or batched schedules, preserving FP32 `C <- A*B+C`.
+
 ## BAG on Triton
 
 - [BAG algorithm and project notes](BAG.md)
