@@ -24,7 +24,7 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
@@ -38,8 +38,11 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
     constexpr int STAGES=Pipeline?2:1, BS=SwizzleB?BN:BN+1;
     static_assert(!SwizzleB || (BK<=32 && BN>=32 && RN==4));
     static_assert(BM%RM==0 && BN%RN==0 && BM/RM>=8 && (BM/RM)%8==0 && (BN/RN)%4==0);
-    __shared__ float sa[STAGES][BK][BM];
-    __shared__ float sb[STAGES][BK][BS];
+    struct Tiles {float sa[STAGES][BK][BM];float sb[STAGES][BK][BS];};
+    union Storage {Tiles tiles;float output[Coalesced?BM*BN:1];};
+    __shared__ __align__(16) Storage storage;
+    auto& sa=storage.tiles.sa;
+    auto& sb=storage.tiles.sb;
     int tid=threadIdx.x, warp=tid/32,lane=tid%32;
     int rr=(warp%ROW_WARPS)*8*RM+(lane%8)*RM;
     int cc=(warp/ROW_WARPS)*4*RN+(lane/8)*RN;
@@ -101,20 +104,48 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         if constexpr(Pipeline) {if(outer+BK<k)pack(stage^1);}
         __syncthreads();
     }
-    #pragma unroll
-    for(int j=0;j<RN;++j) {
+    if constexpr(Coalesced) {
+        static_assert(RM==4);
+        // The compute loop's final barrier makes the packing buffers reusable.
+        // Vector stores keep register-tile writes efficient; scalar reads then
+        // assign each warp 32 adjacent rows for fully coalesced atomic updates.
         #pragma unroll
-        for(int i=0;i<RM;++i) {
-            int row=base_r+rr+i,col=base_c+cc+j;
-            if(row<m && col<n) {
+        for(int j=0;j<RN;++j)
+            *reinterpret_cast<float4*>(&storage.output[(cc+j)*BM+rr])=
+                make_float4(acc[j][0],acc[j][1],acc[j][2],acc[j][3]);
+        __syncthreads();
+        #pragma unroll
+        for(int q=0;q<(BM*BN+NT-1)/NT;++q) {
+            int index=tid+q*NT,row=base_r+index%BM,col=base_c+index/BM;
+            if(index<BM*BN && row<m && col<n) {
+                float result=storage.output[index];
                 size_t offset=row+size_t(col)*ld;
                 if constexpr(GD!=0) {
-                    if constexpr(Atomic) atomicAdd(D+offset,GD*acc[j][i]);
-                    else D[offset]+=GD*acc[j][i];
+                    if constexpr(Atomic) atomicAdd(D+offset,GD*result);
+                    else D[offset]+=GD*result;
                 }
                 if constexpr(GE!=0) {
-                    if constexpr(Atomic) atomicAdd(E+offset,GE*acc[j][i]);
-                    else E[offset]+=GE*acc[j][i];
+                    if constexpr(Atomic) atomicAdd(E+offset,GE*result);
+                    else E[offset]+=GE*result;
+                }
+            }
+        }
+    } else {
+        #pragma unroll
+        for(int j=0;j<RN;++j) {
+            #pragma unroll
+            for(int i=0;i<RM;++i) {
+                int row=base_r+rr+i,col=base_c+cc+j;
+                if(row<m && col<n) {
+                    size_t offset=row+size_t(col)*ld;
+                    if constexpr(GD!=0) {
+                        if constexpr(Atomic) atomicAdd(D+offset,GD*acc[j][i]);
+                        else D[offset]+=GD*acc[j][i];
+                    }
+                    if constexpr(GE!=0) {
+                        if constexpr(Atomic) atomicAdd(E+offset,GE*acc[j][i]);
+                        else E[offset]+=GE*acc[j][i];
+                    }
                 }
             }
         }
@@ -135,5 +166,12 @@ void launch_swizzled(const float* x,const float* y,const float* v,const float* w
     constexpr int NT=(BM/4)*(BN/4);
     simt_primitive<BM,BN,BK,4,4,true,Atomic,D,E,GD,GE,false,true>
         <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<bool Swizzle,int D,int E,int GD,int GE,bool Atomic>
+void launch_coalesced(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                      int s,int ld,cudaStream_t stream) {
+    simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true>
+        <<<dim3((s+63)/64,(s+63)/64),256,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
 }
 } // namespace strassen_cuda

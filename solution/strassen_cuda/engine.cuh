@@ -9,7 +9,7 @@
 namespace strassen_cuda {
 enum class Backend { Legacy, Large, Medium, Huge, Sync64, Pipe64,
     Pipe64K16, Pipe64R4, Pipe64x32, Pipe128x64, Pipe128,
-    Swizzle64, Swizzle64x32, Swizzle32x64 };
+    Swizzle64, Swizzle64x32, Swizzle32x64, Coalesced64, SwizzleCoalesced64 };
 struct NamedBackend {const char* name;Backend backend;bool normal;bool paired=false;};
 inline const NamedBackend backends[]={
     {"legacy",Backend::Legacy,false},{"large",Backend::Large,true},
@@ -20,7 +20,9 @@ inline const NamedBackend backends[]={
     {"pipe128x64_k16_r8x4",Backend::Pipe128x64,true},{"pipe128_k16_r8",Backend::Pipe128,true},
     {"swizzle64_k16_r4",Backend::Swizzle64,true},
     {"swizzle64x32_k16_r4",Backend::Swizzle64x32,true},
-    {"swizzle32x64_k16_r4",Backend::Swizzle32x64,true}};
+    {"swizzle32x64_k16_r4",Backend::Swizzle32x64,true},
+    {"coalesced64_k16_r4",Backend::Coalesced64,true},
+    {"swizzle_coalesced64_k16_r4",Backend::SwizzleCoalesced64,true}};
 
 inline bool valid_shape(Backend backend,int s) {
     if(s<=0||s%4)return false;
@@ -64,6 +66,8 @@ void primitive(Backend backend,const float* x,const float* y,const float* v,cons
     case Backend::Swizzle64: launch_swizzled<64,64,16,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::Swizzle64x32: launch_swizzled<64,32,16,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::Swizzle32x64: launch_swizzled<32,64,16,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::Coalesced64: launch_coalesced<false,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::SwizzleCoalesced64: launch_coalesced<true,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     }
 }
 

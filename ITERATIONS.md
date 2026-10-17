@@ -1585,3 +1585,27 @@
 - **N=2048 swizzle64x32_k16_r4_seven_atomic:** 1.180678065 ms; same-run cuBLAS/latency=0.841619x.
 - **Correctness:** 56 FP64 checks; all pass=True.
 - **Acceptance:** N=1536 crossover remains subject to the full-call numbers above; isolated NCU durations are diagnostic and kernel replay serializes the seven launches. No claim of a hardware floor or completion.
+
+## Strassen iteration 6 — coalesced atomic epilogue (2026-10-17)
+
+- **Direction:** NCU M7 at leaf 768 reports 589824 reduction sectors vs 147456 ideally for two dense outputs. Reuse the compute shared-memory allocation as an output tile, vector-store register accumulators then synchronize and issue contiguous warp atomics. Keep padded and swizzled controls; union adds no global scratch and all work remains inside the primitive.
+- **Benchmark:** allocation 108133, full seven-product calls at N=1280/1536/1792/2048, 5 randomized rounds x 200 ms, same-run pure FP32 cuBLAS; archive `benchmark_results/strassen_primitive_20261017/iter6_coalesced`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.304175163 ms, cuBLAS=0.257514615 ms, ratio=0.846600x; reduction vs original r4=0.000%.
+- **N=1280 swizzle64_k16_r4_seven_atomic:** 0.300572575 ms, cuBLAS=0.257514615 ms, ratio=0.856747x; reduction vs original r4=1.184%.
+- **N=1280 coalesced64_k16_r4_seven_atomic:** 0.291722356 ms, cuBLAS=0.257514615 ms, ratio=0.882739x; reduction vs original r4=4.094%.
+- **N=1280 swizzle_coalesced64_k16_r4_seven_atomic:** 0.287319382 ms, cuBLAS=0.257514615 ms, ratio=0.896266x; reduction vs original r4=5.541%.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.508855429 ms, cuBLAS=0.431906168 ms, ratio=0.848780x; reduction vs original r4=0.000%.
+- **N=1536 swizzle64_k16_r4_seven_atomic:** 0.491768935 ms, cuBLAS=0.431906168 ms, ratio=0.878271x; reduction vs original r4=3.358%.
+- **N=1536 coalesced64_k16_r4_seven_atomic:** 0.495907152 ms, cuBLAS=0.431906168 ms, ratio=0.870942x; reduction vs original r4=2.545%.
+- **N=1536 swizzle_coalesced64_k16_r4_seven_atomic:** 0.484021455 ms, cuBLAS=0.431906168 ms, ratio=0.892329x; reduction vs original r4=4.880%.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.774937890 ms, cuBLAS=0.697881947 ms, ratio=0.900565x; reduction vs original r4=0.000%.
+- **N=1792 swizzle64_k16_r4_seven_atomic:** 0.751833788 ms, cuBLAS=0.697881947 ms, ratio=0.928240x; reduction vs original r4=2.981%.
+- **N=1792 coalesced64_k16_r4_seven_atomic:** 0.761114718 ms, cuBLAS=0.697881947 ms, ratio=0.916921x; reduction vs original r4=1.784%.
+- **N=1792 swizzle_coalesced64_k16_r4_seven_atomic:** 0.740877145 ms, cuBLAS=0.697881947 ms, ratio=0.941967x; reduction vs original r4=4.395%.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.139447179 ms, cuBLAS=0.994465718 ms, ratio=0.872762x; reduction vs original r4=0.000%.
+- **N=2048 swizzle64_k16_r4_seven_atomic:** 1.110328929 ms, cuBLAS=0.994465718 ms, ratio=0.895650x; reduction vs original r4=2.555%.
+- **N=2048 coalesced64_k16_r4_seven_atomic:** 1.125510603 ms, cuBLAS=0.994465718 ms, ratio=0.883569x; reduction vs original r4=1.223%.
+- **N=2048 swizzle_coalesced64_k16_r4_seven_atomic:** 1.102997303 ms, cuBLAS=0.994465718 ms, ratio=0.901603x; reduction vs original r4=3.199%.
+- **Correctness:** 40 FP64 records, all pass=True.
+- **Outcome:** still below cuBLAS at N=1536. Profile post-change sectors/resources and pursue compute-body efficiency. Concurrent-output race safety retains atomics; shared-memory lifetime uses the final compute barrier plus a dedicated epilogue barrier.
