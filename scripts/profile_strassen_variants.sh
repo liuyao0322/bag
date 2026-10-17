@@ -7,6 +7,9 @@ cd "$ROOT"
 ORIGIN="$(cd "${1:?immutable build}" && pwd)"
 OUT="${2:?output directory}"
 BACKEND="${3:-pipe64_k16_r4}"
+SCHEDULE="${4:-seven_atomic}"
+LAUNCHES=7
+if [[ "$SCHEDULE" == four_batched_atomic ]]; then LAUNCHES=4; fi
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 [[ -n "${SLURM_JOB_ID:-}" && -n "${CUDA_VISIBLE_DEVICES:-}" ]]
@@ -18,16 +21,17 @@ mkdir -p "$TMPDIR"
 (cd "$ORIGIN" && sha256sum --check source.sha256) > "$OUT/source-verification.txt"
 sha256sum "$ORIGIN/benchmark_strassen_onelevel" > "$OUT/binary.sha256"
 cp scripts/profile_strassen_variants.sh "$OUT/profile-source.sh"
+printf '{"backend":"%s","schedule":"%s","launches":%d}\n' "$BACKEND" "$SCHEDULE" "$LAUNCHES" > "$OUT/profile_contract.json"
 { ncu --version; hostname; nvidia-smi --query-gpu=uuid,name,driver_version --format=csv; } > "$OUT/environment.txt"
 for n in 1536 2048; do
-    CMD=(ncu --profile-from-start off --launch-count 7
+    CMD=(ncu --profile-from-start off --launch-count "$LAUNCHES"
          --section LaunchStats --section Occupancy --section SchedulerStats
          --section WarpStateStats --section MemoryWorkloadAnalysis --section SpeedOfLight
          --section SourceCounters
          --metrics l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.sum,l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_st.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_red.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_atom.sum,l1tex__t_requests_pipe_lsu_mem_global_op_ld.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_ld.sum
          --csv --log-file "$OUT/n$n.csv"
          "$ORIGIN/benchmark_strassen_onelevel" --mode endtoend --backends "$BACKEND"
-         --only "${BACKEND}_seven_atomic" --sizes "$n" --profile-calls 1 --output "$OUT/n$n")
+         --schedules "$SCHEDULE" --only "${BACKEND}_${SCHEDULE}" --sizes "$n" --profile-calls 1 --output "$OUT/n$n")
     printf '%q ' "${CMD[@]}" > "$OUT/n$n.command.txt"; printf '\n' >> "$OUT/n$n.command.txt"
     status=0
     timeout --signal=TERM --kill-after=30s 15m "${CMD[@]}" > "$OUT/n$n.stdout" 2>&1 || status=$?

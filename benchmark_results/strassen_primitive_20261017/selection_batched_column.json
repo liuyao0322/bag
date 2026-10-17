@@ -1,0 +1,15 @@
+{
+  "selected_at_utc": "2026-10-17T03:22:49.643608+00:00",
+  "source_run": "iter16_column_resources",
+  "backend": "column_tile64_k16_r4x8",
+  "schedule": "four_batched_atomic",
+  "selection_seed_offset": 0,
+  "validation_seed_offsets": [
+    1009,
+    2027
+  ],
+  "validation_rounds": 7,
+  "validation_target_ms": 300,
+  "binary_sha256": "491e53139892afda8104586fbb53b8bc329171ad63db710c77edb2887f002f7e",
+  "reason": "Iteration16 fixed column tile plus four-class batching improved all four complete-call sizes and N1536 exceeded same-run cuBLAS by0.98%; all resource-pressure alternatives were slower. Freeze before independent replay; do not select anew using holdout."
+}

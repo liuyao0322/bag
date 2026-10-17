@@ -29,16 +29,20 @@ for folder in sorted(root.glob('profile_*')):
         content = (folder / f'n{n}.csv').read_text()
         raw = list(csv.DictReader(io.StringIO(content[content.index('"ID"'):])))
         raw = [r for r in raw if r.get('ID', '').isdigit()]
-        assert {r['ID'] for r in raw} == set(map(str, range(7)))
-        for product in [0, 3, 4, 6]:
-            rs = [r for r in raw if r['ID'] == str(product)]
+        contract_path = folder/'profile_contract.json'
+        contract = json.loads(contract_path.read_text()) if contract_path.exists() else dict(launches=7)
+        count = contract['launches']
+        assert {r['ID'] for r in raw} == set(map(str, range(count)))
+        representatives = [(0,0),(1,3),(2,4),(3,6)] if count == 4 else [(0,0),(3,3),(4,4),(6,6)]
+        for launch_id, product in representatives:
+            rs = [r for r in raw if r['ID'] == str(launch_id)]
             values = {r['Metric Name']: r['Metric Value'].replace(',', '') for r in rs if r.get('Metric Name')}
             def metric(name):
                 return float(values[name]) if values.get(name) else None
             variant = {0: 'Var3: A2 B1 C2', 3: 'Var1: A2 B2 C1',
                        4: 'Var2: A1 B2 C2', 6: 'Var0: A2 B2 C2'}[product]
             counters.append(dict(profile=folder.name, parent_n=n, leaf=n//2, variant=variant,
-                                 product=product, kernel=rs[0]['Kernel Name'],
+                                 product=product, launch_id=launch_id, batched_pair=count==4 and launch_id<3, kernel=rs[0]['Kernel Name'],
                                  registers_per_thread=metric('Registers Per Thread'),
                                  threads_per_block=metric('Block Size'), grid_ctas=metric('Grid Size'),
                                  static_smem_bytes=metric('Static Shared Memory Per Block'),
@@ -143,7 +147,9 @@ lines = ['# A100 小尺寸融合 Strassen primitive 优化', '',
          '## 四类 primitive 的测量', '',
          '详细寄存器、CTA、共享内存、理论与隔离 occupancy、加载/原子 sector 在 primitive_counters.csv。',
          'NCU kernel replay 会串行重放 kernel，这些 occupancy 和时长只用于解释隔离 primitive，',
-         '不能当成七流并发时的占用率或主性能结论。Var1/Var2/Var3 各代表两乘积，Var0 代表 M7。', '',
+         '不能当成并发时的占用率或主性能结论。Var1/Var2/Var3 各代表两乘积，Var0 代表 M7。',
+         'four_batched_atomic 的前三个 launch 各覆盖两乘积，grid/sector 为该对产品的合计；',
+         'CSV 的 batched_pair 和 launch_id 标明采集单位，不能与单产品计数直接作倍数结论。', '',
          '| 采集 | leaf | 变体 | 寄存器/线程 | CTA | 共享写 bank conflicts | reduction sectors |',
          '|---|---:|---|---:|---:|---:|---:|']
 for r in counters:
