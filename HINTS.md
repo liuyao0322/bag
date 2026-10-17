@@ -1,5 +1,13 @@
 # Optimization Directives
 
+Source: active user goal, 2026-10-17 (primitive profiling and implementation).
+
+- Profile the four fused primitive variants at leaf=768/1024: registers,
+  CTA concurrency, memory access and atomic output updates. Change the kernel
+  according to measured bottlenecks, retaining the N=1536 cuBLAS target.
+- Judge changes by complete seven-product calls at N=1280/1536/1792/2048;
+  isolated primitive improvement does not satisfy the performance goal.
+
 Source: user correction, 2026-10-17 (paper crossover not reached).
 
 - Treat the paper's one-level crossover at N=1536 as an unmet performance

@@ -1557,3 +1557,31 @@
 - **Validation:** 980 timing rows and 392 FP64 checks all pass; max relative L2 1.54791789328e-6. Replay verifies immutable source SHA256. Analysis asserts round counts, per-case median agreement, input seed, precision and error status. Bash/Python syntax and git whitespace checks pass. A100 allocation 108132 completes and releases automatically; A800 108131 remains queued; unrelated H100 allocation unchanged.
 - **Outcome/next work:** one-level crossover remains unmet after existing-configuration selection. Target the roughly 15% complete-call gap at N=1536/2048 through variant-specific primitive profiling (leaf=768/1024, registers, CTA concurrency, memory and atomic output updates), then implementation changes and complete seven-product validation. Earlier N=2048 internal kernel gaps ~0.008 ms do not explain the ~0.185 ms call deficit; neither Graph nor hardware differences are established explanations or physical bounds.
 - **Artifacts:** `benchmark_results/strassen_crossover_20261017/REPORT.md`, raw independent-seed data, source verification, environment, telemetry, allocation/accounting and selection CSV; updated paper comparison in `benchmark_results/strassen_batching_20261017/REPORT.md`. Preexisting root `.gitignore` modification remains untouched and unstaged.
+
+## Strassen iteration 5 — aligned XOR-swizzled B tiles (2026-10-17)
+
+- **Direction:** use NCU evidence from the four operand/output variants at leaf=768/1024 to replace padded B shared-memory rows with an aligned XOR swizzle. Preserve original backends, add 64x64/64x32/32x64 r4 candidates; keep all atomic semantics and boundary masks.
+- **Benchmark:** allocation 108133, endtoend N=1280/1536/1792/2048, 5 randomized rounds x 200 ms, same-run pure-FP32 PEDANTIC cuBLAS. Full archive: `benchmark_results/strassen_primitive_20261017/iter5_swizzle`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cublas_full:** 0.259921170 ms; same-run cuBLAS/latency=1.000000x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.305269735 ms; same-run cuBLAS/latency=0.851448x.
+- **N=1280 swizzle32x64_k16_r4_seven_atomic:** 0.304778938 ms; same-run cuBLAS/latency=0.852819x.
+- **N=1280 swizzle64_k16_r4_seven_atomic:** 0.299318710 ms; same-run cuBLAS/latency=0.868376x.
+- **N=1280 swizzle64x32_k16_r4_seven_atomic:** 0.302737965 ms; same-run cuBLAS/latency=0.858568x.
+- **N=1536 cublas_full:** 0.435571112 ms; same-run cuBLAS/latency=1.000000x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.512263108 ms; same-run cuBLAS/latency=0.850288x.
+- **N=1536 swizzle32x64_k16_r4_seven_atomic:** 0.519409417 ms; same-run cuBLAS/latency=0.838589x.
+- **N=1536 swizzle64_k16_r4_seven_atomic:** 0.499919336 ms; same-run cuBLAS/latency=0.871283x.
+- **N=1536 swizzle64x32_k16_r4_seven_atomic:** 0.514966715 ms; same-run cuBLAS/latency=0.845824x.
+- **N=1792 cublas_full:** 0.694382482 ms; same-run cuBLAS/latency=1.000000x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.783158350 ms; same-run cuBLAS/latency=0.886644x.
+- **N=1792 swizzle32x64_k16_r4_seven_atomic:** 0.819375649 ms; same-run cuBLAS/latency=0.847453x.
+- **N=1792 swizzle64_k16_r4_seven_atomic:** 0.763863981 ms; same-run cuBLAS/latency=0.909039x.
+- **N=1792 swizzle64x32_k16_r4_seven_atomic:** 0.804066179 ms; same-run cuBLAS/latency=0.863589x.
+- **N=2048 cublas_full:** 0.993680924 ms; same-run cuBLAS/latency=1.000000x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.148364456 ms; same-run cuBLAS/latency=0.865301x.
+- **N=2048 swizzle32x64_k16_r4_seven_atomic:** 1.213144938 ms; same-run cuBLAS/latency=0.819095x.
+- **N=2048 swizzle64_k16_r4_seven_atomic:** 1.124632263 ms; same-run cuBLAS/latency=0.883561x.
+- **N=2048 swizzle64x32_k16_r4_seven_atomic:** 1.180678065 ms; same-run cuBLAS/latency=0.841619x.
+- **Correctness:** 56 FP64 checks; all pass=True.
+- **Acceptance:** N=1536 crossover remains subject to the full-call numbers above; isolated NCU durations are diagnostic and kernel replay serializes the seven launches. No claim of a hardware floor or completion.

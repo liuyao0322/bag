@@ -24,7 +24,7 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
@@ -35,7 +35,8 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
     }
     constexpr int NT=(BM/RM)*(BN/RN), ROW_WARPS=(BM/RM)/8;
     constexpr int NA=(BM*BK/4+NT-1)/NT, NB=(BN*BK/4+NT-1)/NT;
-    constexpr int STAGES=Pipeline?2:1, BS=BN+1;
+    constexpr int STAGES=Pipeline?2:1, BS=SwizzleB?BN:BN+1;
+    static_assert(!SwizzleB || (BK<=32 && BN>=32 && RN==4));
     static_assert(BM%RM==0 && BN%RN==0 && BM/RM>=8 && (BM/RM)%8==0 && (BN/RN)%4==0);
     __shared__ float sa[STAGES][BK][BM];
     __shared__ float sb[STAGES][BK][BS];
@@ -67,8 +68,11 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         for(int q=0;q<NB;++q) {
             int vec=tid+q*NT,row=(vec%(BK/4))*4,col=vec/(BK/4);
             if(vec<BN*BK/4) {
-                sb[stage][row+0][col]=pb[q].x;sb[stage][row+1][col]=pb[q].y;
-                sb[stage][row+2][col]=pb[q].z;sb[stage][row+3][col]=pb[q].w;
+                // Map the K-vector groups of one loading warp to disjoint
+                // shared-memory banks, preserving float4 alignment in N.
+                int dest=SwizzleB?(col^((row/4)*(128/BK))):col;
+                sb[stage][row+0][dest]=pb[q].x;sb[stage][row+1][dest]=pb[q].y;
+                sb[stage][row+2][dest]=pb[q].z;sb[stage][row+3][dest]=pb[q].w;
             }
         }
     };
@@ -81,8 +85,13 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
             float ar[RM],br[RN];
             #pragma unroll
             for(int i=0;i<RM;++i) ar[i]=sa[stage][kk][rr+i];
-            #pragma unroll
-            for(int j=0;j<RN;++j) br[j]=sb[stage][kk][cc+j];
+            if constexpr(SwizzleB) {
+                float4 bv=*reinterpret_cast<const float4*>(&sb[stage][kk][cc^((kk/4)*(128/BK))]);
+                br[0]=bv.x;br[1]=bv.y;br[2]=bv.z;br[3]=bv.w;
+            } else {
+                #pragma unroll
+                for(int j=0;j<RN;++j) br[j]=sb[stage][kk][cc+j];
+            }
             #pragma unroll
             for(int j=0;j<RN;++j) {
                 #pragma unroll
@@ -117,6 +126,14 @@ void launch(const float* x,const float* y,const float* v,const float* w,float* d
             int s,int ld,cudaStream_t stream) {
     constexpr int NT=(BM/RM)*(BN/RN);
     simt_primitive<BM,BN,BK,RM,RN,Pipeline,Atomic,D,E,GD,GE>
+        <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<int BM,int BN,int BK,int D,int E,int GD,int GE,bool Atomic>
+void launch_swizzled(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                     int s,int ld,cudaStream_t stream) {
+    constexpr int NT=(BM/4)*(BN/4);
+    simt_primitive<BM,BN,BK,4,4,true,Atomic,D,E,GD,GE,false,true>
         <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
 }
 } // namespace strassen_cuda

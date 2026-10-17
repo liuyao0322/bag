@@ -97,6 +97,20 @@ int main(int argc,char** argv)try {
                         if(atomic)strassen_cuda::primitive<1,1,1,1,true>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
                         else strassen_cuda::primitive<1,1,1,1,false>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
                     });
+                    // Representatives of the remaining three operand/output
+                    // classes; controls preserve the identical compute body.
+                    add(std::string(config.name)+"_var1"+suffix,s,true,-1,1,1,0,[=](){
+                        if(atomic)strassen_cuda::primitive<-1,1,1,0,true>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
+                        else strassen_cuda::primitive<-1,1,1,0,false>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
+                    });
+                    add(std::string(config.name)+"_var2"+suffix,s,true,0,-1,1,1,[=](){
+                        if(atomic)strassen_cuda::primitive<0,-1,1,1,true>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
+                        else strassen_cuda::primitive<0,-1,1,1,false>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
+                    });
+                    add(std::string(config.name)+"_var3"+suffix,s,true,1,0,1,-1,[=](){
+                        if(atomic)strassen_cuda::primitive<1,0,1,-1,true>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
+                        else strassen_cuda::primitive<1,0,1,-1,false>(backend,ap,ap+off,bp,bp+off,cp,cp+off,s,n,stream);
+                    });
                 }
             } else {
                 struct Plan {const char* name;Schedule schedule;bool normal;bool paired=false;};
