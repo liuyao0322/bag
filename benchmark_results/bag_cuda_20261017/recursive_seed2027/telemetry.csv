@@ -1,0 +1,3 @@
+timestamp, uuid, utilization.gpu [%], memory.used [MiB], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]
+2026/10/17 18:34:45.909, GPU-4dc59edd-729d-ae17-5121-0450d619dac5, 0 %, 0 MiB, 1410 MHz, 1512 MHz, 77.90 W
+2026/10/17 18:34:46.915, GPU-4dc59edd-729d-ae17-5121-0450d619dac5, 2 %, 449 MiB, 1410 MHz, 1512 MHz, 79.60 W

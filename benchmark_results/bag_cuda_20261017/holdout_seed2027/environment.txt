@@ -1,0 +1,6 @@
+2026-10-17T18:34:18+08:00
+g02
+SLURM_JOB_ID=108156 CUDA_VISIBLE_DEVICES=0 NVIDIA_TF32_OVERRIDE=0
+index, uuid, name, driver_version, clocks.current.sm [MHz], clocks.current.memory [MHz], power.limit [W]
+0, GPU-4dc59edd-729d-ae17-5121-0450d619dac5, NVIDIA A100 80GB PCIe, 535.216.01, 1410 MHz, 1512 MHz, 300.00 W
+e46be75f72a937962edfa6e769bef9a4787f9bde

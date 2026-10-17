@@ -1,0 +1,5 @@
+parent_n,depth,basis,bytes
+4096,1,minimal,100663296
+4096,1,full,201326592
+8192,1,minimal,402653184
+8192,1,full,805306368

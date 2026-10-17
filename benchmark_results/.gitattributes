@@ -4,3 +4,4 @@ strassen_onelevel_*/** -whitespace
 strassen_batching_*/** -whitespace
 strassen_crossover_*/** -whitespace
 strassen_primitive_*/** -whitespace
+bag_cuda_*/** -whitespace

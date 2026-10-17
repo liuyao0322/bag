@@ -1,5 +1,15 @@
 # Optimization Directives
 
+Source: user request, 2026-10-17 (CUDA alternative-basis multiplication).
+
+- Implement the alternative-basis matrix multiplication in BAG.md using the
+  tuned CUDA primitive. Preserve the documented seven-product algebra and
+  basis/inverse transformations at each recursive level.
+- Reuse the validated FP32 primitive body; verify the complete operation,
+  including nonzero initial C, repeated accumulation and caller-stream order.
+- Keep all transforms, scratch resets, products, inverse decoding and stream
+  dependencies inside complete-call timing; compare same-run pure FP32 cuBLAS.
+
 Source: active user goal, 2026-10-17 (primitive profiling and implementation).
 
 - Profile the four fused primitive variants at leaf=768/1024: registers,

@@ -1,0 +1,9 @@
+parent_n,depth,basis,bytes
+24,1,minimal,3456
+24,1,full,6912
+128,1,minimal,98304
+128,1,full,196608
+128,2,minimal,172032
+128,2,full,294912
+2056,1,minimal,25362816
+2056,1,full,50725632

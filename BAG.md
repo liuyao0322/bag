@@ -43,6 +43,12 @@ P7 = A22 * T4
 
 The **BAG algorithm** transforms matrix multiplication into a more efficient computational form through basis transformations. The key idea is to perform matrix multiplication in a transformed basis, reducing the number of expensive multiplication operations.
 
+The [CUDA implementation](solution/bag_cuda/README.md) uses the tuned FP32
+primitive with the seven products below. It includes recursive per-level basis
+transformations, minimal/full basis storage, caller-stream synchronization,
+and accumulation into nonzero initial C. Its source is
+[solution/bag_cuda/bag.cuh](solution/bag_cuda/bag.cuh).
+
 ## Recursive Algorithm Structure
 
 BAG is a recursive algorithm where **each recursion level performs a complete basis transformation and inverse transformation**.
