@@ -1,0 +1,6 @@
+# Local executables and preliminary validation workspaces.
+strassen_fp32_*/benchmark_strassen_fp32
+strassen_fp32_*smoke*/
+strassen_fp32_*entry_check*/
+strassen_fp32_*/sass.txt
+strassen_fp32_*/verification/sass.txt

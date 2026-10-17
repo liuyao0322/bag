@@ -1,0 +1,6 @@
+{
+  "missing_round": true,
+  "duplicate_round": true,
+  "failed_check": true,
+  "nan_latency": true
+}

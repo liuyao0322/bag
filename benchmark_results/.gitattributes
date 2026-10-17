@@ -1,0 +1,2 @@
+# Preserve raw CSV line endings, tool output and verbatim kernel snapshots.
+strassen_fp32_*/** -whitespace

@@ -1,5 +1,14 @@
 # Optimization Directives
 
+Source: user goal, 2026-10-17 (Strassen performance baseline).
+
+- Build a standalone CUDA baseline on A100/A800 with pure FP32 and beta=1
+  (`C <- A*B + C`). Measure full-size cuBLAS, half-size leaf GEMM, and the
+  existing fused primitive costs before changing the kernel implementation.
+- Keep compact leaf storage and parent-leading-dimension leaf storage
+  distinguishable. Record raw rounds, numerical checks, environment, and
+  the exact primitive source snapshot for every measurement.
+
 Source: user prompt, 2026-08-31.
 
 - Optimize the Triton BAG primitive's GEMM body, not the benchmark.

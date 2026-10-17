@@ -1443,3 +1443,37 @@
   complete negative-result/resource log rather than publishing a noisy or
   layout-specific regression.
 - Trajectory: `trajectory/final-20260831-225852`.
+
+## 2026-10-17 — Standalone CUDA FP32 beta=1 Strassen cost baseline
+
+- User objective: measure full-size cuBLAS, half-size leaf GEMMs and the existing
+  fused primitives before modifying their implementation. No kernel edits.
+- Added `scripts/benchmark_strassen_fp32.cu`, `run_strassen_fp32.sh`,
+  `summarize_strassen_fp32.py`, and `STRASSEN_FP32_BASELINE.md`.
+- Platform: g02, one allocated NVIDIA A100 80GB PCIe, CUDA 12.2.140,
+  cuBLAS 12.2.5, column-major FP32, alpha=beta=1,
+  CUBLAS_PEDANTIC_MATH and NVIDIA_TF32_OVERRIDE=0.
+- Full run: 16 parent sizes from 512 to 20480, 11 cases per size,
+  5 randomized timing rounds, 880 timing rows. Every case passed FP64
+  checks after 1 and 3 accumulated calls (352 checks); maximum sampled
+  relative L2 error 2.933386e-6. Small smoke outputs were checked exhaustively.
+- At N=2048, full cuBLAS=0.977161 ms, parent-stride leaf=0.128811 ms,
+  primitive GEMM plus atomic output=0.258245 ms, sum of seven isolated
+  primitives=2.101285 ms. At N=8192, the corresponding costs are
+  58.451199/7.527917/9.065007/73.152671 ms. At N=20480 they are
+  950.978597/118.997670/121.071279/893.870758 ms.
+- Seven-leaf and seven-primitive sums are serial cost proxies, not measured
+  end-to-end speedups or hardware bounds. Medium-size primitive computation
+  and atomic output need attention; large-size primitive costs approach leaves.
+- Additional verification: memcheck=0 errors for representative small/medium/
+  large/huge kernels. NCU sampled cuBLAS SGEMM tensor instructions=0;
+  standalone SASS contains FFMA and no Tensor Core instruction mnemonics.
+- The first compile exposed a benchmark error-macro name collision, corrected
+  before all successful measurements. The main benchmark completed, then its
+  wrapper reported an EOF parse error after being edited while running.
+  Wrapper execution was hardened and a clean replay across four buckets
+  passed with exit code 0, 44 timing rows and 88 checks. Compiled CUDA source
+  is identical to the main run. Full evidence is in `execution_audit.json`.
+- Artifacts: `benchmark_results/strassen_fp32_a100_20261017/` (raw rounds,
+  correctness, source snapshots and hashes, build/environment logs, telemetry,
+  report, CSV summaries, PNG/PDF figures, and instrumentation evidence).
