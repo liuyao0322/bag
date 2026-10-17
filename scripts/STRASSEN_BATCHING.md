@@ -6,6 +6,34 @@ The report and full curves are in the parent directory's `REPORT.md`.
 CUDA 12.2, sm_80, cuBLAS PEDANTIC, TF32 disabled; operation is column-major
 FP32 `C <- AB+C`, alpha=beta=1. No ordinary GEMM fallback in Strassen cases.
 
+## Unmet crossover target
+
+The paper reports one-level crossover N=1536 on V100 SXM2 / CUDA 9.1.
+The fixed Huge seven-stream A100 curve first clearly wins at the measured
+dense point N=4352 across both seeds; this does not establish the best
+crossover across all blocking strategies. The small-size target is unmet.
+Hybrid first clearly wins at measured N=6656, compared with the paper's
+reported 7680. Neither comparison is a same-hardware reproduction.
+Large-size hybrid speedup near 1.19x does not satisfy the one-level target.
+
+The bounded existing-configuration audit uses the unchanged immutable build:
+
+```bash
+salloc --partition=a100 --gres=gpu:1 --cpus-per-task=8 --mem=48G \
+  --time=2-00:00:00 --job-name=strassen-crossover \
+  bash scripts/run_strassen_crossover_a100.sh \
+  benchmark_results/strassen_batching_20261017/iter4_hybrid_smoke \
+  benchmark_results/my_crossover_audit
+/share/home/liuyao/miniconda3/envs/kernelagent/bin/python -s \
+  scripts/analyze_strassen_crossover.py benchmark_results/my_crossover_audit
+```
+
+This compares all 11 existing backends with seven streams and the two
+supported four-batched backends at N=1024/1280/1536/1792/2048/2560/3072,
+five rounds of 200 ms at seed offsets 0 and 1009. Select each size's candidate
+on seed 0 and report the same configuration on seed 1009. Keep the fixed main
+curve and the configuration audit separately identifiable.
+
 ## Implementations
 
 - `Schedule::FourBatchedAtomic`: four concurrent streams, three grid.z=2

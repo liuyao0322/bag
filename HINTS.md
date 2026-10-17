@@ -1,5 +1,16 @@
 # Optimization Directives
 
+Source: user correction, 2026-10-17 (paper crossover not reached).
+
+- Treat the paper's one-level crossover at N=1536 as an unmet performance
+  target. A100 large-size hybrid speedup near 1.19x does not establish that
+  the small-size crossover has been reproduced.
+- Report one-level and hybrid crossover separately, including hardware,
+  candidate-selection policy, measured points, and non-monotonic behavior.
+- Prioritize the one-level N=1536/2048 region; compare existing blocking
+  strategies before attributing the gap to hardware or launch overhead.
+- Keep complete-call timing, pure FP32, numerical limits, and same-run cuBLAS.
+
 Source: user approval, 2026-10-17 (next-phase plan, "同意").
 
 - Implement the paper's four-variant, four-stream atomic batching schedule;

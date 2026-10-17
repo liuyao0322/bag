@@ -2,3 +2,4 @@
 strassen_fp32_*/** -whitespace
 strassen_onelevel_*/** -whitespace
 strassen_batching_*/** -whitespace
+strassen_crossover_*/** -whitespace

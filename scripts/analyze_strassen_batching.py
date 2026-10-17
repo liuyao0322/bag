@@ -241,10 +241,42 @@ matches = {path.name: path.read_bytes() == (PROJECT/'solution/strassen_cuda'/pat
 assert matches and all(matches.values())
 (ROOT/'current_source_match.json').write_text(json.dumps(matches, indent=2)+'\n')
 
+acceptance = []
+for case, paper_n in [(CASES[0], 1536), (CASES[2], 7680)]:
+    by_seed = {}
+    for row in crossover_rows:
+        if row['case'] == case:
+            by_seed.setdefault(row['parent_n'], {})[row['run']] = row
+    clear_points = [n for n, rows in by_seed.items()
+                    if len(rows) == 2 and all(r['observed_ranges_separated'] for r in rows.values())]
+    first = min(clear_points) if clear_points else None
+    acceptance.append(dict(case=case, paper_v100_reported_crossover=paper_n,
+                           a100_first_clear_dense_point=first,
+                           criterion='both seeds: candidate max < same-run cuBLAS min; measured points only',
+                           candidate_policy='fixed Huge seven-stream; not a search over all blocking strategies',
+                           numerical_target_reached=first is not None and first <= paper_n,
+                           same_hardware_reproduction=False))
+write_csv('paper_crossover_comparison.csv', acceptance)
+
 lines = ['# A100/A800 FP32 Strassen：论文 batching 与混合两层', '',
          '固定实现：`64e2695` 的算术代码；列主序 FP32 `C <- AB+C`，alpha=beta=1。',
          '主表为完整调用的 CUDA event 计时；所有变换、中间输出清零、乘积、合并和跨流依赖均计入。',
          '仅分配、输入生成、流/事件创建排除。禁用 TF32，cuBLAS PEDANTIC，误差阈值不变。', '',
+         '## 论文 crossover 验收：一层未达标', '',
+         '大尺寸混合两层达到约 1.19×，不代表论文的小尺寸一层 crossover 已复现。',
+         '论文在 V100 SXM2 / CUDA 9.1 上报告一层 N=1536、混合两层 N=7680；',
+         '本报告是在 A100 PCIe / CUDA 12.2 上验证相对性能，不能据此声称同硬件精确复现。',
+         '论文依据见[原文摘要与第 4 节](../../paper/3372419.pdf)。', '',
+         '| 算法 | 论文报告 crossover | A100 首个明确胜出的加密测点 | 数值目标 |',
+         '|---|---:|---:|---|']
+for row in acceptance:
+    name = '一层' if row['case'] == CASES[0] else '混合两层'
+    state = '已测点不晚于论文；仍有环境差异' if row['numerical_target_reached'] else '未达到'
+    lines.append(f"| {name} | {row['paper_v100_reported_crossover']} | {row['a100_first_clear_dense_point'] or '—'} | {state} |")
+lines += ['', 'A100 的“明确胜出”指两组输入各自五轮 candidate 最慢值低于同批 cuBLAS 最快值；',
+          '这是测点描述，不是统计置信区间，也不是所有后续尺寸均胜出的单调阈值。',
+          '当前主曲线固定 Huge 七流；论文对策略和块大小择优，两者的配置选择范围尚未对齐。',
+          '因此 4352 不能解释为本实现所有分块策略的最佳 crossover。后续重点是 N=1536/2048 的完整一层调用。', '',
          '## 固定候选与独立复测', '',
          '固定比较 Huge 七流、四类 batching，以及相应的混合两层。下表使用七流作为共同基线，',
          '不根据复测后的最低值重新选候选。四类 batching 的全部结果见 algorithm_comparison.csv。', '',
