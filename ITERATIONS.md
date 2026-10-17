@@ -1477,3 +1477,14 @@
 - Artifacts: `benchmark_results/strassen_fp32_a100_20261017/` (raw rounds,
   correctness, source snapshots and hashes, build/environment logs, telemetry,
   report, CSV summaries, PNG/PDF figures, and instrumentation evidence).
+
+## Strassen FP32 one-level — iter 1 (2026-10-17)
+
+- **Direction:** controlled `primitive_large` epilogue (same compute, atomic vs beta=1 vector add); SIMT double-buffer/prefetch versus synchronous loop; BK=8/16, CTA=64x32/64x64/128x64/128x128 and per-thread 4x4/8x4/8x8 blocking. Original medium/huge are measured controls. Complete seven-product API is included for subsequent end-to-end testing.
+- **Profile evidence:** original 1024 leaf, 256 CTAs x64 threads, 113 registers/thread, theoretical occupancy 25%, achieved 6.60%, waves/SM 0.30. Grid size as well as register limit matters. Nsight reports 54% excessive global sectors and 39% excessive shared wavefronts.
+- **Command:** `srun --jobid=108127 --overlap bash scripts/bench_strassen_onelevel.sh iter-1 benchmark_results/strassen_onelevel_20261017/iter1_ablation --mode ablation --sizes 2048,8192,20480 --rounds 3 --target-ms 100`.
+- **Correctness:** PASS, 240 FP64 checks (one and three accumulated calls); maximum sampled relative L2 2.933386e-6, unchanged 3e-5/1e-4 thresholds. 360 raw timing rows (40 cases x3 sizes x3 rounds). Execution exit 0; source and environment archived.
+- **N=2048 result:** cuBLAS full 0.976608 ms, leaf approximately 0.1288 ms. Same-body atomic GEMM 0.258395 ms vs normal 0.253569 ms (1.9%); M7 0.327541 vs 0.324752 ms (0.9%). Best candidate `pipe64x32_k16_r4` atomic: GEMM 0.170362 ms, M7 0.214696 ms (1.52x/1.53x vs original-large). Pipeline by itself (`pipe64_k8_r8`) regresses; reducing register tile and changing CTA shape matters more than removing atomics.
+- **Large regression:** at N=8192 huge GEMM/M7 7.911/8.444 ms beats legacy 8.778/10.710 ms; small winner 10.246/13.401 ms regresses. At N=20480 original huge remains best, GEMM/M7 119.883/130.526 ms versus small winner 165.764/200.717 ms. No universal replacement is justified.
+- **Decision:** keep ablations and separate size-dependent choices. Next measure genuine seven-product execution, including complete joins and nonzero-C accumulation. Do not infer end-to-end speedup from seven isolated leaves.
+- **Artifacts:** `benchmark_results/strassen_onelevel_20261017/iter1_ablation/results.{rounds,correctness,summary}.csv`, source SHA256 manifest, build log, telemetry; baseline Nsight CSV in the parent directory.

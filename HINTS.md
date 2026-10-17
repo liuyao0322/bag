@@ -1,5 +1,14 @@
 # Optimization Directives
 
+Source: user goal, 2026-10-17 (primitive_large analysis and one-level Strassen).
+
+- Analyze loop, blocking and output-update policies at N=2048 (leaf=1024).
+- Preserve large-size regressions and integrate a complete seven-product
+  one-level Strassen path to measure actual end-to-end gains.
+- Keep pure FP32, alpha=beta=1, unchanged numerical tolerances, and all
+  required stream dependencies inside the timed operation. Non-atomic
+  updates are allowed only with an ordering that prevents output races.
+
 Source: user goal, 2026-10-17 (Strassen performance baseline).
 
 - Build a standalone CUDA baseline on A100/A800 with pure FP32 and beta=1
