@@ -10,3 +10,7 @@ strassen_batching_*/**/benchmark_strassen_onelevel
 strassen_batching_*/**/sass.txt
 strassen_batching_*/**/*.nsys-rep
 strassen_batching_*/**/*.sqlite
+strassen_primitive_*/**/benchmark_strassen_onelevel
+strassen_primitive_*/**/sass.txt
+strassen_primitive_*/**/*.nsys-rep
+strassen_primitive_*/**/*.sqlite

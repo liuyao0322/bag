@@ -238,7 +238,7 @@ if verification.exists():
 
 origin = ROOT / 'iter4_hybrid_smoke/source/strassen_cuda'
 matches = {path.name: path.read_bytes() == (PROJECT/'solution/strassen_cuda'/path.name).read_bytes() for path in origin.glob('*.cuh')}
-assert matches and all(matches.values())
+assert matches
 (ROOT/'current_source_match.json').write_text(json.dumps(matches, indent=2)+'\n')
 
 acceptance = []
@@ -295,7 +295,8 @@ lines += ['', '每个 size/case 检查一次与连续三次累加；N<=128 全�
           '同一 seed 下的重复记录不代表独立输入。不同 seed offset 的输入及 FP64 参考同步变化。',
           '五轮随机顺序，目标 200 ms，至少三次调用。GPU 不手动锁频，分母只取同批 cuBLAS。',
           '每次构建和复测保留源文件 SHA256、命令、环境、GPU UUID、原始轮次、校验及 telemetry。',
-          '当前 CUDA 头文件与固定构建逐字节一致，见 current_source_match.json。', '',
+          ('当前 CUDA 头文件与固定构建逐字节一致，见 current_source_match.json。' if all(matches.values()) else
+           '当前工作树已继续优化；本表仍来自原固定构建。工作树与归档差异见 current_source_match.json。'), '',
           '## 实现与显存', '',
           '论文四类 batching 使用三个双乘积 batch 和一个单乘积，由四条流并发执行。',
           '原配对对照则按阶段执行；两者不是同一调度。输出使用原子加，调用流等待全部 worker。',

@@ -23,6 +23,8 @@ for n in 1536 2048; do
     CMD=(ncu --profile-from-start off --launch-count 7
          --section LaunchStats --section Occupancy --section SchedulerStats
          --section WarpStateStats --section MemoryWorkloadAnalysis --section SpeedOfLight
+         --section SourceCounters
+         --metrics l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_ld.sum,l1tex__data_bank_conflicts_pipe_lsu_mem_shared_op_st.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_red.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_atom.sum,l1tex__t_requests_pipe_lsu_mem_global_op_ld.sum,l1tex__t_sectors_pipe_lsu_mem_global_op_ld.sum
          --csv --log-file "$OUT/n$n.csv"
          "$ORIGIN/benchmark_strassen_onelevel" --mode endtoend --backends "$BACKEND"
          --only "${BACKEND}_seven_atomic" --sizes "$n" --profile-calls 1 --output "$OUT/n$n")
