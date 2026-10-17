@@ -1645,3 +1645,32 @@
 - **N=2048 swizzle_coalesced64_k8_r4_seven_atomic:** 1.166290198 ms, ratio=0.847626x.
 - **Correctness:** 56 FP64 checks; all pass=True.
 - **Outcome:** BK16/r4 from iteration 6 remains fastest; larger 8x4 register tiles regress sharply. N=1536 remains below cuBLAS. Retain all negative controls, re-assess using post-change counters and instruction scheduling before the next implementation change.
+
+## Strassen iteration 8 — exact-tile vectorized loading (2026-10-17)
+
+- **Re-assessment:** inspect iteration-6 SASS and post-change NCU after the unsuccessful register/K sweep. Coalesced M7 output sectors reach 147456 at leaf768 and 262144 at leaf1024; shared bank conflicts are zero. NCU still flags L1TEX scoreboard stalls. NVIDIA CUTLASS efficient GEMM documentation describes overlapping data movement/computation at both shared-memory and register levels (https://github.com/NVIDIA/cutlass/blob/main/media/docs/cpp/efficient_gemm.md). No physical floor has been established.
+- **Direction:** remove scalar-tail loading and bounds-check paths only when the leaf is exactly divisible by 64. Other shapes use the complete masked fused primitive, preserving all seven products. Compare padded vs swizzled coalesced exact paths.
+- **Benchmark:** allocation 108133, 5 rounds x200ms, full N=1280/1536/1792/2048; archive `benchmark_results/strassen_primitive_20261017/iter8_exact`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cublas_full:** 0.257575187 ms, ratio=1.000000x.
+- **N=1280 exact_coalesced64_k16_r4_seven_atomic:** 0.291180571 ms, ratio=0.884589x.
+- **N=1280 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.276016541 ms, ratio=0.933188x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.304508562 ms, ratio=0.845872x.
+- **N=1280 swizzle_coalesced64_k16_r4_seven_atomic:** 0.287830784 ms, ratio=0.894884x.
+- **N=1536 cublas_full:** 0.432762111 ms, ratio=1.000000x.
+- **N=1536 exact_coalesced64_k16_r4_seven_atomic:** 0.492873048 ms, ratio=0.878040x.
+- **N=1536 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.469808418 ms, ratio=0.921146x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.507330463 ms, ratio=0.853018x.
+- **N=1536 swizzle_coalesced64_k16_r4_seven_atomic:** 0.484294696 ms, ratio=0.893593x.
+- **N=1792 cublas_full:** 0.692635804 ms, ratio=1.000000x.
+- **N=1792 exact_coalesced64_k16_r4_seven_atomic:** 0.759123972 ms, ratio=0.912415x.
+- **N=1792 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.724512960 ms, ratio=0.956002x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.773829851 ms, ratio=0.895075x.
+- **N=1792 swizzle_coalesced64_k16_r4_seven_atomic:** 0.741231358 ms, ratio=0.934439x.
+- **N=2048 cublas_full:** 0.993765605 ms, ratio=1.000000x.
+- **N=2048 exact_coalesced64_k16_r4_seven_atomic:** 1.130865295 ms, ratio=0.878766x.
+- **N=2048 exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.069172623 ms, ratio=0.929472x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.134603935 ms, ratio=0.875870x.
+- **N=2048 swizzle_coalesced64_k16_r4_seven_atomic:** 1.100855620 ms, ratio=0.902721x.
+- **Correctness:** 40 FP64 checks, all pass=True.
+- **Outcome:** exact swizzled coalesced is fastest; N=1536 ~0.469808 ms vs same-run cuBLAS ~0.432762 ms (0.921146x). The target remains unmet. Next inspect premature consumption of prefetched global operands and profile the actual concurrent range.

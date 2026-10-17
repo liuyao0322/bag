@@ -3,10 +3,13 @@
 
 namespace strassen_cuda {
 
-template<int Coeff>
+template<int Coeff,bool Exact=false>
 __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row,int col,int ld,int rows,int cols) {
     float4 a=make_float4(0,0,0,0), b=a;
-    if(col<cols && row+3<rows) {
+    if constexpr(Exact) {
+        a=*reinterpret_cast<const float4*>(x+row+size_t(col)*ld);
+        if constexpr(Coeff!=0) b=*reinterpret_cast<const float4*>(y+row+size_t(col)*ld);
+    } else if(col<cols && row+3<rows) {
         a=*reinterpret_cast<const float4*>(x+row+size_t(col)*ld);
         if constexpr(Coeff!=0) b=*reinterpret_cast<const float4*>(y+row+size_t(col)*ld);
     } else if(col<cols) {
@@ -24,7 +27,7 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
@@ -53,12 +56,12 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         #pragma unroll
         for(int q=0;q<NA;++q) {
             int vec=tid+q*NT, r=(vec%(BM/4))*4, col=vec/(BM/4);
-            if(vec<BM*BK/4) pa[q]=load_sum<Delta>(X,Y,base_r+r,kk+col,ld,m,k);
+            if(vec<BM*BK/4) pa[q]=load_sum<Delta,Exact>(X,Y,base_r+r,kk+col,ld,m,k);
         }
         #pragma unroll
         for(int q=0;q<NB;++q) {
             int vec=tid+q*NT, row=(vec%(BK/4))*4, col=vec/(BK/4);
-            if(vec<BN*BK/4) pb[q]=load_sum<Epsilon>(V,W,kk+row,base_c+col,ld,k,n);
+            if(vec<BN*BK/4) pb[q]=load_sum<Epsilon,Exact>(V,W,kk+row,base_c+col,ld,k,n);
         }
     };
     auto pack=[&](int stage) {
@@ -117,7 +120,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
         #pragma unroll
         for(int q=0;q<(BM*BN+NT-1)/NT;++q) {
             int index=tid+q*NT,row=base_r+index%BM,col=base_c+index/BM;
-            if(index<BM*BN && row<m && col<n) {
+            if(index<BM*BN && (Exact || (row<m && col<n))) {
                 float result=storage.output[index];
                 size_t offset=row+size_t(col)*ld;
                 if constexpr(GD!=0) {
@@ -136,7 +139,7 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
             #pragma unroll
             for(int i=0;i<RM;++i) {
                 int row=base_r+rr+i,col=base_c+cc+j;
-                if(row<m && col<n) {
+                if(Exact || (row<m && col<n)) {
                     size_t offset=row+size_t(col)*ld;
                     if constexpr(GD!=0) {
                         if constexpr(Atomic) atomicAdd(D+offset,GD*acc[j][i]);
@@ -181,5 +184,18 @@ void launch_balanced(const float* x,const float* y,const float* v,const float* w
     constexpr int NT=(64/RM)*16;
     simt_primitive<64,64,BK,RM,4,true,Atomic,D,E,GD,GE,false,true,Coalesced>
         <<<dim3((s+63)/64,(s+63)/64),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<bool Swizzle,int D,int E,int GD,int GE,bool Atomic>
+void launch_exact(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                  int s,int ld,cudaStream_t stream) {
+    if(s%64==0) {
+        simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true,true>
+            <<<dim3(s/64,s/64),256,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+    } else {
+        // Partial tiles retain the complete masked primitive; never substitute
+        // an ordinary GEMM for any of the seven Strassen products.
+        launch_coalesced<Swizzle,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);
+    }
 }
 } // namespace strassen_cuda
