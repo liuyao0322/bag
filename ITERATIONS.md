@@ -1887,3 +1887,17 @@ Logging deviation: initial append attempted nonexistent status.json and failed b
 - N=2048 register_stage64_k16_r4x4_seven_atomic: 1.056963078 ms, 0.938162x.
 - N=2048 register_stage64_k16_r4x8_seven_atomic: 0.966646185 ms, 1.025818x.
 - Correctness: 48 FP64 records, all pass; status {'phase': 'benchmark', 'exit_code': 0}. Search results require frozen independent-input replay and memory/race validation before declaring a crossover.
+
+
+### Frozen iteration-15 column candidate validation
+
+Frozen column_tile64_k16_r4x8 before independent seed offset1009 replay; five rounds/200ms, same full-call contract. Profiled all four primitive classes at leaf768 and1024: zero measured shared load/store bank conflicts; regs107 for Var2/Var3,119 for Var0/Var1; 128 threads,16KB shared,25% theoretical occupancy. This profile is isolated kernel replay, not concurrent occupancy.
+- N=1280 column_tile64_k16_r4x8_seven_atomic: 0.262422924835 ms, 0.983418x.
+- N=1280 cublas_full: 0.258071427069 ms, 1.000000x.
+- N=1536 column_tile64_k16_r4x8_seven_atomic: 0.434319808635 ms, 0.993813x.
+- N=1536 cublas_full: 0.431632503386 ms, 1.000000x.
+- N=1792 column_tile64_k16_r4x8_seven_atomic: 0.655432670347 ms, 1.057431x.
+- N=1792 cublas_full: 0.693074938277 ms, 1.000000x.
+- N=2048 column_tile64_k16_r4x8_seven_atomic: 0.963643074036 ms, 1.026323x.
+- N=2048 cublas_full: 0.98900892821 ms, 1.000000x.
+Independent replay: 32 FP64 records all pass. Source/hash/status/counters at profile_column/ and holdout_column_seed1009/. N1536 requires consistent speedup over same-run cuBLAS; no isolated-counter or search-only crossover claim.
