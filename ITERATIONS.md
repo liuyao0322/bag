@@ -1702,3 +1702,36 @@
 - **N=2048 pipe64_k16_r4_seven_atomic:** 1.136024384 ms, ratio=0.883314x.
 - **Correctness:** 40 FP64 checks, all pass=True.
 - **Outcome:** deferred+exact+swizzled+coalesced is slightly faster, but N=1536 remains ~0.464734 ms vs cuBLAS ~0.431229 ms (0.927906x). No crossover claim. Next collect concurrent range counters rather than applying isolated occupancy to the seven-stream execution.
+
+## Strassen iteration 10 — CTA-local sliced K (2026-10-17)
+
+- **Direction:** implement a genuine fused 64x32 BK8 r8x4 kernel with 1/2/4 CTA-local K partitions. Each group accumulates a partial register tile, the last group merges S-1 shared partial tiles, and all threads issue coalesced atomic outputs. Packing and reduction storage are reused; no global temporary products. Partial shapes keep the masked fused fallback.
+- **Evidence:** concurrent range counters at N1536 give ~43% active-warp occupancy for iteration 9 vs ~24% for cuBLAS; isolated ~16% occupancy is not a full-call diagnosis. cuBLAS launch audit records ampere_sgemm_64x32_sliced1x4_nn, 256 threads, 1152 CTAs, 82 registers. Its proprietary internal partitioning is not claimed identical to ours.
+- **Benchmark:** allocation 108133, 5 rounds x200ms, N=1280/1536/1792/2048, archive `benchmark_results/strassen_primitive_20261017/iter10_sliced`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cublas_full:** 0.258551170 ms, ratio=1.000000x.
+- **N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.272199602 ms, ratio=0.949859x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.304259843 ms, ratio=0.849771x.
+- **N=1280 sliced1_64x32_k8_r8x4_seven_atomic:** 0.350325610 ms, ratio=0.738031x.
+- **N=1280 sliced2_64x32_k8_r8x4_seven_atomic:** 0.329492742 ms, ratio=0.784695x.
+- **N=1280 sliced4_64x32_k8_r8x4_seven_atomic:** 0.341816038 ms, ratio=0.756404x.
+- **N=1536 cublas_full:** 0.431209385 ms, ratio=1.000000x.
+- **N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.463839913 ms, ratio=0.929651x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.505608309 ms, ratio=0.852853x.
+- **N=1536 sliced1_64x32_k8_r8x4_seven_atomic:** 0.586340586 ms, ratio=0.735425x.
+- **N=1536 sliced2_64x32_k8_r8x4_seven_atomic:** 0.564440197 ms, ratio=0.763959x.
+- **N=1536 sliced4_64x32_k8_r8x4_seven_atomic:** 0.586950269 ms, ratio=0.734661x.
+- **N=1792 cublas_full:** 0.687078857 ms, ratio=1.000000x.
+- **N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.715190364 ms, ratio=0.960694x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.774283297 ms, ratio=0.887374x.
+- **N=1792 sliced1_64x32_k8_r8x4_seven_atomic:** 0.876521529 ms, ratio=0.783870x.
+- **N=1792 sliced2_64x32_k8_r8x4_seven_atomic:** 0.885029192 ms, ratio=0.776335x.
+- **N=1792 sliced4_64x32_k8_r8x4_seven_atomic:** 0.927380357 ms, ratio=0.740881x.
+- **N=2048 cublas_full:** 0.981780472 ms, ratio=1.000000x.
+- **N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.069595486 ms, ratio=0.917899x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.140390978 ms, ratio=0.860916x.
+- **N=2048 sliced1_64x32_k8_r8x4_seven_atomic:** 1.298371365 ms, ratio=0.756163x.
+- **N=2048 sliced2_64x32_k8_r8x4_seven_atomic:** 1.315248167 ms, ratio=0.746460x.
+- **N=2048 sliced4_64x32_k8_r8x4_seven_atomic:** 1.360979560 ms, ratio=0.721378x.
+- **Correctness:** 48 FP64 checks, all pass=True.
+- **Outcome:** sliced variants regress; iteration-9 path remains fastest. Preserve negative results and inspect the 8-row thread mapping for shared bank conflicts before further slicing changes. Target N1536 is unmet.

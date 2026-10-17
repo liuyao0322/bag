@@ -3,6 +3,7 @@
 #include "large_control.cuh"
 #include "huge_pair.cuh"
 #include "simt.cuh"
+#include "sliced.cuh"
 #include <stdexcept>
 #include <string>
 
@@ -11,7 +12,7 @@ enum class Backend { Legacy, Large, Medium, Huge, Sync64, Pipe64,
     Pipe64K16, Pipe64R4, Pipe64x32, Pipe128x64, Pipe128,
     Swizzle64, Swizzle64x32, Swizzle32x64, Coalesced64, SwizzleCoalesced64,
     BalancedK8R8, BalancedK16R8, BalancedK8R4, BalancedK32R4, Exact64, ExactSwizzle64,
-    Deferred64, DeferredSwizzle64 };
+    Deferred64, DeferredSwizzle64, Sliced1, Sliced2, Sliced4 };
 struct NamedBackend {const char* name;Backend backend;bool normal;bool paired=false;};
 inline const NamedBackend backends[]={
     {"legacy",Backend::Legacy,false},{"large",Backend::Large,true},
@@ -32,7 +33,10 @@ inline const NamedBackend backends[]={
     {"exact_coalesced64_k16_r4",Backend::Exact64,true},
     {"exact_swizzle_coalesced64_k16_r4",Backend::ExactSwizzle64,true},
     {"deferred_exact_coalesced64_k16_r4",Backend::Deferred64,true},
-    {"deferred_exact_swizzle_coalesced64_k16_r4",Backend::DeferredSwizzle64,true}};
+    {"deferred_exact_swizzle_coalesced64_k16_r4",Backend::DeferredSwizzle64,true},
+    {"sliced1_64x32_k8_r8x4",Backend::Sliced1,true},
+    {"sliced2_64x32_k8_r8x4",Backend::Sliced2,true},
+    {"sliced4_64x32_k8_r8x4",Backend::Sliced4,true}};
 
 inline bool valid_shape(Backend backend,int s) {
     if(s<=0||s%4)return false;
@@ -86,6 +90,9 @@ void primitive(Backend backend,const float* x,const float* y,const float* v,cons
     case Backend::ExactSwizzle64: launch_exact<true,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::Deferred64: launch_exact<false,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);break;
     case Backend::DeferredSwizzle64: launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::Sliced1: launch_sliced<1,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::Sliced2: launch_sliced<2,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
+    case Backend::Sliced4: launch_sliced<4,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);break;
     }
 }
 
