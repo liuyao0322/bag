@@ -3,12 +3,20 @@
 
 namespace strassen_cuda {
 
-template<int Coeff,bool Exact=false>
+template<int Cache>
+__device__ __forceinline__ float4 load_vector(const float* ptr) {
+    const float4* vector=reinterpret_cast<const float4*>(ptr);
+    if constexpr(Cache==1)return __ldcg(vector);
+    else if constexpr(Cache==2)return __ldg(vector);
+    else return *vector;
+}
+
+template<int Coeff,bool Exact=false,int Cache=0>
 __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row,int col,int ld,int rows,int cols) {
     float4 a=make_float4(0,0,0,0), b=a;
     if constexpr(Exact) {
-        a=*reinterpret_cast<const float4*>(x+row+size_t(col)*ld);
-        if constexpr(Coeff!=0) b=*reinterpret_cast<const float4*>(y+row+size_t(col)*ld);
+        a=load_vector<Cache>(x+row+size_t(col)*ld);
+        if constexpr(Coeff!=0) b=load_vector<Cache>(y+row+size_t(col)*ld);
     } else if(col<cols && row+3<rows) {
         a=*reinterpret_cast<const float4*>(x+row+size_t(col)*ld);
         if constexpr(Coeff!=0) b=*reinterpret_cast<const float4*>(y+row+size_t(col)*ld);
@@ -27,7 +35,7 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
                     float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
@@ -58,9 +66,9 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
             int vec=tid+q*NT, r=(vec%(BM/4))*4, col=vec/(BM/4);
             if(vec<BM*BK/4) {
                 if constexpr(Deferred) {
-                    pa[q]=load_sum<0,Exact>(X,X,base_r+r,kk+col,ld,m,k);
-                    if constexpr(Delta!=0) pay[q]=load_sum<0,Exact>(Y,Y,base_r+r,kk+col,ld,m,k);
-                } else pa[q]=load_sum<Delta,Exact>(X,Y,base_r+r,kk+col,ld,m,k);
+                    pa[q]=load_sum<0,Exact,Cache>(X,X,base_r+r,kk+col,ld,m,k);
+                    if constexpr(Delta!=0) pay[q]=load_sum<0,Exact,Cache>(Y,Y,base_r+r,kk+col,ld,m,k);
+                } else pa[q]=load_sum<Delta,Exact,Cache>(X,Y,base_r+r,kk+col,ld,m,k);
             }
         }
         #pragma unroll
@@ -68,9 +76,9 @@ void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
             int vec=tid+q*NT, row=(vec%(BK/4))*4, col=vec/(BK/4);
             if(vec<BN*BK/4) {
                 if constexpr(Deferred) {
-                    pb[q]=load_sum<0,Exact>(V,V,kk+row,base_c+col,ld,k,n);
-                    if constexpr(Epsilon!=0) pbw[q]=load_sum<0,Exact>(W,W,kk+row,base_c+col,ld,k,n);
-                } else pb[q]=load_sum<Epsilon,Exact>(V,W,kk+row,base_c+col,ld,k,n);
+                    pb[q]=load_sum<0,Exact,Cache>(V,V,kk+row,base_c+col,ld,k,n);
+                    if constexpr(Epsilon!=0) pbw[q]=load_sum<0,Exact,Cache>(W,W,kk+row,base_c+col,ld,k,n);
+                } else pb[q]=load_sum<Epsilon,Exact,Cache>(V,W,kk+row,base_c+col,ld,k,n);
             }
         }
     };
@@ -208,11 +216,11 @@ void launch_balanced(const float* x,const float* y,const float* v,const float* w
         <<<dim3((s+63)/64,(s+63)/64),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
 }
 
-template<bool Swizzle,int D,int E,int GD,int GE,bool Atomic,bool Deferred=false>
+template<bool Swizzle,int D,int E,int GD,int GE,bool Atomic,bool Deferred=false,int Cache=0>
 void launch_exact(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
                   int s,int ld,cudaStream_t stream) {
     if(s%64==0) {
-        simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true,true,Deferred>
+        simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true,true,Deferred,Cache>
             <<<dim3(s/64,s/64),256,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
     } else {
         // Partial tiles retain the complete masked primitive; never substitute

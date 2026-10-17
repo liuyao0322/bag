@@ -1772,3 +1772,36 @@
 - **Correctness:** 56 FP64 checks, all pass=True.
 - **Outcome:** striping substantially improves the sliced implementation, but every sliced candidate remains slower than iteration-9 at all four target sizes. N=1536 best retained case ~0.463952 ms vs cuBLAS ~0.432578 ms. The crossover target remains unmet; do not replace the selected iteration-9 candidate with a slower slicing configuration.
 - **Protocol note:** the wait wrapper also tailed the completed console in the same orchestration call before this log was appended. No implementation edit or next experiment intervened; future closures should use the wait result directly, then log and commit.
+
+## Strassen iteration 12 — global input cache hints (2026-10-17)
+
+- **Re-assessment/evidence:** after deferred/sliced/striped candidates fail to improve the retained best by 3%, inspect concurrent range data: L1 sector hit rate <1%, L2 hit rate ~96% at N1536. Review NVIDIA CUDA Programming Guide cache-hint intrinsics (https://docs.nvidia.com/cuda/archive/12.8.1/cuda-c-programming-guide/index.html#load-functions-using-cache-hints). No physical floor is established.
+- **Direction:** compare __ldcg L2 caching and __ldg readonly input loads against default global loading, holding exact tile, swizzle, coalesced output and mathematical products fixed. Compare CG with and without deferred input sums.
+- **Benchmark:** allocation 108133, 5 rounds x200ms, full N=1280/1536/1792/2048; archive `benchmark_results/strassen_primitive_20261017/iter12_cache`.
+- **Status:** {'phase': 'benchmark', 'exit_code': 0}
+- **N=1280 cg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.277829626 ms, ratio=0.931382x.
+- **N=1280 cg_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.282460052 ms, ratio=0.916114x.
+- **N=1280 cublas_full:** 0.258765619 ms, ratio=1.000000x.
+- **N=1280 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.273825040 ms, ratio=0.945003x.
+- **N=1280 ldg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.273790590 ms, ratio=0.945122x.
+- **N=1280 pipe64_k16_r4_seven_atomic:** 0.306013225 ms, ratio=0.845603x.
+- **N=1536 cg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.465766873 ms, ratio=0.930505x.
+- **N=1536 cg_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.470740412 ms, ratio=0.920674x.
+- **N=1536 cublas_full:** 0.433398384 ms, ratio=1.000000x.
+- **N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.467168897 ms, ratio=0.927712x.
+- **N=1536 ldg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.466487235 ms, ratio=0.929068x.
+- **N=1536 pipe64_k16_r4_seven_atomic:** 0.505478747 ms, ratio=0.857402x.
+- **N=1792 cg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.718549762 ms, ratio=0.963108x.
+- **N=1792 cg_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.724029598 ms, ratio=0.955819x.
+- **N=1792 cublas_full:** 0.692041125 ms, ratio=1.000000x.
+- **N=1792 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.715499063 ms, ratio=0.967215x.
+- **N=1792 ldg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 0.718470551 ms, ratio=0.963214x.
+- **N=1792 pipe64_k16_r4_seven_atomic:** 0.778673987 ms, ratio=0.888743x.
+- **N=2048 cg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.071412281 ms, ratio=0.929502x.
+- **N=2048 cg_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.075099257 ms, ratio=0.926315x.
+- **N=2048 cublas_full:** 0.995880207 ms, ratio=1.000000x.
+- **N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.057677626 ms, ratio=0.941573x.
+- **N=2048 ldg_deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic:** 1.065702925 ms, ratio=0.934482x.
+- **N=2048 pipe64_k16_r4_seven_atomic:** 1.140973682 ms, ratio=0.872834x.
+- **Correctness:** 48 FP64 checks, all pass=True.
+- **Outcome:** cache hints do not provide a consistent cross-size improvement. Retain default-loading iteration-9 path as selected candidate. N1536 remains below cuBLAS; no target completion.
