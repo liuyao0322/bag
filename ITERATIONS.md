@@ -1805,3 +1805,20 @@
 - **N=2048 pipe64_k16_r4_seven_atomic:** 1.140973682 ms, ratio=0.872834x.
 - **Correctness:** 48 FP64 checks, all pass=True.
 - **Outcome:** cache hints do not provide a consistent cross-size improvement. Retain default-loading iteration-9 path as selected candidate. N1536 remains below cuBLAS; no target completion.
+
+
+## Iteration 13 — batch the retained fused primitive
+
+Enabled paired and four-class batching for DeferredSwizzle64, keeping all seven Strassen products, fused input transforms and output updates. Exact tiles and masked paired dispatch are explicit. Same allocation A100 108133; five shuffled rounds at each of N=1280,1536,1792,2048, target 200 ms/case. Artifacts: `benchmark_results/strassen_primitive_20261017/iter13_batched/`.
+
+N=1280: cuBLAS 0.257683663998 ms; seven atomic 0.273634477095 ms; four batched atomic 0.270327931001 ms (0.953226191033315x); paired atomic 0.300735308034 ms; paired normal 0.327686736458 ms.
+
+N=1536: cuBLAS 0.43028833959 ms; seven atomic 0.466382461759 ms; four batched atomic 0.461397717178 ms (0.9325757878078134x); paired atomic 0.530283746387 ms; paired normal 0.577962936535 ms.
+
+N=1792: cuBLAS 0.691239253985 ms; seven atomic 0.716684647388 ms; four batched atomic 0.718899710813 ms (0.9615239004662849x); paired atomic 0.781485369825 ms; paired normal 0.832253717743 ms.
+
+N=2048: cuBLAS 0.989189147949 ms; seven atomic 1.06849302921 ms; four batched atomic 1.06618978463 ms (0.9277796150450631x); paired atomic 1.1422164481 ms; paired normal 1.18169601903 ms.
+
+Correctness records: 48; FP64 comparison details in archived CSV. Four batching improves N1536 by about 1.1% in this run, but remains slower than the same-run cuBLAS. No crossover acceptance claimed. Sequential paired schedules regress. N1792 does not establish a batching gain. Retain seven and four-batched candidates pending independent validation; continue compute-body optimization.
+
+Logging deviation: initial append attempted nonexistent status.json and failed before writing; repaired immediately before commit.

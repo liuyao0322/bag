@@ -34,7 +34,7 @@ inline const NamedBackend backends[]={
     {"exact_coalesced64_k16_r4",Backend::Exact64,true},
     {"exact_swizzle_coalesced64_k16_r4",Backend::ExactSwizzle64,true},
     {"deferred_exact_coalesced64_k16_r4",Backend::Deferred64,true},
-    {"deferred_exact_swizzle_coalesced64_k16_r4",Backend::DeferredSwizzle64,true},
+    {"deferred_exact_swizzle_coalesced64_k16_r4",Backend::DeferredSwizzle64,true,true},
     {"sliced1_64x32_k8_r8x4",Backend::Sliced1,true},
     {"sliced2_64x32_k8_r8x4",Backend::Sliced2,true},
     {"sliced4_64x32_k8_r8x4",Backend::Sliced4,true},
@@ -157,6 +157,15 @@ void pair(Backend backend,Operand a,Operand b,int s,int ld,cudaStream_t stream) 
         simt_primitive<64,32,16,4,4,true,Atomic,D,E,GD,GE,true>
             <<<dim3((s+63)/64,(s+31)/32,2),128,0,stream>>>
             (a.x,a.y,a.v,a.w,a.d,a.e,s,s,s,ld,args);
+    } else if(backend==Backend::DeferredSwizzle64) {
+        dim3 grid((s+63)/64,(s+63)/64,2);
+        if(s%64==0) {
+            simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,true,true,true,true,true>
+                <<<grid,256,0,stream>>>(a.x,a.y,a.v,a.w,a.d,a.e,s,s,s,ld,args);
+        } else {
+            simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,true,true,true,false,true>
+                <<<grid,256,0,stream>>>(a.x,a.y,a.v,a.w,a.d,a.e,s,s,s,ld,args);
+        }
     } else throw std::runtime_error("backend has no paired implementation");
 }
 template<bool Atomic>
@@ -207,7 +216,7 @@ inline void one_level(Backend backend,Schedule schedule,const float* a,const flo
     }
     checked(cudaEventRecord(workspace.start,caller));
     if(schedule==Schedule::FourBatchedAtomic) {
-        if(backend!=Backend::Huge&&backend!=Backend::Pipe64x32)
+        if(backend!=Backend::Huge&&backend!=Backend::Pipe64x32&&backend!=Backend::DeferredSwizzle64)
             throw std::runtime_error("four-variant batching requires a paired backend");
         for(int i=0;i<4;++i) {
             checked(cudaStreamWaitEvent(workspace.streams[i],workspace.start));
