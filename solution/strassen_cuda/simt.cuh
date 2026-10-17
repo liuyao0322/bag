@@ -24,10 +24,15 @@ __device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row
 // Each warp has eight row groups and four column groups. Padding B breaks
 // stride-related bank conflicts; A stays contiguous along its row dimension.
 template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
-         int Delta,int Epsilon,int GD,int GE>
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false>
 __global__ __launch_bounds__((BM/RM)*(BN/RN))
 void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
-                    float* D,float* E,int m,int n,int k,int ld) {
+                    float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
+    if constexpr(Pair) {
+        X=blockIdx.z?pairs.X1:pairs.X0;Y=blockIdx.z?pairs.Y1:pairs.Y0;
+        V=blockIdx.z?pairs.V1:pairs.V0;W=blockIdx.z?pairs.W1:pairs.W0;
+        D=blockIdx.z?pairs.D1:pairs.D0;E=blockIdx.z?pairs.E1:pairs.E0;
+    }
     constexpr int NT=(BM/RM)*(BN/RN), ROW_WARPS=(BM/RM)/8;
     constexpr int NA=(BM*BK/4+NT-1)/NT, NB=(BN*BK/4+NT-1)/NT;
     constexpr int STAGES=Pipeline?2:1, BS=BN+1;
@@ -112,6 +117,6 @@ void launch(const float* x,const float* y,const float* v,const float* w,float* d
             int s,int ld,cudaStream_t stream) {
     constexpr int NT=(BM/RM)*(BN/RN);
     simt_primitive<BM,BN,BK,RM,RN,Pipeline,Atomic,D,E,GD,GE>
-        <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld);
+        <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
 }
 } // namespace strassen_cuda

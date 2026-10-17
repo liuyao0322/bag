@@ -28,7 +28,11 @@ export NVIDIA_TF32_OVERRIDE=0
     git status --short
 } > "$OUT/environment.txt"
 mkdir -p "$OUT/source/primitive_headers" "$OUT/source/strassen_cuda"
-cp kernel/bag/include/prim_*.cuh kernel/bag/include/base_components.cuh "$OUT/source/primitive_headers/"
+HEADER_DIR="$ROOT/kernel/bag/include"
+if [[ ! -f "$HEADER_DIR/prim_inter.cuh" ]]; then
+    HEADER_DIR="$ROOT/benchmark_results/strassen_fp32_a100_20261017/source/primitive_headers"
+fi
+cp "$HEADER_DIR"/prim_*.cuh "$HEADER_DIR/base_components.cuh" "$OUT/source/primitive_headers/"
 cp solution/strassen_cuda/*.cuh "$OUT/source/strassen_cuda/"
 cp scripts/benchmark_strassen_fp32.cu scripts/benchmark_strassen_onelevel.cu scripts/bench_strassen_onelevel.sh scripts/summarize_strassen_onelevel.py "$OUT/source/"
 (cd "$OUT" && sha256sum source/primitive_headers/*.cuh source/strassen_cuda/*.cuh source/*.*) > "$OUT/source.sha256"

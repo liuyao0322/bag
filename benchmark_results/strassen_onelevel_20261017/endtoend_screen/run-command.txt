@@ -1,0 +1,1 @@
+/share/home/liuyao/workspace/bag/benchmark_results/strassen_onelevel_20261017/iter1_ablation/benchmark_strassen_onelevel --output /share/home/liuyao/workspace/bag/benchmark_results/strassen_onelevel_20261017/endtoend_screen/results --mode endtoend --sizes 2048\,8192\,20480 --backends legacy\,huge\,pipe64x32_k16_r4 --rounds 3 --target-ms 100 

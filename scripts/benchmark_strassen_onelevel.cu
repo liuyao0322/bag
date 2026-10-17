@@ -67,8 +67,7 @@ int main(int argc,char** argv)try {
         for(auto config:strassen_cuda::backends) {
             if(!options.backend_filter.empty()&&options.backend_filter.find(","+std::string(config.name)+",")==std::string::npos)continue;
             // Original unmasked kernels are only legal at their tile boundaries.
-            if(!config.normal&&s%128)continue;
-            if(config.backend==Backend::Large&&s%64)continue;
+            if(!strassen_cuda::valid_shape(config.backend,s))continue;
             auto backend=config.backend;
             if(options.mode=="ablation") {
                 size_t off=size_t(s)*(n+1);
@@ -85,10 +84,12 @@ int main(int argc,char** argv)try {
                     });
                 }
             } else {
-                struct Plan {const char* name;Schedule schedule;bool normal;};
+                struct Plan {const char* name;Schedule schedule;bool normal;bool paired=false;};
                 for(auto plan:{Plan{"serial_atomic",Schedule::SerialAtomic,false},Plan{"serial_normal",Schedule::SerialNormal,true},
-                               Plan{"seven_atomic",Schedule::SevenAtomic,false},Plan{"dependency_normal",Schedule::DependencyNormal,true}}) {
+                               Plan{"seven_atomic",Schedule::SevenAtomic,false},Plan{"dependency_normal",Schedule::DependencyNormal,true},
+                               Plan{"paired_atomic",Schedule::PairedAtomic,false,true},Plan{"paired_normal",Schedule::PairedNormal,true,true}}) {
                     if(plan.normal&&!config.normal)continue;
+                    if(plan.paired&&!config.paired)continue;
                     add(std::string(config.name)+"_"+plan.name,n,false,0,0,1,0,
                         [=,&workspace](){strassen_cuda::one_level(backend,plan.schedule,ap,bp,cp,n,stream,workspace);});
                 }

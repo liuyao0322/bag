@@ -1,0 +1,22 @@
+2026-10-17T09:05:00+08:00
+g02
+SLURM_JOB_ID=108127 CUDA_VISIBLE_DEVICES=0
+NVIDIA_TF32_OVERRIDE=0
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Tue_Aug_15_22:02:13_PDT_2023
+Cuda compilation tools, release 12.2, V12.2.140
+Build cuda_12.2.r12.2/compiler.33191640_0
+index, uuid, name, driver_version, memory.total [MiB], clocks.current.sm [MHz], clocks.current.memory [MHz], power.limit [W], compute_mode
+0, GPU-4dc59edd-729d-ae17-5121-0450d619dac5, NVIDIA A100 80GB PCIe, 535.216.01, 81920 MiB, 210 MHz, 1512 MHz, 300.00 W, Default
+dc730323a5445be567688aac293233a57d7a4ca4
+ M .gitignore
+ M scripts/benchmark_strassen_onelevel.cu
+ M solution/strassen_cuda/engine.cuh
+ M solution/strassen_cuda/simt.cuh
+?? benchmark_results/strassen_onelevel_20261017/endtoend_screen/
+?? benchmark_results/strassen_onelevel_20261017/endtoend_screen_console.log
+?? benchmark_results/strassen_onelevel_20261017/iter2_console.log
+?? benchmark_results/strassen_onelevel_20261017/iter2_endtoend/
+?? scripts/replay_strassen_onelevel.sh
+?? solution/strassen_cuda/huge_pair.cuh
