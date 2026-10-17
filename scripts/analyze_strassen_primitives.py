@@ -123,7 +123,7 @@ for status in sorted((root/'range_profiles').glob('*.status.json')):
 write_csv('concurrent_range_counters.csv', concurrent)
 
 stalls = []
-for status in sorted((root/'stall_profiles').glob('*.status.json')):
+for status in sorted([*(root/'stall_profiles').glob('*.status.json'), *(root/'stall_profiles_selected').glob('*.status.json')]):
     assert json.loads(status.read_text())['exit_code'] == 0, status
     stem = status.name.removesuffix('.status.json')
     n, case = re.fullmatch(r'n(\d+)_(.*)', stem).groups()
@@ -134,7 +134,7 @@ for status in sorted((root/'stall_profiles').glob('*.status.json')):
     meta = json.loads((status.parent/(stem+'.metadata.json')).read_text())
     checks = list(csv.DictReader((status.parent/(stem+'.correctness.csv')).open()))
     assert meta['profile_calls'] == 10 and checks and all(r['pass'] == '1' for r in checks)
-    row = dict(parent_n=int(n), case=case, profile_calls=10)
+    row = dict(profile=status.parent.name, parent_n=int(n), case=case, profile_calls=10)
     for name in ['short_scoreboard','long_scoreboard','mio_throttle','math_pipe_throttle','barrier','wait','not_selected','lg_throttle']:
         row[name+'_pct'] = values['smsp__warp_issue_stalled_'+name+'_per_warp_active.pct']
     stalls.append(row)
@@ -191,7 +191,7 @@ if stalls:
 selected = 'deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic'
 holdout = [r for r in complete if r['run'] == 'holdout_seed1009' and r['case'] == selected]
 if holdout:
-    lines += ['', '## 冻结候选的独立输入复测：crossover 仍未达到', '',
+    lines += ['', '## 第 9 轮冻结候选的独立复测：该候选未达标', '',
               '选择来自 iteration 9，第二组输入使用同一配置；并非在第二组输入重新择优。',
               '候选为 `'+selected+'`。', '',
               '| N | 一层 ms | 同批 cuBLAS ms | 加速比 | 持平还需降时 |',
@@ -207,6 +207,57 @@ if column_holdout:
               '|---:|---:|---:|---:|']
     for r in column_holdout:
         lines.append(f"| {r['parent_n']} | {r['candidate_ms']:.6f} | {r['cublas_ms']:.6f} | {r['speedup']:.4f}× |")
+
+final_case = 'column_tile64_k16_r4x8_four_batched_atomic'
+final_holdouts = [r for r in complete if r['run'] in ('holdout_batched_seed1009','holdout_batched_seed2027') and r['case'] == final_case]
+if final_holdouts:
+    proof = [r for r in final_holdouts if r['parent_n'] == 1536]
+    sanitizer = {tool: json.loads((root/'verification_selected'/f'{tool}.status.json').read_text())['exit_code']
+                 for tool in ('memcheck','racecheck')}
+    origin = root/'iter16_column_resources'
+    project = Path(__file__).resolve().parents[1]
+    source_matches = all(p.read_bytes() == (project/'solution/strassen_cuda'/p.name).read_bytes()
+                         for p in (origin/'source/strassen_cuda').glob('*.cuh'))
+    profile_complete = all(json.loads((root/'profile_selected_batched'/f'n{n}.status.json').read_text())['exit_code'] == 0
+                           for n in (1536,2048))
+    passed = (len(proof)==2 and all(r['speedup']>1 and r['ranges_separated'] for r in proof)
+              and all(code==0 for code in sanitizer.values()) and source_matches and profile_complete)
+    acceptance = dict(acceptance_met=passed, scope='A100 80GB PCIe, FP32 C<-AB+C, N1536 complete one-level Strassen versus same-run cuBLAS',
+                      selected_case=final_case, n1536_independent_replays=proof,
+                      source_matches_selected_archive=source_matches, selected_four_variant_profiles_complete=profile_complete,
+                      sanitizer_exit_codes=sanitizer, a800_job='108136; report status separately')
+    (root/'acceptance.json').write_text(json.dumps(acceptance,indent=2)+'\n')
+    intro = ['**当前验收：A100 上 N=1536 已超过同批 cuBLAS。**' if passed else '**当前验收仍未通过；查看 acceptance.json。**', '',
+             '最终固定配置为 `column_tile64_k16_r4x8 / four_batched_atomic`，选择与 SHA256 见 selection_batched_column.json。',
+             '两组新输入各七轮、每轮目标 300 ms；两组 N=1536 的 candidate 最慢轮仍快于 cuBLAS 最快轮。',
+             '此结论针对本机 A100 / CUDA12.2 / cuBLAS12.2.5 的相对性能；原论文 V100 SXM2 / CUDA9.1 的绝对时长未作数值复刻。', '',
+             '| 独立输入 offset | N | Strassen ms | 同批 cuBLAS ms | 加速比 |',
+             '|---:|---:|---:|---:|---:|']
+    for r in final_holdouts:
+        intro.append(f"| {r['seed_offset']} | {r['parent_n']} | {r['candidate_ms']:.6f} | {r['cublas_ms']:.6f} | {r['speedup']:.4f}× |")
+    intro += ['', 'memcheck：N=120/128/1536/2056；racecheck：N=120/128；均零错误/零 hazard。',
+              '部分 tile 回退保留融合七乘积，不以普通 GEMM 替代。A800 固定候选验证作业为 108136，排队状态不视为实测。', '']
+    lines[2:2] = intro
+    curve = [r for r in complete if r['run']=='selected_curve_seed2027' and r['case']==final_case]
+    if curve:
+        lines += ['', '## 冻结候选的加密尺寸曲线', '',
+                  '![固定候选的 crossover 曲线](selected_crossover.png)', '',
+                  'offset2027，七轮×200ms。首个胜出的采样点为 N=1280，前一点 N=1152 仍落后；',
+                  '两点之间尚未采样；不据此声称精确转折位置、所有整数尺寸或所有更大尺寸均胜出。', '',
+                  '| N | Strassen ms | 同批 cuBLAS ms | 加速比 |',
+                  '|---:|---:|---:|---:|']
+        for r in curve:
+            lines.append(f"| {r['parent_n']} | {r['candidate_ms']:.6f} | {r['cublas_ms']:.6f} | {r['speedup']:.4f}× |")
+    large = [r for r in complete if r['run']=='selected_large_regression']
+    if large:
+        lines += ['', '## 大尺寸回归：小尺寸配置不能覆盖全部尺寸', '',
+                  '保留全部七流/四类 batching 结果，不把 column 配置的退化隐藏为自动普通 GEMM 回退。', '',
+                  '| N | 配置 | Strassen ms | 同批 cuBLAS ms | 加速比 |',
+                  '|---:|---|---:|---:|---:|']
+        for r in large:
+            lines.append(f"| {r['parent_n']} | {r['case']} | {r['candidate_ms']:.4f} | {r['cublas_ms']:.4f} | {r['speedup']:.4f}× |")
+        lines += ['', '小尺寸使用 column、较大尺寸保留 Huge/已有混合两层为不同固定配置；',
+                  '该小尺寸优化不替代旧的大尺寸混合两层报告，也不据此宣称整个尺寸域有单调 crossover。']
 
 lines += ['', '## 实现方向与证据边界', '',
           '- XOR swizzle 消除测得的共享 B 写 bank 冲突，并保留 float4 对齐；寄存器代价逐类报告。',

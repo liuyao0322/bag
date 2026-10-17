@@ -1,0 +1,3 @@
+N=2048 correctness PASS cases=1
+PROFILE COMPLETE calls=1
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/profile_column/n2048

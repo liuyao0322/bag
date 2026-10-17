@@ -259,10 +259,12 @@ for case, paper_n in [(CASES[0], 1536), (CASES[2], 7680)]:
 write_csv('paper_crossover_comparison.csv', acceptance)
 
 lines = ['# A100/A800 FP32 Strassen：论文 batching 与混合两层', '',
+         '本报告保留原冻结 Huge/混合两层结果。后续 4×8 列映射已在 A100 达到 N=1536 的独立输入验收，',
+         '完整小尺寸结果、负对照和验证见 [primitive 优化报告](../strassen_primitive_20261017/REPORT.md)。', '',
          '固定实现：`64e2695` 的算术代码；列主序 FP32 `C <- AB+C`，alpha=beta=1。',
          '主表为完整调用的 CUDA event 计时；所有变换、中间输出清零、乘积、合并和跨流依赖均计入。',
          '仅分配、输入生成、流/事件创建排除。禁用 TF32，cuBLAS PEDANTIC，误差阈值不变。', '',
-         '## 论文 crossover 验收：一层未达标', '',
+         '## 原冻结 Huge 配置的 crossover：一层未达标', '',
          '大尺寸混合两层达到约 1.19×，不代表论文的小尺寸一层 crossover 已复现。',
          '论文在 V100 SXM2 / CUDA 9.1 上报告一层 N=1536、混合两层 N=7680；',
          '本报告是在 A100 PCIe / CUDA 12.2 上验证相对性能，不能据此声称同硬件精确复现。',
@@ -352,7 +354,7 @@ if len(selected)==2:
               f"相对对应一层的耗时下降为 {100*selected[0]['hybrid_latency_reduction']:.2f}% / {100*selected[1]['hybrid_latency_reduction']:.2f}%。",
               'N=10240、12288、16384、20480 的两层收益均超过本轮 3% 投入门槛，可作为后续大尺寸工作基线。',
               '在较小尺寸应继续区分两层相对 cuBLAS 的收益与两层相对一层的额外收益；工作区开销也需纳入选择。',
-              'N=2048 的现有候选仍未超过 cuBLAS。四类 batching 没有在所有尺寸稳定优于七流，因此保留显式选择。',
+              '本报告原冻结候选在 N=2048 仍未超过 cuBLAS；后续列映射结果见前述独立报告。四类 batching 没有在所有尺寸稳定优于七流，因此保留显式选择。',
               '本轮不新增自动 GEMM 回退，不以 post-hoc 最低值替换预先固定的七流对照。',
               '一层在 N=4096 附近持平，N=4352 的两组加密测点中位数开始超过 cuBLAS；N=5632 仍接近持平。',
               '两层在加密测点 N=6144 附近持平，N=6656 的两组中位数明确超过 cuBLAS。这里只描述测点，不保证未测尺寸。',

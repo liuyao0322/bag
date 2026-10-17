@@ -1,0 +1,277 @@
+#pragma once
+#include <cuda_runtime.h>
+
+namespace strassen_cuda {
+
+template<int Cache>
+__device__ __forceinline__ float4 load_vector(const float* ptr) {
+    const float4* vector=reinterpret_cast<const float4*>(ptr);
+    if constexpr(Cache==1)return __ldcg(vector);
+    else if constexpr(Cache==2)return __ldg(vector);
+    else return *vector;
+}
+
+template<int Coeff,bool Exact=false,int Cache=0>
+__device__ __forceinline__ float4 load_sum(const float* x,const float* y,int row,int col,int ld,int rows,int cols) {
+    float4 a=make_float4(0,0,0,0), b=a;
+    if constexpr(Exact) {
+        a=load_vector<Cache>(x+row+size_t(col)*ld);
+        if constexpr(Coeff!=0) b=load_vector<Cache>(y+row+size_t(col)*ld);
+    } else if(col<cols && row+3<rows) {
+        a=*reinterpret_cast<const float4*>(x+row+size_t(col)*ld);
+        if constexpr(Coeff!=0) b=*reinterpret_cast<const float4*>(y+row+size_t(col)*ld);
+    } else if(col<cols) {
+        float* av=&a.x; float* bv=&b.x;
+        #pragma unroll
+        for(int i=0;i<4;++i) if(row+i<rows) {
+            av[i]=x[row+i+size_t(col)*ld];
+            if constexpr(Coeff!=0) bv[i]=y[row+i+size_t(col)*ld];
+        }
+    }
+    if constexpr(Coeff!=0) {a.x+=Coeff*b.x;a.y+=Coeff*b.y;a.z+=Coeff*b.z;a.w+=Coeff*b.w;}
+    return a;
+}
+
+// Each warp has eight row groups and four column groups. Padding B breaks
+// stride-related bank conflicts; A stays contiguous along its row dimension.
+template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,
+         int Delta,int Epsilon,int GD,int GE,bool Pair=false,bool SwizzleB=false,bool Coalesced=false,bool Exact=false,bool Deferred=false,int Cache=0,bool Striped=false,bool RegPipeline=false,int MinCTAs=1>
+__global__ __launch_bounds__((BM/RM)*(BN/RN),MinCTAs)
+void simt_primitive(const float* X,const float* Y,const float* V,const float* W,
+                    float* D,float* E,int m,int n,int k,int ld,PrimBatchedPairArgs pairs) {
+    if constexpr(Pair) {
+        X=blockIdx.z?pairs.X1:pairs.X0;Y=blockIdx.z?pairs.Y1:pairs.Y0;
+        V=blockIdx.z?pairs.V1:pairs.V0;W=blockIdx.z?pairs.W1:pairs.W0;
+        D=blockIdx.z?pairs.D1:pairs.D0;E=blockIdx.z?pairs.E1:pairs.E0;
+    }
+    constexpr int NT=(BM/RM)*(BN/RN), ROW_WARPS=(BM/RM)/8;
+    constexpr int NA=(BM*BK/4+NT-1)/NT, NB=(BN*BK/4+NT-1)/NT;
+    constexpr int STAGES=Pipeline?2:1, BS=SwizzleB?BN:BN+1;
+    static_assert(!SwizzleB || (BK<=32 && BN>=32 && (RN==4 || RN==8)));
+    static_assert(BM%RM==0 && BN%RN==0 && BM/RM>=8 && (BM/RM)%8==0 && (BN/RN)%4==0);
+    struct Tiles {float sa[STAGES][BK][BM];float sb[STAGES][BK][BS];};
+    union Storage {Tiles tiles;float output[Coalesced?BM*BN:1];};
+    __shared__ __align__(16) Storage storage;
+    auto& sa=storage.tiles.sa;
+    auto& sb=storage.tiles.sb;
+    int tid=threadIdx.x, warp=tid/32,lane=tid%32;
+    static_assert(!Striped || RM==8);
+    int rr=(warp%ROW_WARPS)*8*RM+(lane%8)*(Striped?4:RM);
+    constexpr bool ColStriped=SwizzleB && RN==8;
+    int cc=(warp/ROW_WARPS)*4*RN+(lane/8)*(ColStriped?4:RN);
+    int base_r=blockIdx.x*BM, base_c=blockIdx.y*BN;
+    float acc[RN][RM]={};
+    float4 pa[NA],pb[NB],pay[NA],pbw[NB];
+    auto fetch=[&](int kk) {
+        #pragma unroll
+        for(int q=0;q<NA;++q) {
+            int vec=tid+q*NT, r=(vec%(BM/4))*4, col=vec/(BM/4);
+            if(vec<BM*BK/4) {
+                if constexpr(Deferred) {
+                    pa[q]=load_sum<0,Exact,Cache>(X,X,base_r+r,kk+col,ld,m,k);
+                    if constexpr(Delta!=0) pay[q]=load_sum<0,Exact,Cache>(Y,Y,base_r+r,kk+col,ld,m,k);
+                } else pa[q]=load_sum<Delta,Exact,Cache>(X,Y,base_r+r,kk+col,ld,m,k);
+            }
+        }
+        #pragma unroll
+        for(int q=0;q<NB;++q) {
+            int vec=tid+q*NT, row=(vec%(BK/4))*4, col=vec/(BK/4);
+            if(vec<BN*BK/4) {
+                if constexpr(Deferred) {
+                    pb[q]=load_sum<0,Exact,Cache>(V,V,kk+row,base_c+col,ld,k,n);
+                    if constexpr(Epsilon!=0) pbw[q]=load_sum<0,Exact,Cache>(W,W,kk+row,base_c+col,ld,k,n);
+                } else pb[q]=load_sum<Epsilon,Exact,Cache>(V,W,kk+row,base_c+col,ld,k,n);
+            }
+        }
+    };
+    auto pack=[&](int stage) {
+        #pragma unroll
+        for(int q=0;q<NA;++q) {
+            int vec=tid+q*NT,r=(vec%(BM/4))*4,col=vec/(BM/4);
+            if(vec<BM*BK/4) {
+                float4 av=pa[q];
+                if constexpr(Deferred && Delta!=0) {
+                    av.x+=Delta*pay[q].x;av.y+=Delta*pay[q].y;
+                    av.z+=Delta*pay[q].z;av.w+=Delta*pay[q].w;
+                }
+                *reinterpret_cast<float4*>(&sa[stage][col][r])=av;
+            }
+        }
+        #pragma unroll
+        for(int q=0;q<NB;++q) {
+            int vec=tid+q*NT,row=(vec%(BK/4))*4,col=vec/(BK/4);
+            if(vec<BN*BK/4) {
+                // Map the K-vector groups of one loading warp to disjoint
+                // shared-memory banks, preserving float4 alignment in N.
+                int dest=SwizzleB?(col^((row/4)*(128/BK))):col;
+                float4 bv=pb[q];
+                if constexpr(Deferred && Epsilon!=0) {
+                    bv.x+=Epsilon*pbw[q].x;bv.y+=Epsilon*pbw[q].y;
+                    bv.z+=Epsilon*pbw[q].z;bv.w+=Epsilon*pbw[q].w;
+                }
+                sb[stage][row+0][dest]=bv.x;sb[stage][row+1][dest]=bv.y;
+                sb[stage][row+2][dest]=bv.z;sb[stage][row+3][dest]=bv.w;
+            }
+        }
+    };
+    if constexpr(Pipeline) {fetch(0);pack(0);__syncthreads();}
+    for(int outer=0,stage=0;outer<k;outer+=BK,stage=Pipeline?(stage^1):0) {
+        if constexpr(Pipeline) {if(outer+BK<k)fetch(outer+BK);}
+        else {fetch(outer);pack(0);__syncthreads();}
+        auto read_fragment=[&](int kk,float* ar,float* br) {
+            #pragma unroll
+            for(int i=0;i<RM;++i) ar[i]=sa[stage][kk][rr+(Striped?(i%4+(i/4)*32):i)];
+            if constexpr(SwizzleB) {
+                #pragma unroll
+                for(int j=0;j<RN;j+=4) {
+                    int col=cc+(ColStriped?(j/4)*16:j);
+                    float4 bv=*reinterpret_cast<const float4*>(&sb[stage][kk][col^((kk/4)*(128/BK))]);
+                    br[j]=bv.x;br[j+1]=bv.y;br[j+2]=bv.z;br[j+3]=bv.w;
+                }
+            } else {
+                #pragma unroll
+                for(int j=0;j<RN;++j) br[j]=sb[stage][kk][cc+j];
+            }
+        };
+        if constexpr(RegPipeline) {
+            float ar[2][RM],br[2][RN];
+            read_fragment(0,ar[0],br[0]);
+            #pragma unroll
+            for(int kk=0;kk<BK;++kk) {
+                if(kk+1<BK)read_fragment(kk+1,ar[(kk+1)&1],br[(kk+1)&1]);
+                #pragma unroll
+                for(int j=0;j<RN;++j) {
+                    #pragma unroll
+                    for(int i=0;i<RM;++i)acc[j][i]=fmaf(ar[kk&1][i],br[kk&1][j],acc[j][i]);
+                }
+            }
+        } else {
+            #pragma unroll
+            for(int kk=0;kk<BK;++kk) {
+                float ar[RM],br[RN];
+                read_fragment(kk,ar,br);
+                #pragma unroll
+                for(int j=0;j<RN;++j) {
+                    #pragma unroll
+                    for(int i=0;i<RM;++i)acc[j][i]=fmaf(ar[i],br[j],acc[j][i]);
+                }
+            }
+        }
+        if constexpr(Pipeline) {if(outer+BK<k)pack(stage^1);}
+        __syncthreads();
+    }
+    if constexpr(Coalesced) {
+        static_assert(RM==4 || (RM==8 && Striped));
+        // The compute loop's final barrier makes the packing buffers reusable.
+        // Vector stores keep register-tile writes efficient; scalar reads then
+        // assign each warp 32 adjacent rows for fully coalesced atomic updates.
+        #pragma unroll
+        for(int j=0;j<RN;++j) {
+            #pragma unroll
+            for(int i=0;i<RM;i+=4)
+                *reinterpret_cast<float4*>(&storage.output[(cc+(ColStriped?(j%4+(j/4)*16):j))*BM+rr+(Striped?(i/4)*32:i)])=
+                    make_float4(acc[j][i],acc[j][i+1],acc[j][i+2],acc[j][i+3]);
+        }
+        __syncthreads();
+        #pragma unroll
+        for(int q=0;q<(BM*BN+NT-1)/NT;++q) {
+            int index=tid+q*NT,row=base_r+index%BM,col=base_c+index/BM;
+            if(index<BM*BN && (Exact || (row<m && col<n))) {
+                float result=storage.output[index];
+                size_t offset=row+size_t(col)*ld;
+                if constexpr(GD!=0) {
+                    if constexpr(Atomic) atomicAdd(D+offset,GD*result);
+                    else D[offset]+=GD*result;
+                }
+                if constexpr(GE!=0) {
+                    if constexpr(Atomic) atomicAdd(E+offset,GE*result);
+                    else E[offset]+=GE*result;
+                }
+            }
+        }
+    } else {
+        #pragma unroll
+        for(int j=0;j<RN;++j) {
+            #pragma unroll
+            for(int i=0;i<RM;++i) {
+                int row=base_r+rr+(Striped?(i%4+(i/4)*32):i),col=base_c+cc+(ColStriped?(j%4+(j/4)*16):j);
+                if(Exact || (row<m && col<n)) {
+                    size_t offset=row+size_t(col)*ld;
+                    if constexpr(GD!=0) {
+                        if constexpr(Atomic) atomicAdd(D+offset,GD*acc[j][i]);
+                        else D[offset]+=GD*acc[j][i];
+                    }
+                    if constexpr(GE!=0) {
+                        if constexpr(Atomic) atomicAdd(E+offset,GE*acc[j][i]);
+                        else E[offset]+=GE*acc[j][i];
+                    }
+                }
+            }
+        }
+    }
+}
+
+template<int BM,int BN,int BK,int RM,int RN,bool Pipeline,bool Atomic,int D,int E,int GD,int GE>
+void launch(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+            int s,int ld,cudaStream_t stream) {
+    constexpr int NT=(BM/RM)*(BN/RN);
+    simt_primitive<BM,BN,BK,RM,RN,Pipeline,Atomic,D,E,GD,GE>
+        <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<int BM,int BN,int BK,int D,int E,int GD,int GE,bool Atomic>
+void launch_swizzled(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                     int s,int ld,cudaStream_t stream) {
+    constexpr int NT=(BM/4)*(BN/4);
+    simt_primitive<BM,BN,BK,4,4,true,Atomic,D,E,GD,GE,false,true>
+        <<<dim3((s+BM-1)/BM,(s+BN-1)/BN),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<bool Swizzle,int D,int E,int GD,int GE,bool Atomic>
+void launch_coalesced(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                      int s,int ld,cudaStream_t stream) {
+    simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true>
+        <<<dim3((s+63)/64,(s+63)/64),256,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<int BK,int RM,bool Coalesced,int D,int E,int GD,int GE,bool Atomic>
+void launch_balanced(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                     int s,int ld,cudaStream_t stream) {
+    constexpr int NT=(64/RM)*16;
+    simt_primitive<64,64,BK,RM,4,true,Atomic,D,E,GD,GE,false,true,Coalesced>
+        <<<dim3((s+63)/64,(s+63)/64),NT,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+}
+
+template<bool Swizzle,int D,int E,int GD,int GE,bool Atomic,bool Deferred=false,int Cache=0>
+void launch_exact(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                  int s,int ld,cudaStream_t stream) {
+    if(s%64==0) {
+        simt_primitive<64,64,16,4,4,true,Atomic,D,E,GD,GE,false,Swizzle,true,true,Deferred,Cache>
+            <<<dim3(s/64,s/64),256,0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+    } else {
+        // Partial tiles retain the complete masked primitive; never substitute
+        // an ordinary GEMM for any of the seven Strassen products.
+        launch_coalesced<Swizzle,D,E,GD,GE,Atomic>(x,y,v,w,d,e,s,ld,stream);
+    }
+}
+
+// Eight rows per thread, striped into two disjoint bank groups. Larger CTA
+// tiles reuse each shared operand across more FMAs without K-partial reduction.
+template<int BM,int BN,int D,int E,int GD,int GE,bool Atomic>
+void launch_striped_tile(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                         int s,int ld,cudaStream_t stream) {
+    if(s%BM==0 && s%BN==0) {
+        simt_primitive<BM,BN,16,8,4,true,Atomic,D,E,GD,GE,false,true,true,true,true,0,true>
+            <<<dim3(s/BM,s/BN),(BM/8)*(BN/4),0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+    } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
+}
+// Register-stage experiment keeps global/shared packing and all updates fused.
+template<int RN,bool RegPipeline,int D,int E,int GD,int GE,bool Atomic,int BK=16,bool Deferred=true,int MinCTAs=1>
+void launch_register_stage(const float* x,const float* y,const float* v,const float* w,float* d,float* e,
+                           int s,int ld,cudaStream_t stream) {
+    if(s%64==0) {
+        simt_primitive<64,64,BK,4,RN,true,Atomic,D,E,GD,GE,false,true,true,true,Deferred,0,false,RegPipeline,MinCTAs>
+            <<<dim3(s/64,s/64),16*(64/RN),0,stream>>>(x,y,v,w,d,e,s,s,s,ld,{});
+    } else launch_exact<true,D,E,GD,GE,Atomic,true>(x,y,v,w,d,e,s,ld,stream);
+}
+} // namespace strassen_cuda

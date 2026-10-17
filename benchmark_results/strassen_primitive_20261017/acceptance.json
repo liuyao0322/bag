@@ -1,0 +1,34 @@
+{
+  "acceptance_met": true,
+  "scope": "A100 80GB PCIe, FP32 C<-AB+C, N1536 complete one-level Strassen versus same-run cuBLAS",
+  "selected_case": "column_tile64_k16_r4x8_four_batched_atomic",
+  "n1536_independent_replays": [
+    {
+      "run": "holdout_batched_seed1009",
+      "parent_n": 1536,
+      "case": "column_tile64_k16_r4x8_four_batched_atomic",
+      "seed_offset": 1009,
+      "candidate_ms": 0.428827964291,
+      "cublas_ms": 0.437366548696,
+      "speedup": 1.01991144495233,
+      "ranges_separated": true
+    },
+    {
+      "run": "holdout_batched_seed2027",
+      "parent_n": 1536,
+      "case": "column_tile64_k16_r4x8_four_batched_atomic",
+      "seed_offset": 2027,
+      "candidate_ms": 0.429041537402,
+      "cublas_ms": 0.435720931652,
+      "speedup": 1.0155681761967525,
+      "ranges_separated": true
+    }
+  ],
+  "source_matches_selected_archive": true,
+  "selected_four_variant_profiles_complete": true,
+  "sanitizer_exit_codes": {
+    "memcheck": 0,
+    "racecheck": 0
+  },
+  "a800_job": "108136; report status separately"
+}

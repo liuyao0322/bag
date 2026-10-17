@@ -1,0 +1,1 @@
+{"backend":"column_tile64_k16_r4x8","schedule":"four_batched_atomic","launches":4}

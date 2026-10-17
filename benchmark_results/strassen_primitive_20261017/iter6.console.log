@@ -1,0 +1,129 @@
+srun: Job 108133 step creation temporarily disabled, retrying (Requested nodes are busy)
+srun: Step created for job 108133
+BUILD PASS
+N=1280 correctness PASS cases=5
+1280 round=0 cublas_full ms=0.257418
+1280 round=0 swizzle_coalesced64_k16_r4_seven_atomic ms=0.287305
+1280 round=0 pipe64_k16_r4_seven_atomic ms=0.303991
+1280 round=0 swizzle64_k16_r4_seven_atomic ms=0.300705
+1280 round=0 coalesced64_k16_r4_seven_atomic ms=0.291722
+1280 round=1 swizzle64_k16_r4_seven_atomic ms=0.300573
+1280 round=1 coalesced64_k16_r4_seven_atomic ms=0.291685
+1280 round=1 swizzle_coalesced64_k16_r4_seven_atomic ms=0.287319
+1280 round=1 pipe64_k16_r4_seven_atomic ms=0.304266
+1280 round=1 cublas_full ms=0.2575
+1280 round=2 pipe64_k16_r4_seven_atomic ms=0.304363
+1280 round=2 cublas_full ms=0.257515
+1280 round=2 coalesced64_k16_r4_seven_atomic ms=0.291535
+1280 round=2 swizzle_coalesced64_k16_r4_seven_atomic ms=0.287249
+1280 round=2 swizzle64_k16_r4_seven_atomic ms=0.300391
+1280 round=3 swizzle64_k16_r4_seven_atomic ms=0.300136
+1280 round=3 cublas_full ms=0.257602
+1280 round=3 swizzle_coalesced64_k16_r4_seven_atomic ms=0.287589
+1280 round=3 coalesced64_k16_r4_seven_atomic ms=0.292011
+1280 round=3 pipe64_k16_r4_seven_atomic ms=0.304154
+1280 round=4 pipe64_k16_r4_seven_atomic ms=0.304175
+1280 round=4 cublas_full ms=0.257649
+1280 round=4 coalesced64_k16_r4_seven_atomic ms=0.291885
+1280 round=4 swizzle64_k16_r4_seven_atomic ms=0.300856
+1280 round=4 swizzle_coalesced64_k16_r4_seven_atomic ms=0.287754
+N=1536 correctness PASS cases=5
+1536 round=0 swizzle_coalesced64_k16_r4_seven_atomic ms=0.486246
+1536 round=0 coalesced64_k16_r4_seven_atomic ms=0.497625
+1536 round=0 pipe64_k16_r4_seven_atomic ms=0.507426
+1536 round=0 cublas_full ms=0.432693
+1536 round=0 swizzle64_k16_r4_seven_atomic ms=0.490297
+1536 round=1 swizzle_coalesced64_k16_r4_seven_atomic ms=0.484021
+1536 round=1 coalesced64_k16_r4_seven_atomic ms=0.495907
+1536 round=1 swizzle64_k16_r4_seven_atomic ms=0.496119
+1536 round=1 pipe64_k16_r4_seven_atomic ms=0.505596
+1536 round=1 cublas_full ms=0.431148
+1536 round=2 swizzle_coalesced64_k16_r4_seven_atomic ms=0.483183
+1536 round=2 coalesced64_k16_r4_seven_atomic ms=0.495919
+1536 round=2 cublas_full ms=0.431906
+1536 round=2 swizzle64_k16_r4_seven_atomic ms=0.491277
+1536 round=2 pipe64_k16_r4_seven_atomic ms=0.509408
+1536 round=3 swizzle_coalesced64_k16_r4_seven_atomic ms=0.484607
+1536 round=3 swizzle64_k16_r4_seven_atomic ms=0.493422
+1536 round=3 pipe64_k16_r4_seven_atomic ms=0.508855
+1536 round=3 cublas_full ms=0.431849
+1536 round=3 coalesced64_k16_r4_seven_atomic ms=0.4958
+1536 round=4 pipe64_k16_r4_seven_atomic ms=0.510651
+1536 round=4 cublas_full ms=0.432781
+1536 round=4 swizzle_coalesced64_k16_r4_seven_atomic ms=0.48394
+1536 round=4 swizzle64_k16_r4_seven_atomic ms=0.491769
+1536 round=4 coalesced64_k16_r4_seven_atomic ms=0.495396
+N=1792 correctness PASS cases=5
+1792 round=0 pipe64_k16_r4_seven_atomic ms=0.777189
+1792 round=0 coalesced64_k16_r4_seven_atomic ms=0.762918
+1792 round=0 swizzle_coalesced64_k16_r4_seven_atomic ms=0.743356
+1792 round=0 cublas_full ms=0.697882
+1792 round=0 swizzle64_k16_r4_seven_atomic ms=0.752983
+1792 round=1 swizzle64_k16_r4_seven_atomic ms=0.749034
+1792 round=1 pipe64_k16_r4_seven_atomic ms=0.776827
+1792 round=1 coalesced64_k16_r4_seven_atomic ms=0.764703
+1792 round=1 cublas_full ms=0.6956
+1792 round=1 swizzle_coalesced64_k16_r4_seven_atomic ms=0.746852
+1792 round=2 swizzle_coalesced64_k16_r4_seven_atomic ms=0.740591
+1792 round=2 swizzle64_k16_r4_seven_atomic ms=0.747626
+1792 round=2 cublas_full ms=0.698261
+1792 round=2 coalesced64_k16_r4_seven_atomic ms=0.757651
+1792 round=2 pipe64_k16_r4_seven_atomic ms=0.773437
+1792 round=3 coalesced64_k16_r4_seven_atomic ms=0.758776
+1792 round=3 cublas_full ms=0.701069
+1792 round=3 pipe64_k16_r4_seven_atomic ms=0.768311
+1792 round=3 swizzle64_k16_r4_seven_atomic ms=0.753183
+1792 round=3 swizzle_coalesced64_k16_r4_seven_atomic ms=0.740817
+1792 round=4 coalesced64_k16_r4_seven_atomic ms=0.761115
+1792 round=4 cublas_full ms=0.694935
+1792 round=4 pipe64_k16_r4_seven_atomic ms=0.774938
+1792 round=4 swizzle64_k16_r4_seven_atomic ms=0.751834
+1792 round=4 swizzle_coalesced64_k16_r4_seven_atomic ms=0.740877
+N=2048 correctness PASS cases=5
+2048 round=0 cublas_full ms=0.991915
+2048 round=0 coalesced64_k16_r4_seven_atomic ms=1.12148
+2048 round=0 swizzle_coalesced64_k16_r4_seven_atomic ms=1.09802
+2048 round=0 pipe64_k16_r4_seven_atomic ms=1.13945
+2048 round=0 swizzle64_k16_r4_seven_atomic ms=1.11127
+2048 round=1 cublas_full ms=0.994869
+2048 round=1 coalesced64_k16_r4_seven_atomic ms=1.12592
+2048 round=1 swizzle64_k16_r4_seven_atomic ms=1.10697
+2048 round=1 pipe64_k16_r4_seven_atomic ms=1.13644
+2048 round=1 swizzle_coalesced64_k16_r4_seven_atomic ms=1.10335
+2048 round=2 swizzle64_k16_r4_seven_atomic ms=1.11033
+2048 round=2 pipe64_k16_r4_seven_atomic ms=1.14419
+2048 round=2 coalesced64_k16_r4_seven_atomic ms=1.12173
+2048 round=2 swizzle_coalesced64_k16_r4_seven_atomic ms=1.10319
+2048 round=2 cublas_full ms=1.00106
+2048 round=3 swizzle_coalesced64_k16_r4_seven_atomic ms=1.103
+2048 round=3 pipe64_k16_r4_seven_atomic ms=1.14327
+2048 round=3 swizzle64_k16_r4_seven_atomic ms=1.10252
+2048 round=3 cublas_full ms=0.994466
+2048 round=3 coalesced64_k16_r4_seven_atomic ms=1.12904
+2048 round=4 coalesced64_k16_r4_seven_atomic ms=1.12551
+2048 round=4 cublas_full ms=0.991599
+2048 round=4 swizzle64_k16_r4_seven_atomic ms=1.11141
+2048 round=4 pipe64_k16_r4_seven_atomic ms=1.13916
+2048 round=4 swizzle_coalesced64_k16_r4_seven_atomic ms=1.09811
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter6_coalesced/results
+CORRECT=True checks=40 max_relative_l2=1.0629683e-06
+N=1280 mode=endtoend cuBLAS=0.257515 ms
+  swizzle_coalesced64_k16_r4_seven_atomic          0.287319 ms speedup=0.8963 cv=0.068%
+  coalesced64_k16_r4_seven_atomic                  0.291722 ms speedup=0.8827 cv=0.057%
+  swizzle64_k16_r4_seven_atomic                    0.300573 ms speedup=0.8567 cv=0.083%
+  pipe64_k16_r4_seven_atomic                       0.304175 ms speedup=0.8466 cv=0.041%
+N=1536 mode=endtoend cuBLAS=0.431906 ms
+  swizzle_coalesced64_k16_r4_seven_atomic          0.484021 ms speedup=0.8923 cv=0.212%
+  swizzle64_k16_r4_seven_atomic                    0.491769 ms speedup=0.8783 cv=0.414%
+  coalesced64_k16_r4_seven_atomic                  0.495907 ms speedup=0.8709 cv=0.156%
+  pipe64_k16_r4_seven_atomic                       0.508855 ms speedup=0.8488 cv=0.342%
+N=1792 mode=endtoend cuBLAS=0.697882 ms
+  swizzle_coalesced64_k16_r4_seven_atomic          0.740877 ms speedup=0.9420 cv=0.323%
+  swizzle64_k16_r4_seven_atomic                    0.751834 ms speedup=0.9282 cv=0.295%
+  coalesced64_k16_r4_seven_atomic                  0.761115 ms speedup=0.9169 cv=0.340%
+  pipe64_k16_r4_seven_atomic                       0.774938 ms speedup=0.9006 cv=0.415%
+N=2048 mode=endtoend cuBLAS=0.994466 ms
+  swizzle_coalesced64_k16_r4_seven_atomic          1.102997 ms speedup=0.9016 cv=0.228%
+  swizzle64_k16_r4_seven_atomic                    1.110329 ms speedup=0.8956 cv=0.306%
+  coalesced64_k16_r4_seven_atomic                  1.125511 ms speedup=0.8836 cv=0.252%
+  pipe64_k16_r4_seven_atomic                       1.139447 ms speedup=0.8728 cv=0.250%

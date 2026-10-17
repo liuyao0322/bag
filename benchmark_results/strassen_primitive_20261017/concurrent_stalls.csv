@@ -1,0 +1,13 @@
+profile,parent_n,case,profile_calls,short_scoreboard_pct,long_scoreboard_pct,mio_throttle_pct,math_pipe_throttle_pct,barrier_pct,wait_pct,not_selected_pct,lg_throttle_pct
+stall_profiles,1536,cublas_full,10,2.47,7.74,2.21,26.79,4.82,10.9,27.39,0.0
+stall_profiles,1536,deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic,10,12.87,3.81,8.08,23.13,8.73,8.23,24.92,0.05
+stall_profiles,1536,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,10,13.12,3.75,7.61,23.28,8.64,8.29,24.84,0.04
+stall_profiles,2048,cublas_full,10,0.15,1.52,0.06,31.33,1.51,15.1,30.71,0.0
+stall_profiles,2048,deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic,10,12.45,4.1,7.62,24.04,8.66,7.78,25.81,0.04
+stall_profiles,2048,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,10,12.49,3.89,7.58,24.01,8.78,7.8,25.81,0.04
+stall_profiles_selected,1536,column_tile64_k16_r4x8_four_batched_atomic,10,3.98,3.33,2.3,24.55,4.98,15.89,25.97,0.05
+stall_profiles_selected,1536,column_tile64_k16_r4x8_seven_atomic,10,3.94,3.16,2.32,24.3,4.78,15.91,25.7,0.05
+stall_profiles_selected,1536,cublas_full,10,2.47,7.75,2.21,26.8,4.82,10.9,27.39,0.0
+stall_profiles_selected,2048,column_tile64_k16_r4x8_four_batched_atomic,10,4.21,3.45,2.43,25.13,5.67,14.97,26.61,0.05
+stall_profiles_selected,2048,column_tile64_k16_r4x8_seven_atomic,10,4.16,3.15,2.44,25.21,5.58,14.96,26.66,0.05
+stall_profiles_selected,2048,cublas_full,10,0.15,1.54,0.06,31.32,1.47,15.1,30.69,0.0

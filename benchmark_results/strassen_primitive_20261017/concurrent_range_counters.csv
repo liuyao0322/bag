@@ -1,0 +1,7 @@
+parent_n,case,profile_calls,active_warp_occupancy_pct,sm_throughput_pct,l1tex_throughput_pct,l1_sector_hit_rate_pct,l2_sector_hit_rate_pct,ctas_launched
+1536,cublas_full,10,23.92,83.05,57.0,0.56,95.62,11520.0
+1536,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,10,43.02,72.4,68.43,0.27,96.12,10080.0
+1536,pipe64_k16_r4_seven_atomic,10,51.5,70.11,70.72,0.62,96.66,10080.0
+2048,cublas_full,10,18.52,87.67,35.06,0.42,89.13,5120.0
+2048,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,10,46.06,81.32,76.71,0.07,90.39,17920.0
+2048,pipe64_k16_r4_seven_atomic,10,56.35,75.97,76.37,0.32,90.95,17920.0

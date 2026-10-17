@@ -1940,3 +1940,38 @@ Independent replay: 32 FP64 records all pass. Source/hash/status/counters at pro
 - N=2048 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic: 1.068193942 ms, 0.925258x.
 - N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic: 1.062782673 ms, 0.929969x.
 - Correctness: 64 FP64 records, all pass. Status {'phase': 'benchmark', 'exit_code': 0}. Judge actual complete-call results, not occupancy alone; independent input validation required before declaring N1536 crossover.
+
+
+### Iteration16 frozen acceptance and regressions
+
+Selected column_tile64_k16_r4x8 / four_batched_atomic before independent replay; source archive and binary SHA256 frozen in selection_batched_column.json. No post-holdout configuration reselection.
+
+holdout_batched_seed1009: 40 FP64 check records, all pass.
+
+- holdout_batched_seed1009 N=1536 column_tile64_k16_r4x8_four_batched_atomic: 0.428827964291ms versus same-run cuBLAS 0.437366548696ms, 1.019911x.
+
+holdout_batched_seed2027: 24 FP64 check records, all pass.
+
+- holdout_batched_seed2027 N=1536 column_tile64_k16_r4x8_four_batched_atomic: 0.429041537402ms versus same-run cuBLAS 0.435720931652ms, 1.015568x.
+
+selected_curve_seed2027: 52 FP64 check records, all pass.
+
+
+selected_large_regression: 20 FP64 check records, all pass.
+
+- selected_large_regression N=8192 column_tile64_k16_r4x8_four_batched_atomic: 64.0478744507ms versus same-run cuBLAS 57.5060462952ms, 0.897860x.
+- selected_large_regression N=8192 column_tile64_k16_r4x8_seven_atomic: 63.339263916ms versus same-run cuBLAS 57.5060462952ms, 0.907905x.
+- selected_large_regression N=8192 cublas_full: 57.5060462952ms versus same-run cuBLAS 57.5060462952ms, 1.000000x.
+- selected_large_regression N=8192 huge_four_batched_atomic: 56.5998077393ms versus same-run cuBLAS 57.5060462952ms, 1.016011x.
+- selected_large_regression N=8192 huge_seven_atomic: 56.3202552795ms versus same-run cuBLAS 57.5060462952ms, 1.021054x.
+- selected_large_regression N=20480 column_tile64_k16_r4x8_four_batched_atomic: 1022.39501953ms versus same-run cuBLAS 951.346191406ms, 0.930507x.
+- selected_large_regression N=20480 column_tile64_k16_r4x8_seven_atomic: 1024.65332031ms versus same-run cuBLAS 951.346191406ms, 0.928457x.
+- selected_large_regression N=20480 cublas_full: 951.346191406ms versus same-run cuBLAS 951.346191406ms, 1.000000x.
+- selected_large_regression N=20480 huge_four_batched_atomic: 882.725911458ms versus same-run cuBLAS 951.346191406ms, 1.077737x.
+- selected_large_regression N=20480 huge_seven_atomic: 883.835205078ms versus same-run cuBLAS 951.346191406ms, 1.076384x.
+
+Both independent N1536 replays have candidate max < cuBLAS min across seven rounds x300ms, with all sampled FP64 and repeated-accumulation checks passing. Fixed dense curve (13 sizes N512..2048, step128) first measured win N1280; N1152 still loses. No claim of exact unsampled onset or monotonic all-size threshold.
+
+Selected batching memcheck N120/128/1536/2056:0 errors; racecheck N120/128:0 hazards. Small N120/128 numeric validation is exhaustive; larger N uses original deterministic sample contract. Four-class selected profiles at leaf768/1024 complete:128 threads/CTA,111 regs Var2/Var3 paired and119 Var0/Var1,16KB shared, register limit4 CTAs/SM,25% theoretical occupancy, zero measured shared load/store bank conflicts. Concurrent range replay N1536 selected:21.43% active-warp occupancy, short-scoreboard3.98%, MIO2.30%, versus previous4x4 ~43% occupancy,13%/8% stalls. These ratios describe active warp cycles, not additive wall-time savings. Primary verdict uses ordinary CUDA events.
+
+Large-size regression is retained: selected small tile loses at8192/20480 while Huge retains gains; do not replace old large-tile/hybrid candidates or claim a universal crossover. Current solution headers match selected iteration16 byte-for-byte. A800 frozen-candidate job108136 is queued (Priority), distinct from older hybrid job108131; no A800 performance claim yet. Full evidence and conservative observed-range plot are in REPORT.md, acceptance.json and selected_crossover.svg/png. A100 N1536 relative-performance acceptance is achieved; original V100 absolute numbers remain outside the agreed scope.

@@ -1,0 +1,199 @@
+BUILD PASS
+N=1280 correctness PASS cases=8
+1280 round=0 column_immediate64_k16_r4x8_seven_atomic ms=0.279015
+1280 round=0 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.269447
+1280 round=0 column_tile64_k8_r4x8_seven_atomic ms=0.266304
+1280 round=0 column_min5_64_k16_r4x8_seven_atomic ms=0.302313
+1280 round=0 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.265692
+1280 round=0 cublas_full ms=0.258147
+1280 round=0 column_tile64_k16_r4x8_four_batched_atomic ms=0.252623
+1280 round=0 column_tile64_k16_r4x8_seven_atomic ms=0.258694
+1280 round=1 column_min5_64_k16_r4x8_seven_atomic ms=0.301524
+1280 round=1 column_immediate64_k16_r4x8_seven_atomic ms=0.27922
+1280 round=1 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.268004
+1280 round=1 column_tile64_k16_r4x8_four_batched_atomic ms=0.255801
+1280 round=1 cublas_full ms=0.257323
+1280 round=1 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.262258
+1280 round=1 column_tile64_k16_r4x8_seven_atomic ms=0.264779
+1280 round=1 column_tile64_k8_r4x8_seven_atomic ms=0.263738
+1280 round=2 column_min5_64_k16_r4x8_seven_atomic ms=0.301212
+1280 round=2 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.270184
+1280 round=2 column_tile64_k16_r4x8_four_batched_atomic ms=0.253976
+1280 round=2 cublas_full ms=0.257519
+1280 round=2 column_tile64_k16_r4x8_seven_atomic ms=0.258604
+1280 round=2 column_tile64_k8_r4x8_seven_atomic ms=0.263033
+1280 round=2 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.267361
+1280 round=2 column_immediate64_k16_r4x8_seven_atomic ms=0.280537
+1280 round=3 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.267243
+1280 round=3 column_immediate64_k16_r4x8_seven_atomic ms=0.279979
+1280 round=3 cublas_full ms=0.257424
+1280 round=3 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.270618
+1280 round=3 column_tile64_k16_r4x8_seven_atomic ms=0.260437
+1280 round=3 column_tile64_k16_r4x8_four_batched_atomic ms=0.252493
+1280 round=3 column_tile64_k8_r4x8_seven_atomic ms=0.263306
+1280 round=3 column_min5_64_k16_r4x8_seven_atomic ms=0.302567
+1280 round=4 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.267664
+1280 round=4 column_immediate64_k16_r4x8_seven_atomic ms=0.280477
+1280 round=4 cublas_full ms=0.257524
+1280 round=4 column_tile64_k8_r4x8_seven_atomic ms=0.263846
+1280 round=4 column_min5_64_k16_r4x8_seven_atomic ms=0.302354
+1280 round=4 column_tile64_k16_r4x8_seven_atomic ms=0.258779
+1280 round=4 column_tile64_k16_r4x8_four_batched_atomic ms=0.252438
+1280 round=4 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.271351
+N=1536 correctness PASS cases=8
+1536 round=0 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.461063
+1536 round=0 cublas_full ms=0.435002
+1536 round=0 column_min5_64_k16_r4x8_seven_atomic ms=0.47175
+1536 round=0 column_tile64_k16_r4x8_seven_atomic ms=0.429992
+1536 round=0 column_immediate64_k16_r4x8_seven_atomic ms=0.463516
+1536 round=0 column_tile64_k16_r4x8_four_batched_atomic ms=0.427271
+1536 round=0 column_tile64_k8_r4x8_seven_atomic ms=0.446477
+1536 round=0 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.464569
+1536 round=1 column_tile64_k16_r4x8_four_batched_atomic ms=0.424871
+1536 round=1 column_min5_64_k16_r4x8_seven_atomic ms=0.473277
+1536 round=1 column_tile64_k8_r4x8_seven_atomic ms=0.442372
+1536 round=1 column_tile64_k16_r4x8_seven_atomic ms=0.430193
+1536 round=1 column_immediate64_k16_r4x8_seven_atomic ms=0.466099
+1536 round=1 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.463463
+1536 round=1 cublas_full ms=0.435181
+1536 round=1 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.457475
+1536 round=2 column_tile64_k16_r4x8_four_batched_atomic ms=0.427133
+1536 round=2 column_tile64_k16_r4x8_seven_atomic ms=0.430164
+1536 round=2 column_min5_64_k16_r4x8_seven_atomic ms=0.474026
+1536 round=2 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.460447
+1536 round=2 column_tile64_k8_r4x8_seven_atomic ms=0.446114
+1536 round=2 cublas_full ms=0.431157
+1536 round=2 column_immediate64_k16_r4x8_seven_atomic ms=0.46439
+1536 round=2 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.46468
+1536 round=3 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.459013
+1536 round=3 column_tile64_k16_r4x8_seven_atomic ms=0.436595
+1536 round=3 column_tile64_k16_r4x8_four_batched_atomic ms=0.425188
+1536 round=3 column_immediate64_k16_r4x8_seven_atomic ms=0.463737
+1536 round=3 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.464374
+1536 round=3 column_min5_64_k16_r4x8_seven_atomic ms=0.473295
+1536 round=3 cublas_full ms=0.431225
+1536 round=3 column_tile64_k8_r4x8_seven_atomic ms=0.443096
+1536 round=4 cublas_full ms=0.431312
+1536 round=4 column_tile64_k16_r4x8_seven_atomic ms=0.44132
+1536 round=4 column_tile64_k16_r4x8_four_batched_atomic ms=0.427264
+1536 round=4 column_tile64_k8_r4x8_seven_atomic ms=0.444508
+1536 round=4 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.461689
+1536 round=4 column_min5_64_k16_r4x8_seven_atomic ms=0.475835
+1536 round=4 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.46466
+1536 round=4 column_immediate64_k16_r4x8_seven_atomic ms=0.465871
+N=1792 correctness PASS cases=8
+1792 round=0 column_tile64_k16_r4x8_four_batched_atomic ms=0.648288
+1792 round=0 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.711996
+1792 round=0 cublas_full ms=0.692254
+1792 round=0 column_min5_64_k16_r4x8_seven_atomic ms=0.707311
+1792 round=0 column_tile64_k8_r4x8_seven_atomic ms=0.675031
+1792 round=0 column_immediate64_k16_r4x8_seven_atomic ms=0.705692
+1792 round=0 column_tile64_k16_r4x8_seven_atomic ms=0.657317
+1792 round=0 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.714148
+1792 round=1 column_tile64_k16_r4x8_seven_atomic ms=0.65745
+1792 round=1 column_immediate64_k16_r4x8_seven_atomic ms=0.703386
+1792 round=1 column_min5_64_k16_r4x8_seven_atomic ms=0.706858
+1792 round=1 column_tile64_k16_r4x8_four_batched_atomic ms=0.647068
+1792 round=1 cublas_full ms=0.695234
+1792 round=1 column_tile64_k8_r4x8_seven_atomic ms=0.680687
+1792 round=1 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.713696
+1792 round=1 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.718194
+1792 round=2 column_tile64_k8_r4x8_seven_atomic ms=0.682371
+1792 round=2 cublas_full ms=0.690688
+1792 round=2 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.714133
+1792 round=2 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.717128
+1792 round=2 column_immediate64_k16_r4x8_seven_atomic ms=0.705696
+1792 round=2 column_tile64_k16_r4x8_seven_atomic ms=0.651328
+1792 round=2 column_min5_64_k16_r4x8_seven_atomic ms=0.708972
+1792 round=2 column_tile64_k16_r4x8_four_batched_atomic ms=0.647283
+1792 round=3 column_tile64_k8_r4x8_seven_atomic ms=0.686397
+1792 round=3 column_tile64_k16_r4x8_four_batched_atomic ms=0.651281
+1792 round=3 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.713095
+1792 round=3 column_tile64_k16_r4x8_seven_atomic ms=0.653547
+1792 round=3 column_min5_64_k16_r4x8_seven_atomic ms=0.710517
+1792 round=3 column_immediate64_k16_r4x8_seven_atomic ms=0.705304
+1792 round=3 cublas_full ms=0.69071
+1792 round=3 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.713762
+1792 round=4 cublas_full ms=0.692498
+1792 round=4 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=0.70889
+1792 round=4 column_tile64_k16_r4x8_four_batched_atomic ms=0.653558
+1792 round=4 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=0.718567
+1792 round=4 column_immediate64_k16_r4x8_seven_atomic ms=0.707473
+1792 round=4 column_min5_64_k16_r4x8_seven_atomic ms=0.707499
+1792 round=4 column_tile64_k16_r4x8_seven_atomic ms=0.652785
+1792 round=4 column_tile64_k8_r4x8_seven_atomic ms=0.67497
+N=2048 correctness PASS cases=8
+2048 round=0 column_tile64_k16_r4x8_seven_atomic ms=0.962887
+2048 round=0 column_min5_64_k16_r4x8_seven_atomic ms=1.03511
+2048 round=0 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=1.06621
+2048 round=0 cublas_full ms=0.988355
+2048 round=0 column_tile64_k8_r4x8_seven_atomic ms=1.00171
+2048 round=0 column_tile64_k16_r4x8_four_batched_atomic ms=0.960808
+2048 round=0 column_immediate64_k16_r4x8_seven_atomic ms=1.03739
+2048 round=0 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=1.07303
+2048 round=1 cublas_full ms=0.986371
+2048 round=1 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=1.05931
+2048 round=1 column_tile64_k8_r4x8_seven_atomic ms=1.00037
+2048 round=1 column_min5_64_k16_r4x8_seven_atomic ms=1.0389
+2048 round=1 column_tile64_k16_r4x8_four_batched_atomic ms=0.962653
+2048 round=1 column_tile64_k16_r4x8_seven_atomic ms=0.966852
+2048 round=1 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=1.06278
+2048 round=1 column_immediate64_k16_r4x8_seven_atomic ms=1.03663
+2048 round=2 column_tile64_k8_r4x8_seven_atomic ms=1.00175
+2048 round=2 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=1.06819
+2048 round=2 column_immediate64_k16_r4x8_seven_atomic ms=1.03795
+2048 round=2 column_tile64_k16_r4x8_seven_atomic ms=0.964291
+2048 round=2 column_tile64_k16_r4x8_four_batched_atomic ms=0.958698
+2048 round=2 column_min5_64_k16_r4x8_seven_atomic ms=1.03714
+2048 round=2 cublas_full ms=0.985949
+2048 round=2 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=1.05742
+2048 round=3 column_tile64_k16_r4x8_four_batched_atomic ms=0.964742
+2048 round=3 cublas_full ms=0.989095
+2048 round=3 column_tile64_k16_r4x8_seven_atomic ms=0.962969
+2048 round=3 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=1.06676
+2048 round=3 column_immediate64_k16_r4x8_seven_atomic ms=1.03804
+2048 round=3 column_min5_64_k16_r4x8_seven_atomic ms=1.03208
+2048 round=3 column_tile64_k8_r4x8_seven_atomic ms=1.00324
+2048 round=3 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=1.06276
+2048 round=4 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic ms=1.06791
+2048 round=4 cublas_full ms=0.996943
+2048 round=4 column_tile64_k16_r4x8_four_batched_atomic ms=0.957365
+2048 round=4 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic ms=1.06843
+2048 round=4 column_tile64_k16_r4x8_seven_atomic ms=0.966571
+2048 round=4 column_min5_64_k16_r4x8_seven_atomic ms=1.03744
+2048 round=4 column_tile64_k8_r4x8_seven_atomic ms=1.00256
+2048 round=4 column_immediate64_k16_r4x8_seven_atomic ms=1.03809
+COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/iter16_column_resources/results
+CORRECT=True checks=64 max_relative_l2=1.0676632e-06
+N=1280 mode=endtoend cuBLAS=0.257519 ms
+  column_tile64_k16_r4x8_four_batched_atomic       0.252623 ms speedup=1.0194 cv=0.512%
+  column_tile64_k16_r4x8_seven_atomic              0.258779 ms speedup=0.9951 cv=0.907%
+  column_tile64_k8_r4x8_seven_atomic               0.263738 ms speedup=0.9764 cv=0.442%
+  deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic 0.267243 ms speedup=0.9636 cv=0.756%
+  deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic 0.270184 ms speedup=0.9531 cv=0.422%
+  column_immediate64_k16_r4x8_seven_atomic         0.279979 ms speedup=0.9198 cv=0.225%
+  column_min5_64_k16_r4x8_seven_atomic             0.302313 ms speedup=0.8518 cv=0.175%
+N=1536 mode=endtoend cuBLAS=0.431312 ms
+  column_tile64_k16_r4x8_four_batched_atomic       0.427133 ms speedup=1.0098 cv=0.253%
+  column_tile64_k16_r4x8_seven_atomic              0.430193 ms speedup=1.0026 cv=1.057%
+  column_tile64_k8_r4x8_seven_atomic               0.444508 ms speedup=0.9703 cv=0.363%
+  deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic 0.460447 ms speedup=0.9367 cv=0.330%
+  column_immediate64_k16_r4x8_seven_atomic         0.464390 ms speedup=0.9288 cv=0.231%
+  deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic 0.464569 ms speedup=0.9284 cv=0.098%
+  column_min5_64_k16_r4x8_seven_atomic             0.473295 ms speedup=0.9113 cv=0.280%
+N=1792 mode=endtoend cuBLAS=0.692254 ms
+  column_tile64_k16_r4x8_four_batched_atomic       0.648288 ms speedup=1.0678 cv=0.389%
+  column_tile64_k16_r4x8_seven_atomic              0.653547 ms speedup=1.0592 cv=0.378%
+  column_tile64_k8_r4x8_seven_atomic               0.680687 ms speedup=1.0170 cv=0.648%
+  column_immediate64_k16_r4x8_seven_atomic         0.705692 ms speedup=0.9810 cv=0.185%
+  column_min5_64_k16_r4x8_seven_atomic             0.707499 ms speedup=0.9785 cv=0.190%
+  deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic 0.713762 ms speedup=0.9699 cv=0.475%
+  deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic 0.714133 ms speedup=0.9694 cv=0.274%
+N=2048 mode=endtoend cuBLAS=0.988355 ms
+  column_tile64_k16_r4x8_four_batched_atomic       0.960808 ms speedup=1.0287 cv=0.276%
+  column_tile64_k16_r4x8_seven_atomic              0.964291 ms speedup=1.0250 cv=0.177%
+  column_tile64_k8_r4x8_seven_atomic               1.001752 ms speedup=0.9866 cv=0.096%
+  column_min5_64_k16_r4x8_seven_atomic             1.037143 ms speedup=0.9530 cv=0.228%
+  column_immediate64_k16_r4x8_seven_atomic         1.037955 ms speedup=0.9522 cv=0.054%
+  deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic 1.062783 ms speedup=0.9300 cv=0.338%
+  deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic 1.068194 ms speedup=0.9253 cv=0.417%

@@ -1,0 +1,6 @@
+NVIDIA (R) Nsight Compute Command Line Profiler
+Copyright (c) 2018-2023 NVIDIA Corporation
+Version 2023.2.2.0 (build 33188574) (public-release)
+g03
+uuid, name, driver_version
+GPU-4db2fb47-d819-bfee-f2f8-e6c84299d435, NVIDIA A100 80GB PCIe, 535.216.01
