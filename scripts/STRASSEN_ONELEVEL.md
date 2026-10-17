@@ -5,6 +5,8 @@ parent N=2048 (leaf 1024), retains N=8192/20480 as regressions, and measures an
 actual seven-product Strassen operation. Results and figures are under
 `benchmark_results/strassen_onelevel_20261017/REPORT.md`.
 
+The current [Strassen entry point](../solution/strassen_cuda/README.md) describes
+the validated ColumnTile8/FourBatchedAtomic API and the complete seven products.
 The subsequent paper four-variant batching, hybrid two-level implementation,
 independent-seed curves and A800 queue workflow are documented in
 [STRASSEN_BATCHING.md](STRASSEN_BATCHING.md).

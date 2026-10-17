@@ -6,12 +6,19 @@ The report and full curves are in the parent directory's `REPORT.md`.
 CUDA 12.2, sm_80, cuBLAS PEDANTIC, TF32 disabled; operation is column-major
 FP32 `C <- AB+C`, alpha=beta=1. No ordinary GEMM fallback in Strassen cases.
 
-## Unmet crossover target
+## Current small-size result and historical Huge crossover
+
+The subsequent fused-primitive optimization meets the A100 N=1536 target
+with the frozen `column_tile64_k16_r4x8 / four_batched_atomic` configuration.
+Two independent seven-round runs measured 1.0199x and 1.0156x over same-run
+cuBLAS. See the [current algorithm/API](../solution/strassen_cuda/README.md)
+and [primitive report](../benchmark_results/strassen_primitive_20261017/REPORT.md).
+The following curve describes the earlier fixed Huge candidate.
 
 The paper reports one-level crossover N=1536 on V100 SXM2 / CUDA 9.1.
 The fixed Huge seven-stream A100 curve first clearly wins at the measured
 dense point N=4352 across both seeds; this does not establish the best
-crossover across all blocking strategies. The small-size target is unmet.
+crossover across all blocking strategies. That Huge candidate misses the small-size target.
 Hybrid first clearly wins at measured N=6656, compared with the paper's
 reported 7680. Neither comparison is a same-hardware reproduction.
 Large-size hybrid speedup near 1.19x does not satisfy the one-level target.
@@ -39,7 +46,8 @@ curve and the configuration audit separately identifiable.
 - `Schedule::FourBatchedAtomic`: four concurrent streams, three grid.z=2
   batches and M7. Same coefficients share a specialization; M3's sole output
   is remapped to share M4's specialization. Original ordered pairs remain a
-  separate control. Supported backends: Huge and Pipe64x32.
+  separate control. Current supported backends: Huge, Pipe64x32,
+  DeferredSwizzle64 and ColumnTile8.
 - `hybrid_two_level`: workspace-based outer Strassen and fused one-level inner
   products, following the structure of paper section 3.4. Three compact
   half-size scratch matrices are reused across seven outer products. Each
