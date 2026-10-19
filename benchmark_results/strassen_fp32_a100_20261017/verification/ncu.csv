@@ -1,5 +1,0 @@
-==PROF== Connected to process 2489584 (/share/home/liuyao/workspace/bag/benchmark_results/strassen_fp32_a100_20261017/benchmark_strassen_fp32)
-==PROF== Disconnected from process 2489584
-"ID","Process ID","Process Name","Host Name","Kernel Name","Context","Stream","Block Size","Grid Size","Device","CC","Section Name","Metric Name","Metric Unit","Metric Value"
-"0","2489584","benchmark_strassen_fp32","127.0.0.1","ampere_sgemm_128x64_nn","1","13","(128, 1, 1)","(16, 32, 1)","0","8.0","Command line profiler metrics","sm__inst_executed_pipe_tensor.sum","inst","0"
-"0","2489584","benchmark_strassen_fp32","127.0.0.1","ampere_sgemm_128x64_nn","1","13","(128, 1, 1)","(16, 32, 1)","0","8.0","Command line profiler metrics","smsp__sass_thread_inst_executed_op_ffma_pred_on.sum","inst","8594128896"

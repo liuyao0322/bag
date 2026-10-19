@@ -1,1 +1,0 @@
-/share/home/liuyao/workspace/bag/benchmark_results/strassen_fp32_a100_20261017/benchmark_strassen_fp32 --output /share/home/liuyao/workspace/bag/benchmark_results/strassen_fp32_a100_20261017/results --rounds 5 --target-ms 200 

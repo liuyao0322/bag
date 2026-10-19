@@ -1,1 +1,0 @@
-/share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/iter18_initial/benchmark_bag_cuda --output /share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/holdout_seed2027/results --sizes 1280\,1536\,1792\,2048 --depths 1 --basis minimal --schedule batched --seed-offset 2027 --rounds 7 --target-ms 300 

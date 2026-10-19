@@ -1,5 +1,0 @@
-{
-  "ffma_static_instructions": 18720,
-  "tensor_static_instructions": {},
-  "note": "Static instruction counts across the benchmark and instantiated primitive kernels; dynamic cuBLAS is checked separately by ncu."
-}

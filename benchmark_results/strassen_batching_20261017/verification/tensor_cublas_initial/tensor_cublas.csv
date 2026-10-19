@@ -1,8 +1,0 @@
-==PROF== Connected to process 260317 (/share/home/liuyao/workspace/bag/benchmark_results/strassen_batching_20261017/iter4_hybrid_smoke/benchmark_strassen_onelevel)
-==ERROR== Failed to open/create lock file /tmp/nsight-compute-lock. Please check that this process has write permissions on this file. See https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#faq for more details.
-==ERROR== Failed to profile "ampere_sgemm_128x64_nn" in process 260317
-==PROF== Trying to shutdown target application
-==ERROR== The application returned an error code (9).
-==ERROR== An error occurred while trying to profile.
-==WARNING== No kernels were profiled.
-==WARNING== Profiling kernels launched by child processes requires the --target-processes all option.

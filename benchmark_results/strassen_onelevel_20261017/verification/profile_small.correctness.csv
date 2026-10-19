@@ -1,3 +1,0 @@
-parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
-2048,pipe64x32_k16_r4_gemm_atomic,1,288,7.03679275651e-07,9.94512811303e-06,1.08118724272e-06,1
-2048,pipe64x32_k16_r4_gemm_atomic,3,288,6.97876159907e-07,2.88817100227e-05,1.13817543154e-06,1

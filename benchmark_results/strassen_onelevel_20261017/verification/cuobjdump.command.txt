@@ -1,1 +1,0 @@
-cuobjdump --dump-sass /share/home/liuyao/workspace/bag/benchmark_results/strassen_onelevel_20261017/iter2_endtoend/benchmark_strassen_onelevel 

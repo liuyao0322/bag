@@ -1,3 +1,0 @@
-parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
-512,huge_hybrid2_seven_atomic,1,128,8.25410973397e-07,6.86547718942e-06,9.82696939795e-07,1
-512,huge_hybrid2_seven_atomic,3,128,8.40381540739e-07,2.03580129892e-05,1.08043695005e-06,1

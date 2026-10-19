@@ -1,3 +1,0 @@
-case,Registers Per Thread,Theoretical Occupancy,Achieved Occupancy,Waves Per SM
-original_large,113,25,6.60,0.30
-pipe64x32_k16_r4,56,56.25,23.47,0.53

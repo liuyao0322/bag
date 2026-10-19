@@ -1,7 +1,0 @@
-{
-  "engine.cuh": false,
-  "huge_pair.cuh": true,
-  "hybrid.cuh": true,
-  "large_control.cuh": true,
-  "simt.cuh": false
-}

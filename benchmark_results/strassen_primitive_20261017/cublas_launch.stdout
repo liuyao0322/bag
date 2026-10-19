@@ -1,2 +1,0 @@
-N=1536 correctness PASS cases=1
-COMPLETE benchmark_results/strassen_primitive_20261017/cublas_launch

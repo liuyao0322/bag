@@ -1,26 +1,36 @@
-# Build artifacts
-build/
-*.o
-*.exe
+# Generated files
+/build/
+/dist/
+*.egg-info/
 __pycache__/
 *.py[cod]
-_bench_output.txt
-
-# NCU reports (large binary files)
+*.o
+*.a
+*.so
+*.exe
 *.ncu-rep
-
-# Editor / IDE
+*.nsys-rep
+*.csv
+*.log
+/results.*
+.pytest_cache/
+.venv/
 .vscode/
 *.swp
 *~
-
-# OS
 .DS_Store
 Thumbs.db
 
-plot/
-paper/
-profiling/
-logs/
-third_party/
-kernel/
+# Local research workspace (not part of the source distribution)
+/benchmark_results/
+/trajectory/
+/solution/
+/scripts/
+/paper/
+/plot/
+/kernel/
+/third_party/
+/profiling/
+/logs/
+/_bench_output.txt
+*.md

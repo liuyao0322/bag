@@ -1,2 +1,0 @@
-             JOBID    PARTITION                     NAME    STATE       TIME     NODELIST(REASON)
-            108131         a800      strassen-a800-suite  PENDING       0:00           (Priority)

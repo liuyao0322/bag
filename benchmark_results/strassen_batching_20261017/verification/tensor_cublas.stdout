@@ -1,2 +1,0 @@
-N=2048 correctness PASS cases=1
-COMPLETE benchmark_results/strassen_batching_20261017/verification/tensor_cublas

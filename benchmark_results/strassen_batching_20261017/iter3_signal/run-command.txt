@@ -1,1 +1,0 @@
-/share/home/liuyao/workspace/bag/benchmark_results/strassen_batching_20261017/iter3_signal/benchmark_strassen_onelevel --output /share/home/liuyao/workspace/bag/benchmark_results/strassen_batching_20261017/iter3_signal/results --mode endtoend --sizes 2048\,8192\,20480 --backends huge\,pipe64x32_k16_r4 --rounds 3 --target-ms 100 

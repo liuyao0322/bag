@@ -1,4 +1,0 @@
-==WARNING== Please consult the documentation for current range-based replay mode limitations and requirements.
-N=2048 correctness PASS cases=1
-PROFILE COMPLETE calls=10
-COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_primitive_20261017/stall_profiles/n2048_deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic

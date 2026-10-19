@@ -1,2 +1,0 @@
-N=128 correctness PASS cases=1
-COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_batching_20261017/verification/racecheck_hybrid

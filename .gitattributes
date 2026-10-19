@@ -1,2 +1,2 @@
-# Preserve the copied original huge compute body verbatim for source comparison.
-solution/strassen_cuda/huge_pair.cuh -whitespace
+include/bag/cuda/detail/huge_pair.cuh -whitespace
+include/bag/cuda/detail/legacy/*.cuh -whitespace

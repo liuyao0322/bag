@@ -1,3 +1,0 @@
-origin=/share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/iter18_initial
-491d7970ca18f9ce3fd3275d856e85fe0b355f5292eba65451dbd0e0aa2d4e08  /share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/iter18_initial/benchmark_bag_cuda
-b4837b271e833e9659fdf37b0198de72978abe276661f0a0f1b3a8820c7db84b  /share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/iter18_initial/source.sha256

@@ -1,6 +1,0 @@
-N=1536 cublas_full RANGE PASS
-N=1536 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic RANGE PASS
-N=1536 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic RANGE PASS
-N=2048 cublas_full RANGE PASS
-N=2048 deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic RANGE PASS
-N=2048 deferred_exact_swizzle_coalesced64_k16_r4_four_batched_atomic RANGE PASS

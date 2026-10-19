@@ -1,5 +1,0 @@
-parent_n,case,repeats,checked_values,relative_l2_error,max_absolute_error,max_scaled_error,pass
-120,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,1,14400,2.7591604581e-07,1.79442577064e-06,3.7316411842e-07,1
-120,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,3,14400,2.88449424036e-07,4.87570650876e-06,4.0177004104e-07,1
-128,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,1,16384,2.82873825825e-07,1.73924490809e-06,3.29507206778e-07,1
-128,deferred_exact_swizzle_coalesced64_k16_r4_seven_atomic,3,16384,2.96454936778e-07,5.57536259294e-06,4.24988055203e-07,1

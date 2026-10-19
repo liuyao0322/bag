@@ -1,1 +1,0 @@
-{"gpu":"NVIDIA A100 80GB PCIe","alpha":1,"beta":1,"math_mode":"CUBLAS_PEDANTIC_MATH","seed_offset":1009,"rounds":5,"target_ms":200,"samples":128,"backend":"column","basis":"both","schedule":"all","cuda_runtime":12020,"cublas_version":120205,"sizes":[24,128,2056],"depths":[1,2]}

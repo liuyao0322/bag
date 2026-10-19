@@ -1,5 +1,0 @@
-N=512 FP64 validation PASS (1 cases, 1/3 accumulated calls)
-N=1024 FP64 validation PASS (1 cases, 1/3 accumulated calls)
-N=2048 FP64 validation PASS (1 cases, 1/3 accumulated calls)
-N=8448 FP64 validation PASS (1 cases, 1/3 accumulated calls)
-COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/strassen_fp32_a100_20261017/verification/memcheck

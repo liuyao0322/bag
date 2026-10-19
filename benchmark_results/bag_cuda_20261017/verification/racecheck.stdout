@@ -1,4 +1,0 @@
-SKIP N=24 depth=2 invalid leaf shape
-N=24 FP64 PASS cases=8
-N=128 FP64 PASS cases=14
-COMPLETE /share/home/liuyao/workspace/bag/benchmark_results/bag_cuda_20261017/verification/racecheck
